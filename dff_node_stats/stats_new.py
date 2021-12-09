@@ -13,7 +13,7 @@ from collectors import *
 from savers import Saver, CsvSaver
 
 
-class NewStats(BaseModel):
+class Stats(BaseModel):
     saver: Saver
     collectors: List[Collector]
     column_dtypes: Dict[str, str] = {}
@@ -32,28 +32,42 @@ class NewStats(BaseModel):
             column_dtypes.update(collector.column_dtypes)
             parse_dates.extend(collector.parse_dates)
 
-        super(NewStats, self).__init__(
-            saver,
-            collectors,
-            column_dtypes,
-            parse_dates
-        )
+        super(Stats, self).__init__(saver, collectors, column_dtypes, parse_dates)
+
+    @validate_arguments
+    def _update_handlers(self, actor: Actor, stage: ActorStage, handler) -> Actor:
+        actor.handlers[stage] = actor.handlers.get(stage, []) + [handler]
+        return actor
+
+    def update_actor_handlers(
+        self, actor: Actor, auto_save: bool = True, *args, **kwargs
+    ):
+        self._update_handlers(actor, ActorStage.CONTEXT_INIT, self.get_start_time)
+        self._update_handlers(actor, ActorStage.FINISH_TURN, self.collect_stats)
+        if auto_save:
+            self._update_handlers(actor, ActorStage.FINISH_TURN, self.save)
 
     @cached_property
-    def dataframe(self):
-        return self.saver.load()
+    def dataframe(self) -> pd.DataFrame:
+        return self.saver.load(
+            column_types=self.column_dtypes, parse_dates=self.parse_dates
+        )
 
-    def add_df(self, stats: dict):
+    def add_df(self, stats: Dict[str, Any]) -> None:
         self.dfs += [pd.DataFrame(stats)]
 
     @validate_arguments
-    def get_start_time(self, ctx: Context, actor: Actor, *args, **kwargs):
+    def get_start_time(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
         self.start_time = datetime.datetime.now()
-        if ctx.last_label is None:
-            self.add_df(ctx.id, -1, *actor.start_label[:2])
+        stats = dict()
+        for collector in self.collectors:
+            stats.update(
+                collector.collect_stats(ctx, actor, start_time=self.start_time)
+            )
+        self.add_df(stats)
 
     @validate_arguments
-    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs):
+    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
         stats = dict()
         for collector in self.collectors:
             stats.update(
@@ -63,9 +77,7 @@ class NewStats(BaseModel):
 
     def save(self, *args, **kwargs):
         self.saver.save(
-            self.dfs,
-            column_types=self.column_dtypes,
-            parse_dates=["sta"]
+            self.dfs, column_types=self.column_dtypes, parse_dates=self.parse_dates
         )
         self.dfs.clear()
 
@@ -77,6 +89,7 @@ class NewStats(BaseModel):
         by default
         """
         import streamlit as st
+
         for collector in self.collectors:
             collector.visualize(st)
 
@@ -86,25 +99,23 @@ class StatsBuilder:
         self.collector_mapping: Dict[str, Collector] = {
             "BasicCollector": BasicCollector(),
             "RequestCollector": RequestCollector(),
-            "ResponseCollector": ResponseCollector()
+            "ResponseCollector": ResponseCollector(),
         }
 
     @validate_arguments
     def __call__(
-        self,
-        saver: Optional[Saver] = None,
-        collectors: List[str] = ["BasicCollector"]
-    ) -> NewStats:
+        self, saver: Optional[Saver] = None, collectors: List[str] = ["BasicCollector"]
+    ) -> Stats:
         if saver is None:
-            saver = CsvSaver(
-                csv_file=pathlib.Path("./stats.csv")
-            )
-        return NewStats(
+            saver = CsvSaver(csv_file=pathlib.Path("./stats.csv"))
+        return Stats(
             saver,
             [
-                *[self.collector_mapping[i]
-                for i in collectors
-                if i in self.collector_mapping]
+                *[
+                    self.collector_mapping[i]
+                    for i in collectors
+                    if i in self.collector_mapping
+                ]
             ],
         )
 

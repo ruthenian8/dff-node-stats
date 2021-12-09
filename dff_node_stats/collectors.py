@@ -14,7 +14,7 @@ class Collector(Protocol):
 
     @property
     def parse_dates(self) -> List[str]:
-        return []    
+        return []
 
     def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
         raise NotImplementedError
@@ -41,22 +41,19 @@ class BasicCollector(BaseModel):
 
     @validate_arguments
     def collect_stats(
-        self,
-        ctx: Context,
-        actor: Actor,
-        *args,
-        **kwargs
+        self, ctx: Context, actor: Actor, *args, **kwargs
     ) -> Dict[str, Any]:
-        indexes = list(ctx.labels)
-        current_index = indexes[-1] if indexes else -1
-        start_time = kwargs.get("start_time", datetime.datetime.now())
+        indexes = list(ctx.labels) or [-1]
+        current_index = indexes[-1]
+        start_time = kwargs.get("start_time") or datetime.datetime.now()
+        last_label = ctx.last_label or actor.start_label
         return {
             "context_id": [str(ctx.id)],
             "history_id": [current_index],
             "start_time": [start_time],
             "duration_time": [(datetime.datetime.now() - start_time).total_seconds()],
-            "flow_label": [ctx.last_label[0]],
-            "node_label": [ctx.last_label[1]],
+            "flow_label": [last_label[0]],
+            "node_label": [last_label[1]],
         }
 
     def visualize(streamlit: ModuleType) -> None:
@@ -75,11 +72,7 @@ class RequestCollector(BaseModel):
 
     @validate_arguments
     def collect_stats(
-        self,
-        ctx: Context,
-        actor: Actor,
-        *args,
-        **kwargs
+        self, ctx: Context, actor: Actor, *args, **kwargs
     ) -> Dict[str, Any]:
         return {"user_request": ctx.last_request or ""}
 
@@ -99,11 +92,7 @@ class ResponseCollector(BaseModel):
 
     @validate_arguments
     def collect_stats(
-        self,
-        ctx: Context,
-        actor: Actor,
-        *args,
-        **kwargs
+        self, ctx: Context, actor: Actor, *args, **kwargs
     ) -> Dict[str, Any]:
         return {ctx.last_response or ""}
 
@@ -121,21 +110,18 @@ class ContextCollector(BaseModel):
     Names of columns with type 'datetime' can be
     optionally listed in 'parse_dates'
     """
+
     column_dtypes: Dict[str, str]
     parse_dates: List[str]
 
     def __init__(
-        self, 
-        column_dtypes: Dict[str, str],
-        parse_dates: List[str] = []
+        self, column_dtypes: Dict[str, str], parse_dates: List[str] = []
     ) -> None:
         """
         :param column_dtypes: names and pd types of columns
         :param parse_dates: names of columns with datetime
         """
-        super(ContextCollector, self).__init__(
-            column_dtypes, parse_dates
-        )
+        super(ContextCollector, self).__init__(column_dtypes, parse_dates)
 
     @property
     def column_dtypes(self) -> Dict[str, str]:
@@ -147,11 +133,7 @@ class ContextCollector(BaseModel):
 
     @validate_arguments
     def collect_stats(
-        self,
-        ctx: Context,
-        actor: Actor,
-        *args,
-        **kwargs
+        self, ctx: Context, actor: Actor, *args, **kwargs
     ) -> Dict[str, Any]:
         misc_stats = dict()
         for key in self.column_dtypes:
