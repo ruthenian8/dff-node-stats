@@ -86,8 +86,10 @@ class Stats(BaseModel):
         import streamlit as st
 
         df = self.dataframe
+        st.title("DialogFlow Framework Statistic Dashboard")
         for collector in self.collectors:
-            collector.streamlit_run(st, df)
+            df = collector.streamlit_run(st, df)
+        return
 
     def api_run(self, port=8000) -> None:
         """
@@ -107,7 +109,7 @@ class Stats(BaseModel):
 class StatsBuilder:
     def __init__(self) -> None:
         self.collector_mapping: Dict[str, Collector] = {
-            "BasicCollector": BasicCollector(),
+            "NodeLabelCollector": NodeLabelCollector(),
             "RequestCollector": RequestCollector(),
             "ResponseCollector": ResponseCollector(),
         }
@@ -119,13 +121,16 @@ class StatsBuilder:
         if saver is None:
             saver = CsvSaver(csv_file=pathlib.Path("./stats.csv"))
         if collectors is None:
-            collectors = ["BasicCollector"]
+            collectors = ["NodeLabelCollector"]
         return Stats(
             saver,
             [
-                self.collector_mapping[i]
-                for i in collectors
-                if i in self.collector_mapping
+                DefaultCollector(),
+                *[
+                    self.collector_mapping[i]
+                    for i in collectors
+                    if i in self.collector_mapping
+                ],
             ],
         )
 
