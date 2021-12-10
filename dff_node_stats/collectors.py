@@ -2,10 +2,11 @@ from typing import List, Dict, Protocol, runtime_checkable, Any
 from types import ModuleType
 import datetime
 
-from pydantic import BaseModel, validate_arguments
+from pydantic import BaseModel, validate_arguments, Field
 from dff.core import Context, Actor
 import pandas as pd
 from fastapi import FastAPI
+import graphviz
 
 
 @runtime_checkable
@@ -119,6 +120,13 @@ class DefaultCollector(BaseModel):
             ]
 
         df = slice_df_origin(df, start_date, end_date, context_id)
+
+        col1, col2 = streamlit.columns(2)
+        col1.subheader("Data")
+        col1.dataframe(df)
+        col2.subheader("Timings")
+        col2.dataframe(df.describe().duration_time)
+        col2.write(f"Data shape {df.shape}")
         return df
 
     def api_run(self, app: FastAPI, df: pd.DataFrame) -> FastAPI:
@@ -148,9 +156,8 @@ class NodeLabelCollector(BaseModel):
         }
 
     def streamlit_run(self, streamlit: ModuleType, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
-
-        def add_nodes_and_edges(df: pd.DataFrame):
+        @streamlit.cache(allow_output_mutation=True)
+        def get_nodes_and_edges(df: pd.DataFrame):
             for context_id in df.context_id.unique():
                 ctx_index = df.context_id == context_id
                 df.loc[ctx_index, "node"] = (
@@ -169,12 +176,83 @@ class NodeLabelCollector(BaseModel):
                 )
             return df
 
-        df = add_nodes_and_edges(df)
+        df = get_nodes_and_edges(df)
+        node_counter = df.node.value_counts()
+        edge_counter = df.edge.value_counts()
+        node2code = {key: f"n{index}" for index, key in enumerate(df.node.unique())}
+
+        streamlit.subheader("Graph of Transitions")
+        graph = graphviz.Digraph()
+        graph.attr(compound="true")
+        flow_labels = df.flow_label.unique()
+        for i, flow_label in enumerate(flow_labels):
+            with graph.subgraph(name=f"cluster{i}") as sub_graph:
+                sub_graph.attr(style="filled", color="lightgrey")
+                sub_graph.attr(label=flow_label)
+
+                sub_graph.node_attr.update(style="filled", color="white")
+
+                for _, (history_id, node, node_label) in df.loc[
+                    df.flow_label == flow_label, ("history_id", "node", "node_label")
+                ].iterrows():
+                    counter = node_counter[node]
+                    label = f"{node_label} ({counter=})"
+                    if history_id == -1:
+                        sub_graph.node(node2code[node], label=label, shape="Mdiamond")
+                    else:
+                        sub_graph.node(node2code[node], label=label)
+
+        for (in_node, out_node), counter in edge_counter.items():
+            if isinstance(in_node, str):
+                label = f"(probs={counter/node_counter[in_node]:.2f})"
+                graph.edge(node2code[in_node], node2code[out_node], label=label)
+
+        streamlit.graphviz_chart(graph)
+
+        streamlit.subheader("Transition Trace")
+        df_trace = df[["history_id", "flow_label", "node"]]
+        df_trace.index = df_trace.history_id
+        df_trace = df_trace.drop(columns=["history_id"])
+        df_trace
+        node_trace = {}
+        for flow_label in df_trace.flow_label.unique():
+            node_trace[flow_label] = df_trace.loc[
+                df_trace.flow_label == flow_label, "node"
+            ]
+        streamlit.bar_chart(df_trace.loc[:, "node"])
+
+        streamlit.subheader("Node counters")
+        node_counters = {}
+        for flow_label in flow_labels:
+            node_counters[flow_label] = df.loc[
+                df.flow_label == flow_label, "node_label"
+            ].value_counts()
+        streamlit.bar_chart(node_counters)
+
+        streamlit.subheader("Transitions counters")
+        edge_counters = {}
+        for edge_type in df.edge_type.unique():
+            edge_counters[edge_type] = (
+                df.loc[df.edge_type == edge_type, "edge"].astype("str").value_counts()
+            )
+        streamlit.bar_chart(edge_counters)
+
+        streamlit.subheader("Transitions duration [sec]")
+        edge_time = df[["edge", "edge_type", "duration_time"]]
+        edge_time = edge_time.astype({"edge": "str"})
+        edge_time = edge_time.groupby(["edge", "edge_type"], as_index=False).mean()
+        edge_time.index = edge_time.edge
+
+        edge_duration = {}
+        for edge_type in df.edge_type.unique():
+            edge_duration[edge_type] = edge_time.loc[
+                edge_time.edge_type == edge_type, "duration_time"
+            ]
+        streamlit.bar_chart(edge_duration)
         return df
 
     def api_run(self, app: FastAPI, df: pd.DataFrame) -> FastAPI:
         def transition_counts(df: pd.DataFrame) -> Dict[str, int]:
-            df = df.copy()
             df["node"] = df.apply(
                 lambda row: f"{row.flow_label}:{row.node_label}", axis=1
             )
@@ -249,6 +327,8 @@ class ResponseCollector(BaseModel):
 
 class ContextCollector(BaseModel):
     """
+    :param column_dtypes: names and pd types of columns
+    :param parse_dates: names of columns with datetime
     The user needs to provide a datatype for each
     key that must be extracted from the ctx.misc
     object. In case the value is a dict or a list,
@@ -258,16 +338,7 @@ class ContextCollector(BaseModel):
     """
 
     column_dtypes: Dict[str, str]
-    parse_dates: List[str]
-
-    def __init__(
-        self, column_dtypes: Dict[str, str], parse_dates: List[str] = []
-    ) -> None:
-        """
-        :param column_dtypes: names and pd types of columns
-        :param parse_dates: names of columns with datetime
-        """
-        super(ContextCollector, self).__init__(column_dtypes, parse_dates)
+    parse_dates: Field(List[str], default_factory=list)
 
     @property
     def column_dtypes(self) -> Dict[str, str]:

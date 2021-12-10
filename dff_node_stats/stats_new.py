@@ -85,7 +85,7 @@ class Stats(BaseModel):
         """
         import streamlit as st
 
-        df = self.dataframe
+        df = self.dataframe.copy()
         st.title("DialogFlow Framework Statistic Dashboard")
         for collector in self.collectors:
             df = collector.streamlit_run(st, df)
