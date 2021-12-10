@@ -126,7 +126,7 @@ class RequestCollector(BaseModel):
     def collect_stats(
         self, ctx: Context, actor: Actor, *args, **kwargs
     ) -> Dict[str, Any]:
-        return {"user_request": ctx.last_request or ""}
+        return {"user_request": [ctx.last_request or ""]}
 
     def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
         """TODO: implement"""
@@ -149,7 +149,7 @@ class ResponseCollector(BaseModel):
     def collect_stats(
         self, ctx: Context, actor: Actor, *args, **kwargs
     ) -> Dict[str, Any]:
-        return {ctx.last_response or ""}
+        return {"bot_response": [ctx.last_response or ""]}
 
     def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
         """TODO: implement"""
@@ -196,7 +196,7 @@ class ContextCollector(BaseModel):
         misc_stats = dict()
         for key in self.column_dtypes:
             value = ctx.misc.get(key, None)
-            misc_stats[key] = value
+            misc_stats[key] = [value]
         return misc_stats
 
     def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
