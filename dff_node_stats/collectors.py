@@ -35,7 +35,7 @@ class Collector(Protocol):
     def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
         """
         Create a streamlit representation for the data
-        collected by a colllector
+        collected by the colllector
         """
         raise NotImplementedError
 

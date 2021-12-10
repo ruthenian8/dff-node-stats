@@ -6,14 +6,14 @@ import pandas as pd
 
 @runtime_checkable
 class Saver(Protocol):
-    def save(self, dfs: List[pd.DataFrame], **kwargs):
+    def save(self, dfs: List[pd.DataFrame], **kwargs) -> None:
         """
         Save the data to a database or a file
-        Append if already exists
+        Append if the table already exists
         """
         raise NotImplementedError
 
-    def load(self, **kwargs):
+    def load(self, **kwargs) -> pd.DataFrame:
         """
         Load the data from a database or a file
         """
@@ -47,6 +47,7 @@ class PGSaver:
         :param engine_params: dict of format {user, password, host, port, db}
         """
         import sqlalchemy as sa
+
         self.json_type = sa.dialects.postgresql.JSONB
         self.table = table
         self.engine = sa.create_engine(
@@ -59,10 +60,7 @@ class PGSaver:
             if column_types[key] == "object":
                 column_types[key] = self.json_type
         pd.concat(dfs).to_sql(
-            name=self.table,
-            con=self.engine,
-            dtype=column_types,
-            if_exists="append"
+            name=self.table, con=self.engine, dtype=column_types, if_exists="append"
         )
 
     def load(self, **kwargs) -> pd.DataFrame:
@@ -86,10 +84,7 @@ class CHSaver:
     def save(self, dfs: List[pd.DataFrame], **kwargs) -> None:
         column_types: Optional[Dict[str, str]] = kwargs.get("column_types")
         pd.concat(dfs).to_sql(
-            name=self.table,
-            con=self.engine,
-            dtype=column_types,
-            if_exists="append"
+            name=self.table, con=self.engine, dtype=column_types, if_exists="append"
         )
 
     def load(self, **kwargs) -> pd.DataFrame:

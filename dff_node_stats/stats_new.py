@@ -34,6 +34,21 @@ class Stats(BaseModel):
 
         super(Stats, self).__init__(saver, collectors, column_dtypes, parse_dates)
 
+    @cached_property
+    def dataframe(self) -> pd.DataFrame:
+        return self.saver.load(
+            column_types=self.column_dtypes, parse_dates=self.parse_dates
+        )
+
+    def add_df(self, stats: Dict[str, Any]) -> None:
+        self.dfs += [pd.DataFrame(stats)]
+
+    def save(self, *args, **kwargs):
+        self.saver.save(
+            self.dfs, column_types=self.column_dtypes, parse_dates=self.parse_dates
+        )
+        self.dfs.clear()
+
     @validate_arguments
     def _update_handlers(self, actor: Actor, stage: ActorStage, handler) -> Actor:
         actor.handlers[stage] = actor.handlers.get(stage, []) + [handler]
@@ -47,24 +62,10 @@ class Stats(BaseModel):
         if auto_save:
             self._update_handlers(actor, ActorStage.FINISH_TURN, self.save)
 
-    @cached_property
-    def dataframe(self) -> pd.DataFrame:
-        return self.saver.load(
-            column_types=self.column_dtypes, parse_dates=self.parse_dates
-        )
-
-    def add_df(self, stats: Dict[str, Any]) -> None:
-        self.dfs += [pd.DataFrame(stats)]
-
     @validate_arguments
     def get_start_time(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
         self.start_time = datetime.datetime.now()
-        stats = dict()
-        for collector in self.collectors:
-            stats.update(
-                collector.collect_stats(ctx, actor, start_time=self.start_time)
-            )
-        self.add_df(stats)
+        self.collect_stats(ctx, actor, *args, **kwargs)
 
     @validate_arguments
     def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
@@ -75,12 +76,6 @@ class Stats(BaseModel):
             )
         self.add_df(stats=stats)
 
-    def save(self, *args, **kwargs):
-        self.saver.save(
-            self.dfs, column_types=self.column_dtypes, parse_dates=self.parse_dates
-        )
-        self.dfs.clear()
-
     def streamlit_run(self) -> None:
         """
         Methods for visualizing data
@@ -89,6 +84,7 @@ class Stats(BaseModel):
         by default
         """
         import streamlit as st
+
         df = self.dataframe
         for collector in self.collectors:
             collector.streamlit_run(st, df)
@@ -100,6 +96,7 @@ class Stats(BaseModel):
         """
         import uvicorn
         from fastapi import FastAPI
+
         app = FastAPI()
         df = self.dataframe
         for collector in self.collectors:
