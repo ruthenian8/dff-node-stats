@@ -4,22 +4,46 @@ import datetime
 
 from pydantic import BaseModel, validate_arguments
 from dff.core import Context, Actor
+from pandas import DataFrame
+from fastapi import FastAPI
 
 
 @runtime_checkable
 class Collector(Protocol):
     @property
     def column_dtypes(self) -> Dict[str, str]:
+        """
+        String names and string pandas types for the collected data
+        """
         return None
 
     @property
     def parse_dates(self) -> List[str]:
+        """
+        String names of columns that should be parsed as dates
+        """
         return []
 
-    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
+    def collect_stats(
+        self, ctx: Context, actor: Actor, *args, **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Extract the required data from the context
+        """
         raise NotImplementedError
 
-    def visualize(streamlit: ModuleType) -> None:
+    def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
+        """
+        Create a streamlit representation for the data
+        collected by a colllector
+        """
+        raise NotImplementedError
+
+    def api_run(self, app: FastAPI, df: DataFrame) -> FastAPI:
+        """
+        Attach methods to api, returns unchanged object
+        if no endpoints should be added
+        """
         raise NotImplementedError
 
 
@@ -56,9 +80,37 @@ class BasicCollector(BaseModel):
             "node_label": [last_label[1]],
         }
 
-    def visualize(streamlit: ModuleType) -> None:
+    def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
         """TODO: implement"""
         return
+
+    def api_run(self, app: FastAPI, df: DataFrame) -> FastAPI:
+        def transition_counts(df: DataFrame) -> Dict[str, int]:
+            df = df.copy()
+            df["node"] = df.apply(
+                lambda row: f"{row.flow_label}:{row.node_label}", axis=1
+            )
+            df = df.drop(["flow_label", "node_label"], axis=1)
+            df = df.sort_values(["context_id"], kind="stable")
+            df["next_node"] = df.node.shift()
+            df = df[df.history_id != 0]
+            transitions = df.apply(lambda row: f"{row.node}->{row.next_node}", axis=1)
+            return {k: int(v) for k, v in dict(transitions.value_counts()).items()}
+
+        tc = transition_counts(df)
+
+        def transition_probs(df: DataFrame) -> Dict[str, float]:
+            return {k: v / sum(tc.values, 0) for k, v in tc.items()}
+
+        @app.get("/api/v1/stats/transition-counts", response_model=Dict[str, int])
+        async def get_transition_counts():
+            return tc
+
+        @app.get("/api/v1/stats/transition-probs", response_model=Dict[str, float])
+        async def get_transition_probs():
+            return transition_probs(df)
+
+        return app
 
 
 class RequestCollector(BaseModel):
@@ -76,9 +128,12 @@ class RequestCollector(BaseModel):
     ) -> Dict[str, Any]:
         return {"user_request": ctx.last_request or ""}
 
-    def visualize(streamlit: ModuleType) -> None:
+    def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
         """TODO: implement"""
         return
+
+    def api_run(self, app: FastAPI, df: DataFrame) -> FastAPI:
+        return app
 
 
 class ResponseCollector(BaseModel):
@@ -96,9 +151,12 @@ class ResponseCollector(BaseModel):
     ) -> Dict[str, Any]:
         return {ctx.last_response or ""}
 
-    def visualize(streamlit: ModuleType) -> None:
+    def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
         """TODO: implement"""
         return
+
+    def api_run(self, app: FastAPI, df: DataFrame) -> FastAPI:
+        return app
 
 
 class ContextCollector(BaseModel):
@@ -141,6 +199,9 @@ class ContextCollector(BaseModel):
             misc_stats[key] = value
         return misc_stats
 
-    def visualize(streamlit: ModuleType) -> None:
+    def streamlit_run(self, streamlit: ModuleType, df: DataFrame) -> None:
         """TODO: implement"""
         return
+
+    def api_run(self, app: FastAPI, df: DataFrame) -> FastAPI:
+        return app

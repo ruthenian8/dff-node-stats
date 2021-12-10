@@ -81,7 +81,7 @@ class Stats(BaseModel):
         )
         self.dfs.clear()
 
-    def visualize(self) -> None:
+    def streamlit_run(self) -> None:
         """
         Methods for visualizing data
         will be in corresponding collectors,
@@ -89,9 +89,22 @@ class Stats(BaseModel):
         by default
         """
         import streamlit as st
-
+        df = self.dataframe
         for collector in self.collectors:
-            collector.visualize(st)
+            collector.streamlit_run(st, df)
+
+    def api_run(self, port=8000) -> None:
+        """
+        Methods for API get defined
+        inside the collectors as well
+        """
+        import uvicorn
+        from fastapi import FastAPI
+        app = FastAPI()
+        df = self.dataframe
+        for collector in self.collectors:
+            app = collector.api_run(app, df)
+        uvicorn.run(app, host="0.0.0.0", port=port)
 
 
 class StatsBuilder:
@@ -104,18 +117,18 @@ class StatsBuilder:
 
     @validate_arguments
     def __call__(
-        self, saver: Optional[Saver] = None, collectors: List[str] = ["BasicCollector"]
+        self, saver: Optional[Saver] = None, collectors: Optional[List[str]] = None
     ) -> Stats:
         if saver is None:
             saver = CsvSaver(csv_file=pathlib.Path("./stats.csv"))
+        if collectors is None:
+            collectors = ["BasicCollector"]
         return Stats(
             saver,
             [
-                *[
-                    self.collector_mapping[i]
-                    for i in collectors
-                    if i in self.collector_mapping
-                ]
+                self.collector_mapping[i]
+                for i in collectors
+                if i in self.collector_mapping
             ],
         )
 

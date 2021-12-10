@@ -7,9 +7,16 @@ import pandas as pd
 @runtime_checkable
 class Saver(Protocol):
     def save(self, dfs: List[pd.DataFrame], **kwargs):
+        """
+        Save the data to a database or a file
+        Append if already exists
+        """
         raise NotImplementedError
 
     def load(self, **kwargs):
+        """
+        Load the data from a database or a file
+        """
         raise NotImplementedError
 
 
