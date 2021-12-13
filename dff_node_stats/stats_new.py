@@ -13,7 +13,7 @@ from collectors import *
 from savers import Saver, CsvSaver
 
 
-class Stats(BaseModel):
+class Stats(BaseModel, arbitrary_types_allowed=True):
     saver: Saver
     collectors: List[Collector]
     column_dtypes: Dict[str, str] = {}
@@ -114,7 +114,6 @@ class StatsBuilder:
             "ResponseCollector": ResponseCollector(),
         }
 
-    @validate_arguments
     def __call__(
         self, saver: Optional[Saver] = None, collectors: Optional[List[str]] = None
     ) -> Stats:

@@ -338,7 +338,7 @@ class ContextCollector(BaseModel):
     """
 
     column_dtypes: Dict[str, str]
-    parse_dates: Field(List[str], default_factory=list)
+    parse_dates: Field(default_factory=list)
 
     @property
     def column_dtypes(self) -> Dict[str, str]:
