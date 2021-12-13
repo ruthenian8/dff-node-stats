@@ -2,7 +2,7 @@ from typing import List, Dict, Protocol, runtime_checkable, Any
 from types import ModuleType
 import datetime
 
-from pydantic import BaseModel, validate_arguments, Field
+from pydantic import validate_arguments, Field
 from dff.core import Context, Actor
 import pandas as pd
 from fastapi import FastAPI
@@ -48,11 +48,11 @@ class Collector(Protocol):
         raise NotImplementedError
 
 
-class DefaultCollector(BaseModel):
+class DefaultCollector():
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {
-            "context_id": "string",
+            "context_id": "str",
             "history_id": "int64",
             "start_time": "datetime64[ns]",
             "duration_time": "float64",
@@ -111,7 +111,7 @@ class DefaultCollector(BaseModel):
 
         start_date, end_date, context_id = get_sidebar_chnges()
 
-        @streamlit.cache()
+        @streamlit.cache(allow_output_mutation=True)
         def slice_df_origin(df_origin, start_date, end_date, context_id):
             return df_origin[
                 (df_origin.start_time >= start_date)
@@ -133,7 +133,7 @@ class DefaultCollector(BaseModel):
         return app
 
 
-class NodeLabelCollector(BaseModel):
+class NodeLabelCollector():
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {
@@ -279,7 +279,7 @@ class NodeLabelCollector(BaseModel):
         return app
 
 
-class RequestCollector(BaseModel):
+class RequestCollector():
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {"user_request": "string"}
@@ -302,7 +302,7 @@ class RequestCollector(BaseModel):
         return app
 
 
-class ResponseCollector(BaseModel):
+class ResponseCollector():
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {"bot_response": "string"}
@@ -325,7 +325,7 @@ class ResponseCollector(BaseModel):
         return app
 
 
-class ContextCollector(BaseModel):
+class ContextCollector():
     """
     :param column_dtypes: names and pd types of columns
     :param parse_dates: names of columns with datetime
@@ -337,16 +337,25 @@ class ContextCollector(BaseModel):
     optionally listed in 'parse_dates'
     """
 
-    column_dtypes: Dict[str, str]
-    parse_dates: Field(default_factory=list)
+    def __init__(
+        self,
+        column_dtypes: Dict[str, str],
+        parse_dates: List[str]    
+    ) -> None:
+        for key in parse_dates:
+            if key in column_dtypes:
+                column_dtypes.pop(key)
+        self._column_dtypes = column_dtypes,
+        self._parse_dates = parse_dates
+        return
 
     @property
     def column_dtypes(self) -> Dict[str, str]:
-        return self.column_dtypes
+        return self._column_dtypes
 
     @property
     def parse_dates(self) -> List[str]:
-        return self.parse_dates
+        return self._parse_dates
 
     @validate_arguments
     def collect_stats(

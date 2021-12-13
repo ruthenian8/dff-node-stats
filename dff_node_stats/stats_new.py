@@ -5,35 +5,37 @@ import datetime
 from functools import cached_property
 
 import pandas as pd
-from pydantic import validate_arguments, BaseModel, Field
+from pydantic import validate_arguments
 from dff.core import Context, Actor
 from dff.core.types import ActorStage
 
-from collectors import *
-from savers import Saver, CsvSaver
+from .collectors import *
+from .savers import Saver, CsvSaver
 
 
-class Stats(BaseModel, arbitrary_types_allowed=True):
-    saver: Saver
-    collectors: List[Collector]
-    column_dtypes: Dict[str, str] = {}
-    parse_dates: List[str] = []
-    dfs: list = Field(default_factory=list)
-    start_time: Optional[datetime.datetime] = None
-
+class Stats():
     def __init__(
         self,
         saver: Saver,
         collectors: List[Collector],
     ) -> None:
+
         column_dtypes = dict()
         parse_dates = list()
         for collector in collectors:
             column_dtypes.update(collector.column_dtypes)
             parse_dates.extend(collector.parse_dates)
-
-        super(Stats, self).__init__(saver, collectors, column_dtypes, parse_dates)
-
+        for key in parse_dates:
+            if key in column_dtypes:
+                column_dtypes.pop(key)
+        # print(column_dtypes)
+        self.saver: Saver = saver
+        self.collectors: List[Collector] = collectors
+        self.column_dtypes: Dict[str, str] = column_dtypes
+        self.parse_dates: List[str] = parse_dates
+        self.dfs: list = []
+        self.start_time: Optional[datetime.datetime] = None
+        
     @cached_property
     def dataframe(self) -> pd.DataFrame:
         return self.saver.load(
@@ -115,7 +117,9 @@ class StatsBuilder:
         }
 
     def __call__(
-        self, saver: Optional[Saver] = None, collectors: Optional[List[str]] = None
+        self,
+        saver: Optional[Saver] = None,
+        collectors: Optional[List[str]] = None
     ) -> Stats:
         if saver is None:
             saver = CsvSaver(csv_file=pathlib.Path("./stats.csv"))
@@ -134,6 +138,6 @@ class StatsBuilder:
         )
 
     def register(self, collector: Collector) -> None:
-        if not issubclass(collector.__class__, Collector):
+        if not isinstance(collector, Collector):
             raise TypeError("The class should implement the Collector protocol")
         self.collector_mapping[collector.__class__.__name__] = collector

@@ -134,9 +134,20 @@ plot = {
         },
     },
 }
-
+# stats = dff_node.stats.Stats()
+builder = dff_node_stats.stats_builder
+# builder.register(dff_node_stats.ContextCollector(
+#     {}, []
+# ))
 actor = Actor(plot, start_label=("root", "start"), fallback_label=("root", "fallback"))
-stats = dff_node_stats.Stats(csv_file=stats_file)
+stats = builder(
+    saver=dff_node_stats.CsvSaver("examples/stats.csv"),
+    collectors= [
+        "NodeLabelCollector",
+        "RequestCollector",
+        "ResponseCollector"
+    ]
+)
 stats.update_actor_handlers(actor, auto_save=False)
 ctxs = {}
 for i in tqdm.tqdm(range(300)):

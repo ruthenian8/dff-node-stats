@@ -21,14 +21,14 @@ class Saver(Protocol):
 
 
 class CsvSaver:
-    def __init__(self, csv_file: pathlib.Path) -> None:
-        self.csv_file = csv_file
+    def __init__(self, csv_file: str) -> None:
+        self.csv_file = pathlib.Path(csv_file)
 
     def save(self, dfs: List[pd.DataFrame], **kwargs) -> None:
         column_types: Optional[Dict[str, str]] = kwargs.get("column_types")
         parse_dates: Optional[List[str]] = kwargs.get("parse_dates", False)
         saved_df = (
-            self.load(self.csv_file, column_types=column_types, parse_dates=parse_dates)
+            self.load(column_types=column_types, parse_dates=parse_dates)
             if self.csv_file.exists()
             else pd.DataFrame()
         )
