@@ -24,3 +24,4 @@ _globals.py
 venv
 .vscode
 examples/stats.*
+config.xml
