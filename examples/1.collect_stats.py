@@ -141,7 +141,9 @@ builder = dff_node_stats.stats_builder
 # ))
 actor = Actor(plot, start_label=("root", "start"), fallback_label=("root", "fallback"))
 stats = builder(
-    saver=dff_node_stats.CsvSaver("examples/stats.csv"),
+    saver=dff_node_stats.Saver(
+        path="clickhouse://root:qwerty@localhost:8123/test"
+    ),
     collectors= [
         "NodeLabelCollector",
         "RequestCollector",

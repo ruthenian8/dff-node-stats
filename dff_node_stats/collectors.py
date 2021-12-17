@@ -137,8 +137,8 @@ class NodeLabelCollector():
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {
-            "flow_label": "string",
-            "node_label": "string",
+            "flow_label": "str",
+            "node_label": "str",
         }
 
     @property
@@ -282,7 +282,7 @@ class NodeLabelCollector():
 class RequestCollector():
     @property
     def column_dtypes(self) -> Dict[str, str]:
-        return {"user_request": "string"}
+        return {"user_request": "str"}
 
     @property
     def parse_dates(self) -> List[str]:
@@ -305,7 +305,7 @@ class RequestCollector():
 class ResponseCollector():
     @property
     def column_dtypes(self) -> Dict[str, str]:
-        return {"bot_response": "string"}
+        return {"bot_response": "str"}
 
     @property
     def parse_dates(self) -> List[str]:
@@ -342,9 +342,6 @@ class ContextCollector():
         column_dtypes: Dict[str, str],
         parse_dates: List[str]    
     ) -> None:
-        for key in parse_dates:
-            if key in column_dtypes:
-                column_dtypes.pop(key)
         self._column_dtypes = column_dtypes,
         self._parse_dates = parse_dates
         return

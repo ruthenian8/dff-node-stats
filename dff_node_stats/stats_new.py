@@ -25,9 +25,6 @@ class Stats():
         for collector in collectors:
             column_dtypes.update(collector.column_dtypes)
             parse_dates.extend(collector.parse_dates)
-        for key in parse_dates:
-            if key in column_dtypes:
-                column_dtypes.pop(key)
         # print(column_dtypes)
         self.saver: Saver = saver
         self.collectors: List[Collector] = collectors
@@ -122,7 +119,7 @@ class StatsBuilder:
         collectors: Optional[List[str]] = None
     ) -> Stats:
         if saver is None:
-            saver = CsvSaver(csv_file=pathlib.Path("./stats.csv"))
+            saver = Saver("csv://examples/stats.csv")
         if collectors is None:
             collectors = ["NodeLabelCollector"]
         return Stats(
