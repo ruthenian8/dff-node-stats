@@ -1,12 +1,9 @@
 from typing import List, Dict, Protocol, runtime_checkable, Any
-from types import ModuleType
 import datetime
 
 from pydantic import validate_arguments, Field
 from dff.core import Context, Actor
 import pandas as pd
-from fastapi import FastAPI
-import graphviz
 
 
 @runtime_checkable
@@ -30,20 +27,6 @@ class Collector(Protocol):
     ) -> Dict[str, Any]:
         """
         Extract the required data from the context
-        """
-        raise NotImplementedError
-
-    def streamlit_run(self, streamlit: ModuleType, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Create a streamlit representation for the data
-        collected by the colllector
-        """
-        raise NotImplementedError
-
-    def api_run(self, app: FastAPI, df: pd.DataFrame) -> FastAPI:
-        """
-        Attach methods to api, returns unchanged object
-        if no endpoints should be added
         """
         raise NotImplementedError
 
@@ -75,62 +58,6 @@ class DefaultCollector():
             "start_time": [start_time],
             "duration_time": [(datetime.datetime.now() - start_time).total_seconds()],
         }
-
-    def streamlit_run(self, streamlit: ModuleType, df: pd.DataFrame) -> pd.DataFrame:
-        """TODO: implement"""
-
-        @streamlit.cache()
-        def get_datatimes():
-            start_time = pd.to_datetime(df.start_time.min()) - datetime.timedelta(
-                days=1
-            )
-            end_time = pd.to_datetime(df.start_time.max()) + datetime.timedelta(days=1)
-            return start_time, end_time
-
-        start_time_border, end_time_border = get_datatimes()
-
-        def get_sidebar_chnges():
-            start_date = pd.to_datetime(
-                streamlit.sidebar.date_input("Start date", start_time_border)
-            )
-            end_date = pd.to_datetime(
-                streamlit.sidebar.date_input("End date", end_time_border)
-            )
-            if start_date < end_date:
-                streamlit.sidebar.success(
-                    "Start date: `%s`\n\nEnd date:`%s`" % (start_date, end_date)
-                )
-            else:
-                streamlit.sidebar.error("Error: End date must fall after start date.")
-
-            context_id = streamlit.sidebar.selectbox(
-                "Choose context_id",
-                options=["all"] + df.context_id.unique().tolist(),
-            )
-            return start_date, end_date, context_id
-
-        start_date, end_date, context_id = get_sidebar_chnges()
-
-        @streamlit.cache(allow_output_mutation=True)
-        def slice_df_origin(df_origin, start_date, end_date, context_id):
-            return df_origin[
-                (df_origin.start_time >= start_date)
-                & (df_origin.start_time <= end_date)
-                & ((df_origin.context_id == context_id) | (context_id == "all"))
-            ]
-
-        df = slice_df_origin(df, start_date, end_date, context_id)
-
-        col1, col2 = streamlit.columns(2)
-        col1.subheader("Data")
-        col1.dataframe(df)
-        col2.subheader("Timings")
-        col2.dataframe(df.describe().duration_time)
-        col2.write(f"Data shape {df.shape}")
-        return df
-
-    def api_run(self, app: FastAPI, df: pd.DataFrame) -> FastAPI:
-        return app
 
 
 class NodeLabelCollector():
