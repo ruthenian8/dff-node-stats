@@ -108,7 +108,7 @@ class PGSaver(Saver, _id="postgresql"):
         df = pd.concat(dfs)
         if self.engine.dialect.has_table("dff_stats"):
             metadata = PGSaver.sa.schema.MetaData()
-            ExistingModel = Table('dff_stats', metadata, autoload_with=self.engine)
+            ExistingModel = PGSaver.sa.schema.Table('dff_stats', metadata, autoload_with=self.engine)
             # if current schema contains new columns, drop the table to recreate it later
             if not all([list(column_types.keys()) in ExistingModel.columns]):
                 existing_df = self.load(parse_dates=kwargs.get("parse_dates", False))
@@ -183,6 +183,7 @@ class InfiSaver(Saver, _id="clickhouse"):
         self.db.insert(lazyupload(df), batch_size=1000)
 
     def load(self, **kwargs) -> pd.DataFrame:
+        parse_dates: List[str] = kwargs.get("parse_dates")
         Model = self.db.get_model_for_table('dff_stats', system_table=False)
         results = self.db.select(query="SELECT * FROM dff_stats", model_class=Model)
         df = pd.DataFrame.from_records([item.to_dict() for item in results])

@@ -1,4 +1,4 @@
-from functools import partial
+from functools import partial, wraps
 from typing import Callable, List
 
 import pandas as pd
