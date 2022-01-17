@@ -1,5 +1,4 @@
 """Savers for stats
-TODO: try removing thread pools instead of removing engines, which is inefficient
 TODO: Implement another loader using pure infi.orm instead of SQLAlchemy
 """
 from typing import Dict, List, Union, Optional, Protocol, runtime_checkable
@@ -108,7 +107,9 @@ class PGSaver(Saver, _id="postgresql"):
         df = pd.concat(dfs)
         if self.engine.dialect.has_table("dff_stats"):
             metadata = PGSaver.sa.schema.MetaData()
-            ExistingModel = PGSaver.sa.schema.Table('dff_stats', metadata, autoload_with=self.engine)
+            ExistingModel = PGSaver.sa.schema.Table(
+                "dff_stats", metadata, autoload_with=self.engine
+            )
             # if current schema contains new columns, drop the table to recreate it later
             if not all([list(column_types.keys()) in ExistingModel.columns]):
                 existing_df = self.load(parse_dates=kwargs.get("parse_dates", False))
@@ -116,8 +117,7 @@ class PGSaver(Saver, _id="postgresql"):
                 ExistingModel.drop(bind=self.engine)
 
         self.engine.dialect._psycopg2_extensions().register_adapter(
-            dict,
-            self.engine.dialect._psycopg2_extras().Json
+            dict, self.engine.dialect._psycopg2_extras().Json
         )
         # for key in column_types:
         #     if column_types[key] == "object":
@@ -144,8 +144,10 @@ class PGSaver(Saver, _id="postgresql"):
 
 class InfiSaver(Saver, _id="clickhouse"):
     """Alternative clickhouse saver"""
+
     def __init__(self, path: str) -> None:
         from infi.clickhouse_orm.database import Database
+
         if not hasattr(self, "path"):
             self.path = path
         auth, _, address = path.partition("@")
@@ -154,37 +156,39 @@ class InfiSaver(Saver, _id="clickhouse"):
         username, _, password = auth.partition("://")[2].partition(":")
         if not all([db_name, address, username, password]):
             raise ValueError("Invalid database URI or credentials")
-        self.db = Database(db_name, db_url=address, username=username, password=password)
+        self.db = Database(
+            db_name, db_url=address, username=username, password=password
+        )
         return
 
     def save(self, dfs: List[pd.DataFrame], **kwargs) -> None:
         column_types: Dict[str, str] = kwargs.get("column_types")
         parse_dates: List[str] = kwargs.get("parse_dates")
         df = pd.concat(dfs)
-        
+
         Model = self.create_clickhouse_table(column_types)
-        
+
         # in case new columns have been added, we recreate the table
         if self.db.does_table_exist(Model):
-            ExistingModel = self.db.get_model_for_table('dff_stats', system_table=False)
+            ExistingModel = self.db.get_model_for_table("dff_stats", system_table=False)
             if Model.fields() != ExistingModel.fields():
                 existing_df = self.load()
                 self.db.drop_table(ExistingModel)
                 df = pd.concat([existing_df, df], axis=0)
-            
+
         def lazyupload(df):
             for _, row in df.iterrows():
                 row = row.to_dict()
                 for column in parse_dates:
                     row[column] = row[column].to_pydatetime()
                 yield Model(**row)
-            
+
         self.db.create_table(Model)
         self.db.insert(lazyupload(df), batch_size=1000)
 
     def load(self, **kwargs) -> pd.DataFrame:
         parse_dates: List[str] = kwargs.get("parse_dates")
-        Model = self.db.get_model_for_table('dff_stats', system_table=False)
+        Model = self.db.get_model_for_table("dff_stats", system_table=False)
         results = self.db.select(query="SELECT * FROM dff_stats", model_class=Model)
         df = pd.DataFrame.from_records([item.to_dict() for item in results])
         for column in parse_dates:
@@ -215,9 +219,22 @@ class InfiSaver(Saver, _id="clickhouse"):
         }
         for column, _type in column_types.items():
             model_namespace.update(
-                {column: orm.fields.NullableField(
-                    ch_mapping[_type](), extra_null_values=[float("nan")]
-                )}
+                {
+                    column: orm.fields.NullableField(
+                        ch_mapping[_type](), extra_null_values=[float("nan")]
+                    )
+                }
             )
         dff_stats = type("dff_stats", (orm.models.Model,), model_namespace)
         return dff_stats
+
+
+class MongoSaver(Saver, _id="mongo"):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def save(self):
+        return
+
+    def load(self):
+        return

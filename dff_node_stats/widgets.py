@@ -1,11 +1,21 @@
 from typing import Any, Callable, List, Protocol, NamedTuple
-from functools import partial, cached_property
+from functools import partial
 import datetime
 
-from ipywidgets import widgets, Box, Label
+from ipywidgets import widgets
 import plotly.graph_objects as go
-import streamlit
+import streamlit as st
 import pandas as pd
+
+from dff_node_stats import visualizers as vs
+
+default_visualizers = [
+    vs.show_transition_graph,
+    vs.show_transition_trace,
+    vs.show_node_counters,
+    vs.show_transition_counters,
+    vs.show_transition_duration,
+]
 
 
 class FilterType(NamedTuple):
@@ -16,14 +26,24 @@ class FilterType(NamedTuple):
 
 
 default_filters = [
-    FilterType("Choose start date", "start_time", lambda x, y: x >= y, datetime.datetime.now() - datetime.timedelta(days=1)),
-    FilterType("Choose end date", "start_time", lambda x, y: x <= y, datetime.datetime.now() + datetime.timedelta(days=1)),
-    FilterType("Choose context_id", "context_id", lambda x, y: x == y, None)
+    FilterType(
+        "Choose start date",
+        "start_time",
+        lambda x, y: x >= y,
+        datetime.datetime.now() - datetime.timedelta(days=1),
+    ),
+    FilterType(
+        "Choose end date",
+        "start_time",
+        lambda x, y: x <= y,
+        datetime.datetime.now() + datetime.timedelta(days=1),
+    ),
+    FilterType("Choose context_id", "context_id", lambda x, y: x == y, None),
 ]
 
 
 class AbstractDasboard(Protocol):
-    @cached_property
+    @property
     def plots(self):
         raise NotImplementedError
 
@@ -36,158 +56,116 @@ class AbstractDasboard(Protocol):
 
 
 class WidgetDashboard(widgets.Tab):
-    def __init__(self,
-        df,
-        plots,
-        filters=None
-    ) -> None:
+    def __init__(self, df, plots=None, filters=None) -> None:
         super().__init__()
-        self._filters: List[FilterType] = default_filters if filters is None else default_filters.extend(filters)
-        self._plots = plots
+        self._filters: List[FilterType] = (
+            default_filters if filters is None else default_filters.extend(filters)
+        )
+        self._plots: List[Callable] = plots
         self._df_cache = df
         self._df = df
 
     def _slice(self):
+        masks = []
         for _filter, dropdown in zip(self._filters, self.controls):
-            masks = []
-            if dropdown.value != _filter.default:
-                val = dropdown.value
-                func_to_apply = partial(_filter.comparison_func, y=val)
-                masks += [self._df[_filter.colname].apply(func_to_apply)]
-            mask = masks[0]
-            for m in masks[1:]:
-                mask = mask & m
-            if mask.sum() == 0:
-                return
-            self._df = self._df_cache.loc[mask]
+            val = dropdown.value
+            func_to_apply = partial(_filter.comparison_func, y=val)
+            masks += [self._df[_filter.colname].apply(func_to_apply)]
+        mask = masks[0]
+        for m in masks[1:]:
+            mask = mask & (m | val == _filter.default)
+        if mask.sum() == 0:
+            return
+        self._df = self._df_cache.loc[mask]
 
-    def update(self, comparison_func: Callable):
+    def update(self):
         def handleChange(change):
-            colname = change.owner.description
-            value = change.new
-            if value is None:
-                return
-            func_to_apply = partial(comparison_func, y=value)
-            mask = self._df[colname].apply(func_to_apply)
-            if mask.sum() != 0:
-                self._df = self._df.loc[mask]
-                self.__call__()
+            self._slice()
+            self.__call__()
+
         return handleChange
 
     @property
     def controls(self):
         box = widgets.VBox()
         for _filter in self._filters:
-            options = (
-                [(_filter.default, _filter.default)] 
-                + [(i, i) for i in self._df[_filter.colname].unique()]
-            )
+            options = [(_filter.default, _filter.default)] + [
+                (i, i) for i in self._df[_filter.colname].unique()
+            ]
             dropdown = widgets.Dropdown(
-                value=None,
-                options=options,
-                description=_filter.colname
+                value=None, options=options, description=_filter.colname
             )
-            dropdown.observe(self.update(_filter.comparison_func), 'value')
+            dropdown.observe(self.update(), "value")
             box.children += dropdown
         return box
 
-    @cached_property
+    @property
     def plots(self):
-        return widgets.VBox([go.FigureWidget(data=plot) for plot in self._plots])
+        box = widgets.VBox()
+        df = self._df.copy()
+        for plot_func in self._plots:
+            plot = plot_func(df)
+            box.children.append(go.FigureWidget(data=plot))
+        return box
 
     def __call__(self):
         self.children = [self.controls, self.plots]
-        self.titles = ('Filters', 'Plots')
+        self.titles = ("Filters", "Plots")
         return self
 
 
-class StreamlitDashboard(AbstractDasboard):
-    def __init__(self,
-        df,
-        plots,
-        filters=None
-    ) -> None:
-        self._filters: List[FilterType] = default_filters if filters is None else default_filters.extend(filters)
-        self._plots = plots
-        self._df_cache = df
-        self._df = df
-    
+class stDashboard(AbstractDasboard):
+    def __init__(self, df, plots=None, filters=None) -> None:
+        self._filters: List[FilterType] = (
+            default_filters if filters is None else default_filters.extend(filters)
+        )
+        self._plots: List[Callable] = plots
+        self._df_cache: pd.DataFrame = df
+        self._df: pd.DataFrame = self._slice(self._df_cache, *self.controls)
+
+    @st.cache(allow_output_mutation=True)
+    def _slice(self, df_origin, *args):
+        masks = []
+        for _filter, dropdown in zip(self._filters, args):
+            masks = []
+            val = dropdown.value
+            func_to_apply = partial(_filter.comparison_func, y=val)
+            masks += [self._df[_filter.colname].apply(func_to_apply)]
+        mask = masks[0]
+        for m in masks[1:]:
+            mask = mask & (m | val == _filter.default)
+        if mask.sum() == 0:
+            return df_origin
+        return df_origin.loc[mask]
+
     @property
     def controls(self):
-        raise NotImplementedError
+        return tuple(
+            [
+                st.sidebar.selectbox(
+                    _filter.label,
+                    options=(
+                        [_filter.default]
+                        + self._df_cache[_filter.colname].unique().tolist()
+                    ),
+                )
+                for _filter in self._filters
+            ]
+        )
 
-    @cached_property
+    @property
     def plots(self):
-        raise NotImplementedError
+        df = self._df.copy()
+        for plot_func in self._plots:
+            plot = plot_func(df)
+            st.plotly_chart(plot, use_container_width=True)
 
     def __call__(self):
-        raise NotImplementedError
-
-# def streamlit_run(dataframe) -> None:
-#     """
-#     Methods for visualizing data
-#     will be in corresponding collectors,
-#     so that we don't assume that some data is collected
-#     by default
-#     """
-
-#     df = dataframe.copy()
-#     streamlit.title("DialogFlow Framework Statistic Dashboard")
-#     for collector in self.collectors:
-#         streamlit.plotly_chart(fig, use_container_width=True)
-#     return
-
-# @dashboard_requires(["context_id", "start_time"])
-# def show_dates(df: pd.DataFrame) -> pd.DataFrame:
-#     """
-#     """
-    
-#     @streamlit.cache()
-#     def get_datatimes():
-#         start_time = pd.to_datetime(df.start_time.min()) - datetime.timedelta(
-#             days=1
-#         )
-#         end_time = pd.to_datetime(df.start_time.max()) + datetime.timedelta(days=1)
-#         return start_time, end_time
-
-#     start_time_border, end_time_border = get_datatimes()
-
-#     def get_sidebar_chnges():
-#         start_date = pd.to_datetime(
-#             streamlit.sidebar.date_input("Start date", start_time_border)
-#         )
-#         end_date = pd.to_datetime(
-#             streamlit.sidebar.date_input("End date", end_time_border)
-#         )
-#         if start_date < end_date:
-#             streamlit.sidebar.success(
-#                 "Start date: `%s`\n\nEnd date:`%s`" % (start_date, end_date)
-#             )
-#         else:
-#             streamlit.sidebar.error("Error: End date must fall after start date.")
-
-#         context_id = streamlit.sidebar.selectbox(
-#             "Choose context_id",
-#             options=["all"] + df.context_id.unique().tolist(),
-#         )
-#         return start_date, end_date, context_id
-
-#     start_date, end_date, context_id = get_sidebar_chnges()
-
-#     @streamlit.cache(allow_output_mutation=True)
-#     def slice_df_origin(df_origin, start_date, end_date, context_id):
-#         return df_origin[
-#             (df_origin.start_time >= start_date)
-#             & (df_origin.start_time <= end_date)
-#             & ((df_origin.context_id == context_id) | (context_id == "all"))
-#         ]
-
-#     df = slice_df_origin(df, start_date, end_date, context_id)
-
-#     col1, col2 = streamlit.columns(2)
-#     col1.subheader("Data")
-#     col1.dataframe(df)
-#     col2.subheader("Timings")
-#     col2.dataframe(df.describe().duration_time)
-#     col2.write(f"Data shape {df.shape}")
-#     return df
+        st.title("DialogFlow Framework Statistic Dashboard")
+        col1, col2 = st.columns(2)
+        col1.subheader("Data")
+        col1.dataframe(self._df)
+        if "duration_time" in self._df.columns:
+            col2.subheader("Timings")
+            col2.dataframe(self._df.describe().duration_time)
+            col2.write(f"Data shape {self._df.shape}")

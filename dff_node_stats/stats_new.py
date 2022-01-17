@@ -13,7 +13,7 @@ from .collectors import *
 from .savers import Saver, CsvSaver
 
 
-class Stats():
+class Stats:
     def __init__(
         self,
         saver: Saver,
@@ -32,7 +32,7 @@ class Stats():
         self.parse_dates: List[str] = parse_dates
         self.dfs: list = []
         self.start_time: Optional[datetime.datetime] = None
-        
+
     @cached_property
     def dataframe(self) -> pd.DataFrame:
         return self.saver.load(
@@ -75,35 +75,6 @@ class Stats():
             )
         self.add_df(stats=stats)
 
-    def streamlit_run(self) -> None:
-        """
-        Methods for visualizing data
-        will be in corresponding collectors,
-        so that we don't assume that some data is collected
-        by default
-        """
-        import streamlit as st
-
-        df = self.dataframe.copy()
-        st.title("DialogFlow Framework Statistic Dashboard")
-        for collector in self.collectors:
-            df = collector.streamlit_run(st, df)
-        return
-
-    def api_run(self, port=8000) -> None:
-        """
-        Methods for API get defined
-        inside the collectors as well
-        """
-        import uvicorn
-        from fastapi import FastAPI
-
-        app = FastAPI()
-        df = self.dataframe
-        for collector in self.collectors:
-            app = collector.api_run(app, df)
-        uvicorn.run(app, host="0.0.0.0", port=port)
-
 
 class StatsBuilder:
     def __init__(self) -> None:
@@ -114,9 +85,7 @@ class StatsBuilder:
         }
 
     def __call__(
-        self,
-        saver: Optional[Saver] = None,
-        collectors: Optional[List[str]] = None
+        self, saver: Optional[Saver] = None, collectors: Optional[List[str]] = None
     ) -> Stats:
         if saver is None:
             saver = Saver("csv://examples/stats.csv")

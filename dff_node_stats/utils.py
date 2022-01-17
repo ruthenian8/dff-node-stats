@@ -1,31 +1,86 @@
 from functools import partial, wraps
-from typing import Callable, List
+from typing import List, Callable
 
 import pandas as pd
 
 
-class DffDashboardException(Exception):
+TransformType = Callable[[pd.DataFrame], pd.DataFrame]
+
+
+class DffStatsException(Exception):
     pass
 
 
-class DffApiException(Exception):
-    pass
+def transform_once(func: TransformType):
+    """
+    Function that ensures dataset transformations
+    are only performed once
+    """
+
+    @wraps(func)
+    def wrapper(dataframe: pd.DataFrame):
+        if not wrapper.called:
+            wrapper.called = True
+            return func(dataframe)
+        return dataframe
+
+    wrapper.called = False
+    return wrapper
 
 
-def requires_columns(cols: List[str], exctype: type):
+def check_transform(transform: TransformType, exctype: type):
+    """
+    Applies a specified transform operation to the dataset
+    before the decorated function is executed
+    """
+
     def check_func(func: Callable):
         @wraps(func)
-        def wrapper(*args, df: pd.DataFrame):
-            df_columns = df.columns
-            for col in cols:
-                if col not in df_columns:
-                    raise exctype(f"Required column missing: {col}")
-            return func(*args, df)
-        
+        def wrapper(*args, **kwargs):
+            if len(args) == 0 and len(kwargs) == 0:
+                raise exctype(f"No dataframe found.")
+            df = kwargs.get("df") or args[0]
+            if not isinstance(df, pd.DataFrame):
+                raise exctype(f"No dataframe found.")
+            df = transform(df)
+            return func(df)
+
         return wrapper
 
     return check_func
 
-dashboard_requires = partial(requires_columns, exctype=DffDashboardException)
 
-api_requires = partial(requires_columns, exctype=DffApiException)
+def check_columns(cols: List[str], exctype: type):
+    """
+    Raises an error, if the columns needed for a transformation
+    or for a plotting operation are missing.
+    """
+
+    def check_func(func: Callable):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if len(args) == 0 and len(kwargs) == 0:
+                raise exctype(f"No dataframe found.")
+            df = kwargs.get("df") or args[0]
+            if not isinstance(df, pd.DataFrame):
+                raise exctype(f"No dataframe found.")
+            missing = [col for col in cols if col not in df.columns]
+            if len(missing) > 0:
+                raise exctype(
+                    """
+                    Required columns missing: {}. 
+                    Did you collect them?
+                    """.format(
+                        ", ".join(missing)
+                    )
+                )
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return check_func
+
+
+requires_transform = partial(check_transform, exctype=DffStatsException)
+
+requires_columns = partial(check_columns, exctype=DffStatsException)

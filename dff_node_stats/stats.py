@@ -27,7 +27,9 @@ class Stats(BaseModel):
         actor.handlers[stage] = actor.handlers.get(stage, []) + [handler]
         return actor
 
-    def update_actor_handlers(self, actor: Actor, auto_save: bool = True, *args, **kwargs):
+    def update_actor_handlers(
+        self, actor: Actor, auto_save: bool = True, *args, **kwargs
+    ):
         self._update_handlers(actor, ActorStage.CONTEXT_INIT, self.get_start_time)
         self._update_handlers(actor, ActorStage.FINISH_TURN, self.collect_stats)
         if auto_save:
@@ -46,7 +48,9 @@ class Stats(BaseModel):
                     "context_id": [str(context_id)],
                     "history_id": [history_id],
                     "start_time": [self.start_time],
-                    "duration_time": [(datetime.datetime.now() - self.start_time).total_seconds()],
+                    "duration_time": [
+                        (datetime.datetime.now() - self.start_time).total_seconds()
+                    ],
                     "flow_label": [flow_label],
                     "node_label": [node_label],
                 },
@@ -65,7 +69,9 @@ class Stats(BaseModel):
 
     def save(self, *args, **kwargs):
         saved_df = (
-            pd.read_csv(self.csv_file, dtype=self.column_dtypes, parse_dates=["start_time"])
+            pd.read_csv(
+                self.csv_file, dtype=self.column_dtypes, parse_dates=["start_time"]
+            )
             if self.csv_file.exists()
             else pd.DataFrame()
         )
@@ -75,7 +81,9 @@ class Stats(BaseModel):
 
     @property
     def dataframe(self):
-        return pd.read_csv(self.csv_file, dtype=self.column_dtypes, parse_dates=["start_time"])
+        return pd.read_csv(
+            self.csv_file, dtype=self.column_dtypes, parse_dates=["start_time"]
+        )
 
     @property
     def transition_counts(self):
@@ -97,12 +105,18 @@ class Stats(BaseModel):
     def preproc_df(self, df):
         for context_id in self.dataframe.context_id.unique():
             ctx_index = df.context_id == context_id
-            df.loc[ctx_index, "node"] = df.loc[ctx_index, "flow_label"] + ":" + df.loc[ctx_index, "node_label"]
+            df.loc[ctx_index, "node"] = (
+                df.loc[ctx_index, "flow_label"] + ":" + df.loc[ctx_index, "node_label"]
+            )
             df.loc[ctx_index, "edge"] = (
-                df.loc[ctx_index, "node"].shift(periods=1).combine(df.loc[ctx_index, "node"], lambda *x: list(x))
+                df.loc[ctx_index, "node"]
+                .shift(periods=1)
+                .combine(df.loc[ctx_index, "node"], lambda *x: list(x))
             )
             flow_label = df.loc[ctx_index, "flow_label"]
-            df.loc[ctx_index, "edge_type"] = flow_label.where(flow_label.shift(periods=1) == flow_label, "MIXED")
+            df.loc[ctx_index, "edge_type"] = flow_label.where(
+                flow_label.shift(periods=1) == flow_label, "MIXED"
+            )
         return df
 
     def streamlit_run(self):
@@ -112,7 +126,9 @@ class Stats(BaseModel):
 
         @st.cache(allow_output_mutation=True)
         def read_data():
-            df = pd.read_csv(self.csv_file, dtype=self.column_dtypes, parse_dates=["start_time"])
+            df = pd.read_csv(
+                self.csv_file, dtype=self.column_dtypes, parse_dates=["start_time"]
+            )
             df = self.preproc_df(df)
             return df
 
@@ -120,17 +136,27 @@ class Stats(BaseModel):
 
         @st.cache()
         def get_datatimes():
-            start_time = pd.to_datetime(df_origin.start_time.min()) - datetime.timedelta(days=1)
-            end_time = pd.to_datetime(df_origin.start_time.max()) + datetime.timedelta(days=1)
+            start_time = pd.to_datetime(
+                df_origin.start_time.min()
+            ) - datetime.timedelta(days=1)
+            end_time = pd.to_datetime(df_origin.start_time.max()) + datetime.timedelta(
+                days=1
+            )
             return start_time, end_time
 
         start_time_border, end_time_border = get_datatimes()
 
         def get_sidebar_chnges():
-            start_date = pd.to_datetime(st.sidebar.date_input("Start date", start_time_border))
-            end_date = pd.to_datetime(st.sidebar.date_input("End date", end_time_border))
+            start_date = pd.to_datetime(
+                st.sidebar.date_input("Start date", start_time_border)
+            )
+            end_date = pd.to_datetime(
+                st.sidebar.date_input("End date", end_time_border)
+            )
             if start_date < end_date:
-                st.sidebar.success("Start date: `%s`\n\nEnd date:`%s`" % (start_date, end_date))
+                st.sidebar.success(
+                    "Start date: `%s`\n\nEnd date:`%s`" % (start_date, end_date)
+                )
             else:
                 st.sidebar.error("Error: End date must fall after start date.")
 
@@ -198,19 +224,25 @@ class Stats(BaseModel):
         df_trace
         node_trace = {}
         for flow_label in df_trace.flow_label.unique():
-            node_trace[flow_label] = df_trace.loc[df_trace.flow_label == flow_label, "node"]
+            node_trace[flow_label] = df_trace.loc[
+                df_trace.flow_label == flow_label, "node"
+            ]
         st.bar_chart(df_trace.loc[:, "node"])
 
         st.subheader("Node counters")
         node_counters = {}
         for flow_label in flow_labels:
-            node_counters[flow_label] = df.loc[df.flow_label == flow_label, "node_label"].value_counts()
+            node_counters[flow_label] = df.loc[
+                df.flow_label == flow_label, "node_label"
+            ].value_counts()
         st.bar_chart(node_counters)
 
         st.subheader("Transitions counters")
         edge_counters = {}
         for edge_type in df.edge_type.unique():
-            edge_counters[edge_type] = df.loc[df.edge_type == edge_type, "edge"].astype("str").value_counts()
+            edge_counters[edge_type] = (
+                df.loc[df.edge_type == edge_type, "edge"].astype("str").value_counts()
+            )
         st.bar_chart(edge_counters)
 
         st.subheader("Transitions duration [sec]")
@@ -221,7 +253,9 @@ class Stats(BaseModel):
 
         edge_duration = {}
         for edge_type in df.edge_type.unique():
-            edge_duration[edge_type] = edge_time.loc[edge_time.edge_type == edge_type, "duration_time"]
+            edge_duration[edge_type] = edge_time.loc[
+                edge_time.edge_type == edge_type, "duration_time"
+            ]
         st.bar_chart(edge_duration)
 
     def api_run(self, port=8000):

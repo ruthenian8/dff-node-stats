@@ -1,43 +1,98 @@
-import streamlit
+import random
+from typing import Callable, Iterable, Tuple
+from base64 import b64encode
+from io import BytesIO
+
 import graphviz
 import pandas as pd
-pd.options.plotting.backend = "plotly"
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.basedatatypes import BaseFigure
+from dff_node_stats.utils import requires_transform, transform_once, requires_columns
+from plotly.colors import qualitative
 
-def show_node(df: pd.DataFrame) -> pd.DataFrame:
-    fig = df.plot.bar()
+VisualizerType = Callable[[pd.DataFrame], BaseFigure]
+
+
+def generate_random_colors():
+    """
+    Retrieves colours from the standard Plotly palette.
+    Generates random colors on exhaustion.
+    """
+    reserve = []
+    for element in qualitative.Plotly:
+        yield element
+        reserve.append("#{:06x}".format(random.randint(0, 0xFFFFFF)).upper())
+    while reserve:
+        for element in reserve:
+            yield element
+
+
+def colorize(target: Iterable):
+    """
+    Produces a random color each iteration,
+    when paired with an iterator
+    """
+    return zip(generate_random_colors(), target)
+
+
+@requires_columns(["flow_label", "node_label"])
+def show_node_counters(df: pd.DataFrame) -> BaseFigure:
+    fig = go.Figure().update_layout(title="Node counters")
+    for color, flow_label in colorize(df["flow_label"].unique()):
+        subset = df.loc[df.flow_label == flow_label, "node_label"].value_counts()
+        fig.add_trace(
+            go.Bar(
+                x=subset.keys(), y=subset.values, name=flow_label, marker_color=color
+            )
+        )
     return fig
 
-def show_nodes(df: pd.DataFrame) -> pd.DataFrame:
-    @streamlit.cache(allow_output_mutation=True)
-    def get_nodes_and_edges(df: pd.DataFrame):
-        for context_id in df.context_id.unique():
-            ctx_index = df.context_id == context_id
-            df.loc[ctx_index, "node"] = (
-                df.loc[ctx_index, "flow_label"]
-                + ":"
-                + df.loc[ctx_index, "node_label"]
-            )
-            df.loc[ctx_index, "edge"] = (
-                df.loc[ctx_index, "node"]
-                .shift(periods=1)
-                .combine(df.loc[ctx_index, "node"], lambda *x: list(x))
-            )
-            flow_label = df.loc[ctx_index, "flow_label"]
-            df.loc[ctx_index, "edge_type"] = flow_label.where(
-                flow_label.shift(periods=1) == flow_label, "MIXED"
-            )
-        return df
 
-    df = get_nodes_and_edges(df)
+@requires_columns(["flow_label", "node_label"])
+@transform_once
+def get_nodes_and_edges(df: pd.DataFrame):
+    for context_id in df.context_id.unique():
+        ctx_index = df.context_id == context_id
+        df.loc[ctx_index, "node"] = (
+            df.loc[ctx_index, "flow_label"] + ":" + df.loc[ctx_index, "node_label"]
+        )
+        df.loc[ctx_index, "edge"] = (
+            df.loc[ctx_index, "node"]
+            .shift(periods=1)
+            .combine(df.loc[ctx_index, "node"], lambda *x: list(x))
+        )
+        flow_label = df.loc[ctx_index, "flow_label"]
+        df.loc[ctx_index, "edge_type"] = flow_label.where(
+            flow_label.shift(periods=1) == flow_label, "MIXED"
+        )
+    return df
+
+
+@requires_transform(get_nodes_and_edges)
+def show_transition_trace(df: pd.DataFrame) -> BaseFigure:
+    df_trace = df[["history_id", "flow_label", "node"]]
+    df_trace = df_trace.drop(columns=["flow_label"])
+    fig = px.density_heatmap(
+        df_trace, x="history_id", y="node", color_continuous_scale="Viridis"
+    )
+    fig.update_layout(title="Transition Trace")
+    return fig
+
+
+# TODO
+@requires_transform(get_nodes_and_edges)
+def show_transition_graph(df: pd.DataFrame) -> BaseFigure:
+
     node_counter = df.node.value_counts()
     edge_counter = df.edge.value_counts()
     node2code = {key: f"n{index}" for index, key in enumerate(df.node.unique())}
 
-    streamlit.subheader("Graph of Transitions")
+    fig = go.Figure().update_layout(title="Graph of Transitions")
+
     graph = graphviz.Digraph()
     graph.attr(compound="true")
-    flow_labels = df.flow_label.unique()
-    for i, flow_label in enumerate(flow_labels):
+    for i, flow_label in enumerate(df["flow_label"].unique()):
         with graph.subgraph(name=f"cluster{i}") as sub_graph:
             sub_graph.attr(style="filled", color="lightgrey")
             sub_graph.attr(label=flow_label)
@@ -58,47 +113,42 @@ def show_nodes(df: pd.DataFrame) -> pd.DataFrame:
         if isinstance(in_node, str):
             label = f"(probs={counter/node_counter[in_node]:.2f})"
             graph.edge(node2code[in_node], node2code[out_node], label=label)
+    _bytes = graph.pipe(format="png")
+    prefix = "data:image/png;base64,"
+    with BytesIO(_bytes) as stream:
+        base64 = prefix + b64encode(stream.getvalue()).decode("utf-8")
+    fig = go.Figure(go.Image(source=base64))
+    fig.update_xaxes(showticklabels=False).update_yaxes(showticklabels=False)
+    return fig
 
-    streamlit.graphviz_chart(graph)
 
-    streamlit.subheader("Transition Trace")
-    df_trace = df[["history_id", "flow_label", "node"]]
-    df_trace.index = df_trace.history_id
-    df_trace = df_trace.drop(columns=["history_id"])
-    df_trace
-    node_trace = {}
-    for flow_label in df_trace.flow_label.unique():
-        node_trace[flow_label] = df_trace.loc[
-            df_trace.flow_label == flow_label, "node"
-        ]
-    streamlit.bar_chart(df_trace.loc[:, "node"])
-
-    streamlit.subheader("Node counters")
-    node_counters = {}
-    for flow_label in flow_labels:
-        node_counters[flow_label] = df.loc[
-            df.flow_label == flow_label, "node_label"
-        ].value_counts()
-    streamlit.bar_chart(node_counters)
-
-    streamlit.subheader("Transitions counters")
-    edge_counters = {}
-    for edge_type in df.edge_type.unique():
-        edge_counters[edge_type] = (
-            df.loc[df.edge_type == edge_type, "edge"].astype("str").value_counts()
+@requires_transform(get_nodes_and_edges)
+def show_transition_counters(df: pd.DataFrame) -> BaseFigure:
+    fig = go.Figure().update_layout(title="Transitions counters")
+    for color, edge_type in colorize(df["edge_type"].unique()):
+        subset = df.loc[df.edge_type == edge_type, "edge"].astype("str").value_counts()
+        fig.add_trace(
+            go.Bar(x=subset.keys(), y=subset.values, name=edge_type, marker_color=color)
         )
-    streamlit.bar_chart(edge_counters)
+    return fig
 
-    streamlit.subheader("Transitions duration [sec]")
+
+@requires_transform(get_nodes_and_edges)
+def show_transition_duration(df: pd.DataFrame) -> BaseFigure:
+    fig = go.Figure().update_layout(title="Transitions duration [sec]")
     edge_time = df[["edge", "edge_type", "duration_time"]]
     edge_time = edge_time.astype({"edge": "str"})
     edge_time = edge_time.groupby(["edge", "edge_type"], as_index=False).mean()
     edge_time.index = edge_time.edge
 
-    edge_duration = {}
-    for edge_type in df.edge_type.unique():
-        edge_duration[edge_type] = edge_time.loc[
-            edge_time.edge_type == edge_type, "duration_time"
-        ]
-    streamlit.bar_chart(edge_duration)
-    return df
+    for color, edge_type in colorize(df["edge_type"].unique()):
+        subset = edge_time.loc[edge_time["edge_type"] == edge_type, "duration_time"]
+        fig.add_trace(
+            go.Bar(
+                x=["edge"],
+                y=subset["duration_time"],
+                name=edge_type,
+                marker_color=color,
+            )
+        )
+    return fig

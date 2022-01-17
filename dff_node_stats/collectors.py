@@ -31,7 +31,7 @@ class Collector(Protocol):
         raise NotImplementedError
 
 
-class DefaultCollector():
+class DefaultCollector:
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {
@@ -60,7 +60,7 @@ class DefaultCollector():
         }
 
 
-class NodeLabelCollector():
+class NodeLabelCollector:
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {
@@ -83,7 +83,7 @@ class NodeLabelCollector():
         }
 
 
-class RequestCollector():
+class RequestCollector:
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {"user_request": "str"}
@@ -99,7 +99,7 @@ class RequestCollector():
         return {"user_request": [ctx.last_request or ""]}
 
 
-class ResponseCollector():
+class ResponseCollector:
     @property
     def column_dtypes(self) -> Dict[str, str]:
         return {"bot_response": "str"}
@@ -115,7 +115,7 @@ class ResponseCollector():
         return {"bot_response": [ctx.last_response or ""]}
 
 
-class ContextCollector():
+class ContextCollector:
     """
     :param column_dtypes: names and pd types of columns
     :param parse_dates: names of columns with datetime
@@ -127,12 +127,8 @@ class ContextCollector():
     optionally listed in 'parse_dates'
     """
 
-    def __init__(
-        self,
-        column_dtypes: Dict[str, str],
-        parse_dates: List[str]    
-    ) -> None:
-        self._column_dtypes = column_dtypes,
+    def __init__(self, column_dtypes: Dict[str, str], parse_dates: List[str]) -> None:
+        self._column_dtypes = (column_dtypes,)
         self._parse_dates = parse_dates
         return
 
