@@ -10,7 +10,7 @@ from dff.core import Context, Actor
 from dff.core.types import ActorStage
 
 from .collectors import *
-from .savers import Saver, CsvSaver
+from .savers import Saver
 
 
 class Stats:

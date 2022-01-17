@@ -9,12 +9,12 @@ import pandas as pd
 
 from dff_node_stats import visualizers as vs
 
-default_visualizers = [
+default_plots = [
     vs.show_transition_graph,
     vs.show_transition_trace,
     vs.show_node_counters,
     vs.show_transition_counters,
-    vs.show_transition_duration,
+    # vs.show_transition_duration,
 ]
 
 
@@ -61,7 +61,9 @@ class WidgetDashboard(widgets.Tab):
         self._filters: List[FilterType] = (
             default_filters if filters is None else default_filters.extend(filters)
         )
-        self._plots: List[Callable] = plots
+        self._plots: List[vs.VisualizerType] = (
+            default_plots if plots is None else default_plots.extend(plots)
+        )
         self._df_cache = df
         self._df = df
 
@@ -88,6 +90,7 @@ class WidgetDashboard(widgets.Tab):
     @property
     def controls(self):
         box = widgets.VBox()
+        filters = []
         for _filter in self._filters:
             options = [(_filter.default, _filter.default)] + [
                 (i, i) for i in self._df[_filter.colname].unique()
@@ -96,16 +99,21 @@ class WidgetDashboard(widgets.Tab):
                 value=None, options=options, description=_filter.colname
             )
             dropdown.observe(self.update(), "value")
-            box.children += dropdown
+            filters += [dropdown]
+        box.children = filters
         return box
 
     @property
     def plots(self):
         box = widgets.VBox()
+        plot_list = []
         df = self._df.copy()
+        # print("Initial: {}".format(", ".join(df.columns)))
         for plot_func in self._plots:
+            # print("Stage {}: {}".format(plot_func.__name__, ", ".join(df.columns)))
             plot = plot_func(df)
-            box.children.append(go.FigureWidget(data=plot))
+            plot_list += [go.FigureWidget(data=plot)]
+        box.children = plot_list
         return box
 
     def __call__(self):
@@ -114,12 +122,14 @@ class WidgetDashboard(widgets.Tab):
         return self
 
 
-class stDashboard(AbstractDasboard):
+class StreamlitDashboard(AbstractDasboard):
     def __init__(self, df, plots=None, filters=None) -> None:
         self._filters: List[FilterType] = (
             default_filters if filters is None else default_filters.extend(filters)
         )
-        self._plots: List[Callable] = plots
+        self._plots: List[vs.VisualizerType] = (
+            default_plots if plots is None else default_plots.extend(plots)
+        )
         self._df_cache: pd.DataFrame = df
         self._df: pd.DataFrame = self._slice(self._df_cache, *self.controls)
 
@@ -162,10 +172,4 @@ class stDashboard(AbstractDasboard):
 
     def __call__(self):
         st.title("DialogFlow Framework Statistic Dashboard")
-        col1, col2 = st.columns(2)
-        col1.subheader("Data")
-        col1.dataframe(self._df)
-        if "duration_time" in self._df.columns:
-            col2.subheader("Timings")
-            col2.dataframe(self._df.describe().duration_time)
-            col2.write(f"Data shape {self._df.shape}")
+        self.plots

@@ -36,6 +36,30 @@ def colorize(target: Iterable):
     return zip(generate_random_colors(), target)
 
 
+def show_table(df: pd.DataFrame) -> BaseFigure:
+    fig = go.Figure(
+        data=go.Table(
+            header=dict(values=list(df.columns), align='left'),
+            cells=dict(values=[df[col] for col in df.columns], align='left')
+        )
+    )
+    fig.update_layout(title="Data")
+    return fig
+
+
+@requires_columns(["duration_time"])
+def show_duration_time(df: pd.DataFrame) -> BaseFigure:
+    dt = df.describe().duration_time
+    fig = go.Figure(
+        data=go.Table(
+            header=dict(values=list(dt.keys()), align='left'),
+            cells=dict(values=list(dt.values), align='left')
+        )
+    )
+    fig.update_layout(title="Timings")
+    return fig
+
+
 @requires_columns(["flow_label", "node_label"])
 def show_node_counters(df: pd.DataFrame) -> BaseFigure:
     fig = go.Figure().update_layout(title="Node counters")
@@ -92,9 +116,9 @@ def show_transition_graph(df: pd.DataFrame) -> BaseFigure:
 
     graph = graphviz.Digraph()
     graph.attr(compound="true")
-    for i, flow_label in enumerate(df["flow_label"].unique()):
+    for color, (i, flow_label) in colorize(enumerate(df["flow_label"].unique())):
         with graph.subgraph(name=f"cluster{i}") as sub_graph:
-            sub_graph.attr(style="filled", color="lightgrey")
+            sub_graph.attr(style="filled", color=color.lower())
             sub_graph.attr(label=flow_label)
 
             sub_graph.node_attr.update(style="filled", color="white")
@@ -145,8 +169,8 @@ def show_transition_duration(df: pd.DataFrame) -> BaseFigure:
         subset = edge_time.loc[edge_time["edge_type"] == edge_type, "duration_time"]
         fig.add_trace(
             go.Bar(
-                x=["edge"],
-                y=subset["duration_time"],
+                x=subset.keys(),
+                y=subset.values,
                 name=edge_type,
                 marker_color=color,
             )
