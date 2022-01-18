@@ -12,5 +12,8 @@ stats = dff_node_stats.stats_builder(
 )
 
 df = stats.dataframe
+from dff_node_stats.widgets import FilterType
+filt = FilterType("Choose flow", "flow_label", lambda x, y: x == y, default=None)
+filt2 = FilterType("Choose turn", "history_id", lambda x, y: x == y, default=None)
 
-StreamlitDashboard(df)()
+StreamlitDashboard(df, filters=[filt, filt2])()

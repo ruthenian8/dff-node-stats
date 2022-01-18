@@ -1,4 +1,5 @@
-from typing import Any, Callable, List, Protocol, NamedTuple
+from lib2to3.pgen2.token import OP
+from typing import Any, Callable, List, Optional, Protocol, NamedTuple
 from functools import partial
 import datetime
 
@@ -58,13 +59,17 @@ class AbstractDasboard(Protocol):
 
 
 class WidgetDashboard(widgets.Tab):
-    def __init__(self, df, plots=None, filters=None) -> None:
+    def __init__(self,
+        df: pd.DataFrame,
+        plots: Optional[List[vs.VisualizerType]]=None,
+        filters: Optional[List[FilterType]]=None
+    ) -> None:
         super().__init__()
         self._filters: List[FilterType] = (
-            default_filters if filters is None else default_filters.extend(filters)
+            default_filters if filters is None else default_filters + filters
         )
         self._plots: List[vs.VisualizerType] = (
-            default_plots if plots is None else default_plots.extend(plots)
+            default_plots if plots is None else default_plots + filters
         )
         self._df_cache = df
         self._df = df
@@ -73,14 +78,17 @@ class WidgetDashboard(widgets.Tab):
         masks = []
         for _filter, dropdown in zip(self._filters, self.controls):
             val = dropdown.value
-            func_to_apply = partial(_filter.comparison_func, y=val)
-            masks += [self._df[_filter.colname].apply(func_to_apply)]
+            if val == _filter.default:
+                masks += [pd.Series(([True] * self._df.shape[0]), copy=False)]
+            else:            
+                func_to_apply = partial(_filter.comparison_func, y=val)
+                masks += [self._df[_filter.colname].apply(func_to_apply)]
         mask = masks[0]
         for m in masks[1:]:
-            mask = mask & (m | val == _filter.default)
+            mask = mask & m
         if mask.sum() == 0:
             return
-        self._df = self._df_cache.loc[mask]
+        self._df = self._df.loc[mask]      
 
     def update(self):
         def handleChange(change):
@@ -129,27 +137,33 @@ class WidgetDashboard(widgets.Tab):
 
 
 class StreamlitDashboard(AbstractDasboard):
-    def __init__(self, df, plots=None, filters=None) -> None:
+    def __init__(self,
+        df: pd.DataFrame,
+        plots: Optional[List[vs.VisualizerType]]=None,
+        filters: Optional[List[FilterType]]=None
+    ) -> None:
         self._filters: List[FilterType] = (
-            default_filters if filters is None else default_filters.extend(filters)
+            default_filters if filters is None else default_filters + filters
         )
         self._plots: List[vs.VisualizerType] = (
-            default_plots if plots is None else default_plots.extend(plots)
+            default_plots if plots is None else default_plots + plots
         )
         self._df_cache: pd.DataFrame = df
         self._df: pd.DataFrame = self._slice(self._df_cache, *self.controls)
 
     @st.cache(allow_output_mutation=True)
-    def _slice(self, df_origin, *args):
+    def _slice(self, df_origin: pd.DataFrame, *args):
         masks = []
         for _filter, dropdown in zip(self._filters, args):
-            masks = []
             val = dropdown
-            func_to_apply = partial(_filter.comparison_func, y=val)
-            masks += [df_origin[_filter.colname].apply(func_to_apply)]
+            if val == _filter.default:
+                masks += [pd.Series(([True] * df_origin.shape[0]), copy=False)]
+            else:
+                func_to_apply = partial(_filter.comparison_func, y=val)
+                masks += [df_origin[_filter.colname].apply(func_to_apply)]
         mask = masks[0]
         for m in masks[1:]:
-            mask = mask & (m | val == _filter.default)
+            mask = mask & m
         if mask.sum() == 0:
             return df_origin
         return df_origin.loc[mask]
