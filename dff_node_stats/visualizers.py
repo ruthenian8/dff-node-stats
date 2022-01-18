@@ -98,7 +98,7 @@ def show_transition_trace(df: pd.DataFrame) -> BaseFigure:
     df_trace = df[["history_id", "flow_label", "node"]]
     df_trace = df_trace.drop(columns=["flow_label"])
     fig = px.density_heatmap(
-        df_trace, x="history_id", y="node", color_continuous_scale="Viridis"
+        df_trace, x="history_id", y="node", color_continuous_scale='YlGnBu'
     )
     fig.update_layout(title="Transition Trace")
     return fig
@@ -111,8 +111,6 @@ def show_transition_graph(df: pd.DataFrame) -> BaseFigure:
     node_counter = df.node.value_counts()
     edge_counter = df.edge.value_counts()
     node2code = {key: f"n{index}" for index, key in enumerate(df.node.unique())}
-
-    fig = go.Figure().update_layout(title="Graph of Transitions")
 
     graph = graphviz.Digraph()
     graph.attr(compound="true")
@@ -142,6 +140,7 @@ def show_transition_graph(df: pd.DataFrame) -> BaseFigure:
     with BytesIO(_bytes) as stream:
         base64 = prefix + b64encode(stream.getvalue()).decode("utf-8")
     fig = go.Figure(go.Image(source=base64))
+    fig.update_layout(title="Graph of Transitions")
     fig.update_xaxes(showticklabels=False).update_yaxes(showticklabels=False)
     return fig
 

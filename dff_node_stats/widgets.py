@@ -10,11 +10,13 @@ import pandas as pd
 from dff_node_stats import visualizers as vs
 
 default_plots = [
+    vs.show_table,
+    vs.show_duration_time,
     vs.show_transition_graph,
     vs.show_transition_trace,
     vs.show_node_counters,
     vs.show_transition_counters,
-    # vs.show_transition_duration,
+    vs.show_transition_duration,
 ]
 
 
@@ -117,8 +119,14 @@ class WidgetDashboard(widgets.Tab):
         return box
 
     def __call__(self):
-        self.children = [self.controls, self.plots]
-        self.titles = ("Filters", "Plots")
+        self.children = [
+            # self.controls,
+            self.plots
+        ]
+        self.titles = (
+            # "Filters", 
+            "Plots"
+        )
         return self
 
 
