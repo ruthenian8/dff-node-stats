@@ -13,18 +13,18 @@ class DffStatsException(Exception):
 
 def transform_once(func: TransformType):
     """
-    Function that ensures dataset transformations
-    are only performed once
+    Caches the transformations results by columns
     """
-
     @wraps(func)
     def wrapper(dataframe: pd.DataFrame):
-        if not wrapper.called:
-            wrapper.called = True
-            return func(dataframe)
+        cols_as_string = ".".join(dataframe.columns)
+        if cols_as_string != wrapper.columns:
+            new_df = func(dataframe)
+            wrapper.columns = ".".join(new_df.columns)
+            return new_df
         return dataframe
 
-    wrapper.called = False
+    wrapper.columns = ""
     return wrapper
 
 

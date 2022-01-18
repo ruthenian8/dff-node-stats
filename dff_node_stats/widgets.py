@@ -146,9 +146,9 @@ class StreamlitDashboard(AbstractDasboard):
         masks = []
         for _filter, dropdown in zip(self._filters, args):
             masks = []
-            val = dropdown.value
+            val = dropdown
             func_to_apply = partial(_filter.comparison_func, y=val)
-            masks += [self._df[_filter.colname].apply(func_to_apply)]
+            masks += [df_origin[_filter.colname].apply(func_to_apply)]
         mask = masks[0]
         for m in masks[1:]:
             mask = mask & (m | val == _filter.default)

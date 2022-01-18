@@ -11,8 +11,7 @@ app = FastAPI()
 
 def api_run(df, port=8000) -> None:
     """
-    Methods for API get defined
-    inside the collectors as well
+    Launch an API server for a given dataframe
     """
 
     @transform_once

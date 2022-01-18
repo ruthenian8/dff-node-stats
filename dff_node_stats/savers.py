@@ -35,7 +35,7 @@ class Saver(Protocol):
             _id = triple[0]
             subclass = cls._saver_mapping[_id]
             obj = object.__new__(subclass)
-            obj.path = path
+            obj.path = str(path)
             cls._instance = obj
         return cls._instance
 
@@ -59,7 +59,7 @@ class CsvSaver(Saver, _id="csv"):
         path: str,
     ) -> None:
         if hasattr(self, "path"):
-            path = self.path.partition("://")[2]
+            path = str(self.path).partition("://")[2]
         self.path = pathlib.Path(path)
 
     def save(self, dfs: List[pd.DataFrame], **kwargs) -> None:
@@ -79,6 +79,9 @@ class CsvSaver(Saver, _id="csv"):
     def load(self, **kwargs) -> pd.DataFrame:
         column_types: Optional[Dict[str, str]] = kwargs.get("column_types")
         parse_dates: Optional[List[str]] = kwargs.get("parse_dates", False)
+        for date_col in parse_dates:
+            if date_col in column_types:
+                column_types.pop(date_col)
         return pd.read_csv(self.path, dtype=column_types, parse_dates=parse_dates)
 
 
