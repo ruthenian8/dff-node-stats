@@ -1,8 +1,8 @@
 import dff_node_stats
+from dff_node_stats.widgets import StreamlitDashboard
 
-# stats = dff_node_stats.Stats(csv_file="examples/stats.csv")
 stats = dff_node_stats.stats_builder(
-    dff_node_stats.Saver(path="clickhouse://root:qwerty@localhost:8123/test"),
+    dff_node_stats.Saver(path="csv://D:/project/dff-node-stats/examples/stats.csv"),
     collectors= [
         "NodeLabelCollector",
         "RequestCollector",
@@ -10,4 +10,6 @@ stats = dff_node_stats.stats_builder(
     ]
 )
 
-stats.streamlit_run()
+df = stats.dataframe
+
+StreamlitDashboard(df)()
