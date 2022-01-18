@@ -16,28 +16,28 @@ class Saver(Protocol):
         cls._saver_mapping[_id] = cls
 
     def __new__(cls, path: Optional[str] = None):
-        if cls._instance is None:
-            assert isinstance(
-                path, str
-            ), """
-            Saver should be initialized with a string
-            """
-            triple = path.partition("://")
-            if not all(triple):
-                raise ValueError(
-                    """Saver should be initialized with either:
-                    csv://path_to_file 
-                    or
-                    postgresql://sqlalchemy_engine_params
-                    clickhouse://sqlalchemy_engine_params
-                    """
-                )
-            _id = triple[0]
-            subclass = cls._saver_mapping[_id]
-            obj = object.__new__(subclass)
-            obj.path = str(path)
-            cls._instance = obj
-        return cls._instance
+        # if cls._instance is None:
+        assert isinstance(
+            path, str
+        ), """
+        Saver should be initialized with a string
+        """
+        triple = path.partition("://")
+        if not all(triple):
+            raise ValueError(
+                """Saver should be initialized with either:
+                csv://path_to_file 
+                or
+                postgresql://sqlalchemy_engine_params
+                clickhouse://sqlalchemy_engine_params
+                """
+            )
+        _id = triple[0]
+        subclass = cls._saver_mapping[_id]
+        obj = object.__new__(subclass)
+        obj.path = str(path)
+        return obj
+        # return cls._instance
 
     def save(self, dfs: List[pd.DataFrame], **kwargs) -> None:
         """
@@ -59,7 +59,7 @@ class CsvSaver(Saver, _id="csv"):
         path: str,
     ) -> None:
         if hasattr(self, "path"):
-            path = str(self.path).partition("://")[2]
+            path = self.path.partition("://")[2]
         self.path = pathlib.Path(path)
 
     def save(self, dfs: List[pd.DataFrame], **kwargs) -> None:
@@ -193,6 +193,8 @@ class InfiSaver(Saver, _id="clickhouse"):
         parse_dates: List[str] = kwargs.get("parse_dates")
         Model = self.db.get_model_for_table("dff_stats", system_table=False)
         results = self.db.select(query="SELECT * FROM dff_stats", model_class=Model)
+        if len(results) == 0:
+            raise Exception("`dff_stats` table is empty!")
         df = pd.DataFrame.from_records([item.to_dict() for item in results])
         for column in parse_dates:
             df[column] = df[column].astype("datetime64[ns]")

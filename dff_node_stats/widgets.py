@@ -28,18 +28,18 @@ class FilterType(NamedTuple):
 
 
 default_filters = [
-    FilterType(
-        "Choose start date",
-        "start_time",
-        lambda x, y: x >= y,
-        datetime.datetime.now() - datetime.timedelta(days=1),
-    ),
-    FilterType(
-        "Choose end date",
-        "start_time",
-        lambda x, y: x <= y,
-        datetime.datetime.now() + datetime.timedelta(days=1),
-    ),
+    # FilterType(
+    #     "Choose start date",
+    #     "start_time",
+    #     lambda x, y: x >= y,
+    #     datetime.datetime.now() - datetime.timedelta(days=1),
+    # ),
+    # FilterType(
+    #     "Choose end date",
+    #     "start_time",
+    #     lambda x, y: x <= y,
+    #     datetime.datetime.now() + datetime.timedelta(days=1),
+    # ),
     FilterType("Choose context_id", "context_id", lambda x, y: x == y, None),
 ]
 
@@ -110,9 +110,7 @@ class WidgetDashboard(widgets.Tab):
         box = widgets.VBox()
         plot_list = []
         df = self._df.copy()
-        # print("Initial: {}".format(", ".join(df.columns)))
         for plot_func in self._plots:
-            # print("Stage {}: {}".format(plot_func.__name__, ", ".join(df.columns)))
             plot = plot_func(df)
             plot_list += [go.FigureWidget(data=plot)]
         box.children = plot_list
