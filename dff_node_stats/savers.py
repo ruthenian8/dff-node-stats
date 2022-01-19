@@ -9,19 +9,20 @@ import pandas as pd
 @runtime_checkable
 class Saver(Protocol):
     _saver_mapping = {}
-    _instance = None
+    _path = None
 
     def __init_subclass__(cls, _id: str, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         cls._saver_mapping[_id] = cls
 
     def __new__(cls, path: Optional[str] = None):
-        # if cls._instance is None:
-        assert isinstance(
-            path, str
-        ), """
-        Saver should be initialized with a string
-        """
+        if not path and not cls._path:
+            raise ValueError(
+            """
+            Saver should be initialized with a string
+            """
+        )
+        cls._path, path = [path or cls._path] * 2 # need this workaround cause pydantic constantly calls __new__
         triple = path.partition("://")
         if not all(triple):
             raise ValueError(
