@@ -1,7 +1,5 @@
-from lib2to3.pgen2.token import OP
 from typing import Any, Callable, List, Optional, Protocol, NamedTuple
 from functools import partial
-import datetime
 
 from ipywidgets import widgets
 import plotly.graph_objects as go
@@ -25,7 +23,7 @@ class FilterType(NamedTuple):
     label: str
     colname: str
     comparison_func: Callable[[Any, Any], bool]
-    default: Any = None
+    default: str = "None"
 
 
 default_filters = [
@@ -41,7 +39,7 @@ default_filters = [
     #     lambda x, y: x <= y,
     #     datetime.datetime.now() + datetime.timedelta(days=1),
     # ),
-    FilterType("Choose context_id", "context_id", lambda x, y: x == y, None),
+    FilterType("Choose context_id", "context_id", lambda x, y: x == y, "None"),
 ]
 
 
@@ -58,7 +56,7 @@ class AbstractDasboard(Protocol):
         raise NotImplementedError
 
 
-class WidgetDashboard(widgets.Tab):
+class WidgetDashboard(widgets.VBox):
     def __init__(self,
         df: pd.DataFrame,
         plots: Optional[List[vs.VisualizerType]]=None,
@@ -71,49 +69,59 @@ class WidgetDashboard(widgets.Tab):
         self._plots: List[vs.VisualizerType] = (
             default_plots if plots is None else default_plots + filters
         )
-        self._df_cache = df
-        self._df = df
+        self._df_cache = df # original df used to construct the widget
+        self._df = df # current state
+        self._controls = self._construct_controls()
+
+    @property
+    def controls(self):
+        return self._controls
 
     def _slice(self):
         masks = []
-        for _filter, dropdown in zip(self._filters, self.controls):
+        for _filter, dropdown in zip(self._filters, self.controls.children):
             val = dropdown.value
             if val == _filter.default:
-                masks += [pd.Series(([True] * self._df.shape[0]), copy=False)]
+                masks += [pd.Series(([True] * self._df_cache.shape[0]), copy=False)]
             else:            
                 func_to_apply = partial(_filter.comparison_func, y=val)
-                masks += [self._df[_filter.colname].apply(func_to_apply)]
+                masks += [self._df_cache[_filter.colname].apply(func_to_apply)]
         mask = masks[0]
         for m in masks[1:]:
             mask = mask & m
         if mask.sum() == 0:
             return
-        self._df = self._df.loc[mask]      
+        self._df = self._df_cache.loc[mask]      
 
-    def update(self):
+    def _construct_controls(self):
         def handleChange(change):
             self._slice()
-            self.__call__()
+            self.children = [
+                self.controls,
+                self.plots()
+            ]
 
-        return handleChange
-
-    @property
-    def controls(self):
         box = widgets.VBox()
         filters = []
         for _filter in self._filters:
+            if _filter.colname not in self._df_cache.columns:
+                raise KeyError(
+                    """
+                    Column {} for filter {}
+                    not found in the dataframe
+                    """.format(_filter.colname, _filter.label)
+                )
             options = [(_filter.default, _filter.default)] + [
-                (i, i) for i in self._df[_filter.colname].unique()
+                (i, i) for i in self._df_cache[_filter.colname].unique()
             ]
             dropdown = widgets.Dropdown(
-                value=None, options=options, description=_filter.colname
+                value=_filter.default, options=options, description=_filter.colname
             )
-            dropdown.observe(self.update(), "value")
+            dropdown.observe(handleChange, "value")
             filters += [dropdown]
         box.children = filters
         return box
 
-    @property
     def plots(self):
         box = widgets.VBox()
         plot_list = []
@@ -126,13 +134,9 @@ class WidgetDashboard(widgets.Tab):
 
     def __call__(self):
         self.children = [
-            # self.controls,
-            self.plots
+            self.controls,
+            self.plots()
         ]
-        self.titles = (
-            # "Filters", 
-            "Plots"
-        )
         return self
 
 
@@ -170,8 +174,16 @@ class StreamlitDashboard(AbstractDasboard):
 
     @property
     def controls(self):
-        return tuple(
-            [
+        filters = []
+        for _filter in self._filters:
+            if _filter.colname not in self._df_cache.columns:
+                raise KeyError(
+                    """
+                    Column {} for filter {}
+                    not found in the dataframe
+                    """.format(_filter.colname, _filter.label)
+                )        
+            filters.append(
                 st.sidebar.selectbox(
                     _filter.label,
                     options=(
@@ -179,9 +191,8 @@ class StreamlitDashboard(AbstractDasboard):
                         + self._df_cache[_filter.colname].unique().tolist()
                     ),
                 )
-                for _filter in self._filters
-            ]
-        )
+            )
+        return tuple(filters)
 
     @property
     def plots(self):
