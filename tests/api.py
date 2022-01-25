@@ -5,15 +5,18 @@ import requests
 
 from dff_node_stats.api import api_run
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def host():
     yield "localhost"
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def port():
     yield 8000
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def endpoint():
     yield "customendpoint"
 
@@ -21,21 +24,21 @@ def endpoint():
 def customize(app, endpoint):
     @app.get(f"/{endpoint}", response_model=Dict[str, str])
     async def custom_route():
-        return [{"foo":"bar"}, {"baz":"qux"}]
+        return [{"foo": "bar"}, {"baz": "qux"}]
 
     return app
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def custom_API(host, port):
-    proc=Process(target=api_run, args=(), daemon=True)
+    proc = Process(target=api_run, args=(), daemon=True)
     yield
     proc.kill()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def default_API(host, port):
-    proc=Process(target=api_run, args=(), daemon=True)
+    proc = Process(target=api_run, args=(), daemon=True)
     yield
     proc.kill()
 
@@ -61,6 +64,7 @@ def test_default_transition_counts(default_API, host, port):
     first = data[0]
     assert len(first) > 0
     assert isinstance(first, dict)
+
 
 def test_default_transition_probs(default_API, host, port):
     response = requests.get(f"http://{host}:{port}/api/v1/stats/transition-probs")

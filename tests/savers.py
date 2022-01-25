@@ -13,7 +13,7 @@ def test_uri():
 
 def test_uri_priority():
     saver1 = Saver("csv://file.csv")
-    saver2 = Saver("csv://file2.csv")    
+    saver2 = Saver("csv://file2.csv")
     assert saver2.path == "file2.csv"
 
 
@@ -29,7 +29,6 @@ def test_saver_registry():
 
         def load(self):
             return
-
 
     assert issubclass(MongoSaver, Saver)
 

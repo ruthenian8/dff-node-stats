@@ -18,26 +18,31 @@ class Saver(Protocol):
     def __new__(cls, path: Optional[str] = None):
         if not path and not cls._path:
             raise ValueError(
-            """
+                """
             Saver should be initialized with a string
             """
-        )
-        cls._path = path = path or cls._path # need this workaround cause pydantic constantly calls __new__
+            )
+        cls._path = path = path or cls._path  # need this workaround cause pydantic constantly calls __new__
         triple = path.partition("://")
         if not all(triple):
             raise ValueError(
                 """Saver should be initialized with either:
                 csv://path_to_file or dbname://engine_params
                 available options: {}
-                """.format(", ".join(list(cls._saver_mapping.keys())))
+                """.format(
+                    ", ".join(list(cls._saver_mapping.keys()))
+                )
             )
         _id = triple[0]
         subclass = cls._saver_mapping.get(_id)
         if not subclass:
-            raise ValueError("""
+            raise ValueError(
+                """
                 Cannot recognize option: {}
                 Available options are: {}            
-                """.format(_id, ", ".join(list(cls._saver_mapping.keys())))
+                """.format(
+                    _id, ", ".join(list(cls._saver_mapping.keys()))
+                )
             )
         obj = object.__new__(subclass)
         obj.path = str(path)
@@ -75,9 +80,7 @@ class CsvSaver(Saver, _id="csv"):
             if key in column_types:
                 column_types.pop(key)
         saved_df = (
-            self.load(column_types=column_types, parse_dates=parse_dates)
-            if self.path.exists()
-            else pd.DataFrame()
+            self.load(column_types=column_types, parse_dates=parse_dates) if self.path.exists() else pd.DataFrame()
         )
         pd.concat([saved_df] + dfs).to_csv(self.path, index=False)
 
@@ -86,12 +89,7 @@ class CsvSaver(Saver, _id="csv"):
         parse_dates: Optional[List[str]] = kwargs.get("parse_dates", False)
         if parse_dates and column_types:
             true_types = {k: v for k, v in column_types.items() if k in (column_types.keys() ^ set(parse_dates))}
-        return pd.read_csv(
-            self.path,
-            usecols=column_types.keys(),
-            dtype=true_types,
-            parse_dates=parse_dates
-        )
+        return pd.read_csv(self.path, usecols=column_types.keys(), dtype=true_types, parse_dates=parse_dates)
 
 
 class PGSaver(Saver, _id="postgresql"):
@@ -119,18 +117,14 @@ class PGSaver(Saver, _id="postgresql"):
         df = pd.concat(dfs)
         if self.engine.dialect.has_table("dff_stats"):
             metadata = PGSaver.sa.schema.MetaData()
-            ExistingModel = PGSaver.sa.schema.Table(
-                "dff_stats", metadata, autoload_with=self.engine
-            )
+            ExistingModel = PGSaver.sa.schema.Table("dff_stats", metadata, autoload_with=self.engine)
             # if current schema contains new columns, drop the table to recreate it later
             if not all([list(column_types.keys()) in ExistingModel.columns]):
                 existing_df = self.load(parse_dates=kwargs.get("parse_dates", False))
                 df = pd.concat([existing_df, df], axis=0)
                 ExistingModel.drop(bind=self.engine)
 
-        self.engine.dialect._psycopg2_extensions().register_adapter(
-            dict, self.engine.dialect._psycopg2_extras().Json
-        )
+        self.engine.dialect._psycopg2_extensions().register_adapter(dict, self.engine.dialect._psycopg2_extras().Json)
         # for key in column_types:
         #     if column_types[key] == "object":
         #         column_types[key] = self.engine.dialects.postgresql.JSONB
@@ -147,9 +141,7 @@ class PGSaver(Saver, _id="postgresql"):
                 # echo=True,
                 # echo_pool="debug"
             )
-        df = pd.read_sql_table(
-            table_name=self.table, con=self.engine, parse_dates=parse_dates
-        )
+        df = pd.read_sql_table(table_name=self.table, con=self.engine, parse_dates=parse_dates)
         self.engine = None
         return df
 
@@ -168,9 +160,7 @@ class InfiSaver(Saver, _id="clickhouse"):
         username, _, password = auth.partition("://")[2].partition(":")
         if not all([db_name, address, username, password]):
             raise ValueError("Invalid database URI or credentials")
-        self.db = Database(
-            db_name, db_url=address, username=username, password=password
-        )
+        self.db = Database(db_name, db_url=address, username=username, password=password)
         return
 
     def save(self, dfs: List[pd.DataFrame], **kwargs) -> None:
@@ -180,7 +170,7 @@ class InfiSaver(Saver, _id="clickhouse"):
 
         Model = self.create_clickhouse_table(column_types)
 
-        # in case new columns have been added, 
+        # in case new columns have been added,
         # but the table already exists
         # we recreate the table and insert old entries
         if self.db.does_table_exist(Model):
@@ -199,7 +189,7 @@ class InfiSaver(Saver, _id="clickhouse"):
                 for column in parse_dates:
                     row[column] = row[column].to_pydatetime()
                 yield Model(**row)
-        
+
         self.db.insert(lazyupload(df), batch_size=1000)
 
     def load(self, **kwargs) -> pd.DataFrame:
@@ -237,13 +227,7 @@ class InfiSaver(Saver, _id="clickhouse"):
         }
         for column, _type in column_types.items():
             model_namespace.update(
-                {
-                    column: orm.fields.NullableField(
-                        ch_mapping[_type](), extra_null_values=[float("nan")]
-                    )
-                }
+                {column: orm.fields.NullableField(ch_mapping[_type](), extra_null_values=[float("nan")])}
             )
         dff_stats = type("dff_stats", (orm.models.Model,), model_namespace)
         return dff_stats
-
-

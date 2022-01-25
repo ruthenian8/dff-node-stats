@@ -137,14 +137,11 @@ plot = {
 }
 
 stats = dff_node_stats.Stats(
-    saver=dff_node_stats.Saver("csv://examples/stats.csv"),
-    collectors=[
-        DSC.NodeLabelCollector()
-    ]
+    saver=dff_node_stats.Saver("csv://examples/stats.csv"), collectors=[DSC.NodeLabelCollector()]
 )
 
 
-def main(stats_object: dff_node_stats.Stats, n_iterations: int=300):
+def main(stats_object: dff_node_stats.Stats, n_iterations: int = 300):
     actor = Actor(plot, start_label=("root", "start"), fallback_label=("root", "fallback"))
 
     stats_object.update_actor_handlers(actor, auto_save=False)
@@ -169,4 +166,3 @@ def main(stats_object: dff_node_stats.Stats, n_iterations: int=300):
 if __name__ == "__main__":
     stats_object = main(stats)
     stats_object.save()
-

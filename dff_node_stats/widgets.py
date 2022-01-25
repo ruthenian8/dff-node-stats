@@ -45,20 +45,17 @@ class AbstractDasboard(Protocol):
 
 
 class WidgetDashboard(widgets.VBox):
-    def __init__(self,
+    def __init__(
+        self,
         df: pd.DataFrame,
-        plots: Optional[List[vs.VisualizerType]]=None,
-        filters: Optional[List[FilterType]]=None
+        plots: Optional[List[vs.VisualizerType]] = None,
+        filters: Optional[List[FilterType]] = None,
     ) -> None:
         super().__init__()
-        self._filters: List[FilterType] = (
-            default_filters if filters is None else default_filters + filters
-        )
-        self._plots: List[vs.VisualizerType] = (
-            default_plots if plots is None else default_plots + filters
-        )
-        self._df_cache = df # original df used to construct the widget
-        self._df = df # current state
+        self._filters: List[FilterType] = default_filters if filters is None else default_filters + filters
+        self._plots: List[vs.VisualizerType] = default_plots if plots is None else default_plots + filters
+        self._df_cache = df  # original df used to construct the widget
+        self._df = df  # current state
         self._controls = self._construct_controls()
 
     @property
@@ -71,7 +68,7 @@ class WidgetDashboard(widgets.VBox):
             val = dropdown.value
             if val == _filter.default:
                 masks += [pd.Series(([True] * self._df_cache.shape[0]), copy=False)]
-            else:            
+            else:
                 func_to_apply = partial(_filter.comparison_func, y=val)
                 masks += [self._df_cache[_filter.colname].apply(func_to_apply)]
         mask = masks[0]
@@ -79,15 +76,12 @@ class WidgetDashboard(widgets.VBox):
             mask = mask & m
         if mask.sum() == 0:
             return
-        self._df = self._df_cache.loc[mask]      
+        self._df = self._df_cache.loc[mask]
 
     def _construct_controls(self):
         def handleChange(change):
             self._slice()
-            self.children = [
-                self.controls,
-                self.plots()
-            ]
+            self.children = [self.controls, self.plots()]
 
         box = widgets.VBox()
         filters = []
@@ -97,14 +91,12 @@ class WidgetDashboard(widgets.VBox):
                     """
                     Column {} for filter {}
                     not found in the dataframe
-                    """.format(_filter.colname, _filter.label)
+                    """.format(
+                        _filter.colname, _filter.label
+                    )
                 )
-            options = [(_filter.default, _filter.default)] + [
-                (i, i) for i in self._df_cache[_filter.colname].unique()
-            ]
-            dropdown = widgets.Dropdown(
-                value=_filter.default, options=options, description=_filter.colname
-            )
+            options = [(_filter.default, _filter.default)] + [(i, i) for i in self._df_cache[_filter.colname].unique()]
+            dropdown = widgets.Dropdown(value=_filter.default, options=options, description=_filter.colname)
             dropdown.observe(handleChange, "value")
             filters += [dropdown]
         box.children = filters
@@ -121,25 +113,19 @@ class WidgetDashboard(widgets.VBox):
         return box
 
     def __call__(self):
-        self.children = [
-            self.controls,
-            self.plots()
-        ]
+        self.children = [self.controls, self.plots()]
         return self
 
 
 class StreamlitDashboard(AbstractDasboard):
-    def __init__(self,
+    def __init__(
+        self,
         df: pd.DataFrame,
-        plots: Optional[List[vs.VisualizerType]]=None,
-        filters: Optional[List[FilterType]]=None
+        plots: Optional[List[vs.VisualizerType]] = None,
+        filters: Optional[List[FilterType]] = None,
     ) -> None:
-        self._filters: List[FilterType] = (
-            default_filters if filters is None else default_filters + filters
-        )
-        self._plots: List[vs.VisualizerType] = (
-            default_plots if plots is None else default_plots + plots
-        )
+        self._filters: List[FilterType] = default_filters if filters is None else default_filters + filters
+        self._plots: List[vs.VisualizerType] = default_plots if plots is None else default_plots + plots
         self._df_cache: pd.DataFrame = df
         self._df: pd.DataFrame = self._slice(self._df_cache, *self.controls)
 
@@ -169,15 +155,14 @@ class StreamlitDashboard(AbstractDasboard):
                     """
                     Column {} for filter {}
                     not found in the dataframe
-                    """.format(_filter.colname, _filter.label)
-                )        
+                    """.format(
+                        _filter.colname, _filter.label
+                    )
+                )
             filters.append(
                 st.sidebar.selectbox(
                     _filter.label,
-                    options=(
-                        [_filter.default]
-                        + self._df_cache[_filter.colname].unique().tolist()
-                    ),
+                    options=([_filter.default] + self._df_cache[_filter.colname].unique().tolist()),
                 )
             )
         return tuple(filters)

@@ -2,12 +2,7 @@ import dff_node_stats
 from dff_node_stats import collectors as DSC
 from dff_node_stats.api import api_run
 
-stats = dff_node_stats.Stats(
-    saver=dff_node_stats.Saver("csv://stats.csv"),
-    collectors=[
-        DSC.NodeLabelCollector()
-    ]
-)
+stats = dff_node_stats.Stats(saver=dff_node_stats.Saver("csv://stats.csv"), collectors=[DSC.NodeLabelCollector()])
 
 df = stats.dataframe
 
