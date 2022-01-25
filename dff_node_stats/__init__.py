@@ -1,10 +1,8 @@
 # flake8: noqa: F401
-from .stats import Stats
-from .stats_new import StatsBuilder
+from .stats_new import Stats
 
-stats_builder = StatsBuilder()
 from .savers import Saver
-from .collectors import ContextCollector
+from . import collectors
 
 from .widgets import (
     WidgetDashboard,

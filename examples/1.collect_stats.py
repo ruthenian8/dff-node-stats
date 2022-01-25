@@ -9,6 +9,7 @@ from dff.core import Context, Actor
 import dff.conditions as cnd
 
 import dff_node_stats
+from dff_node_stats import collectors as DSC
 
 stats_file = pathlib.Path("examples/stats.csv")
 if stats_file.exists():
@@ -134,37 +135,38 @@ plot = {
         },
     },
 }
-# stats = dff_node.stats.Stats()
-builder = dff_node_stats.stats_builder
-# builder.register(dff_node_stats.ContextCollector(
-#     {}, []
-# ))
-actor = Actor(plot, start_label=("root", "start"), fallback_label=("root", "fallback"))
-stats = builder(
-    saver=dff_node_stats.Saver(
-        path="csv://examples/stats.csv"
-    ),
-    collectors= [
-        "NodeLabelCollector",
-        "RequestCollector",
-        "ResponseCollector"
+
+stats = dff_node_stats.Stats(
+    saver=dff_node_stats.Saver("csv://examples/stats.csv"),
+    collectors=[
+        DSC.NodeLabelCollector()
     ]
 )
-stats.update_actor_handlers(actor, auto_save=False)
-ctxs = {}
-for i in tqdm.tqdm(range(300)):
-    for j in range(4):
-        ctx = ctxs.get(j, Context(id=uuid.uuid4()))
-        label = ctx.last_label if ctx.last_label else actor.fallback_label
-        flow, node = label[:2]
-        if [flow, node] == ["root", "fallback"]:
-            ctx = Context()
-            flow, node = ["root", "start"]
-        answers = list(transitions.get(flow, {}).get(node, []))
-        in_text = random.choice(answers) if answers else "go to fallback"
-        ctx.add_request(in_text)
-        ctx = actor(ctx)
-        ctx.clear(hold_last_n_indexes=3)
-        ctxs[j] = ctx
-    if i % 50 == 0:
-        stats.save()
+
+
+def main(stats_object: dff_node_stats.Stats, n_iterations: int=300):
+    actor = Actor(plot, start_label=("root", "start"), fallback_label=("root", "fallback"))
+
+    stats_object.update_actor_handlers(actor, auto_save=False)
+    ctxs = {}
+    for i in tqdm.tqdm(range(n_iterations)):
+        for j in range(4):
+            ctx = ctxs.get(j, Context(id=uuid.uuid4()))
+            label = ctx.last_label if ctx.last_label else actor.fallback_label
+            flow, node = label[:2]
+            if [flow, node] == ["root", "fallback"]:
+                ctx = Context()
+                flow, node = ["root", "start"]
+            answers = list(transitions.get(flow, {}).get(node, []))
+            in_text = random.choice(answers) if answers else "go to fallback"
+            ctx.add_request(in_text)
+            ctx = actor(ctx)
+            ctx.clear(hold_last_n_indexes=3)
+            ctxs[j] = ctx
+    return stats_object
+
+
+if __name__ == "__main__":
+    stats_object = main(stats)
+    stats_object.save()
+

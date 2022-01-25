@@ -22,19 +22,23 @@ class Saver(Protocol):
             Saver should be initialized with a string
             """
         )
-        cls._path, path = [path or cls._path] * 2 # need this workaround cause pydantic constantly calls __new__
+        cls._path = path = path or cls._path # need this workaround cause pydantic constantly calls __new__
         triple = path.partition("://")
         if not all(triple):
             raise ValueError(
                 """Saver should be initialized with either:
-                csv://path_to_file 
-                or
-                postgresql://sqlalchemy_engine_params
-                clickhouse://sqlalchemy_engine_params
-                """
+                csv://path_to_file or dbname://engine_params
+                available options: {}
+                """.format(", ".join(list(cls._saver_mapping.keys())))
             )
         _id = triple[0]
-        subclass = cls._saver_mapping[_id]
+        subclass = cls._saver_mapping.get(_id)
+        if not subclass:
+            raise ValueError("""
+                Cannot recognize option: {}
+                Available options are: {}            
+                """.format(_id, ", ".join(list(cls._saver_mapping.keys())))
+            )
         obj = object.__new__(subclass)
         obj.path = str(path)
         return obj
@@ -80,10 +84,14 @@ class CsvSaver(Saver, _id="csv"):
     def load(self, **kwargs) -> pd.DataFrame:
         column_types: Optional[Dict[str, str]] = kwargs.get("column_types")
         parse_dates: Optional[List[str]] = kwargs.get("parse_dates", False)
-        for date_col in parse_dates:
-            if date_col in column_types:
-                column_types.pop(date_col)
-        return pd.read_csv(self.path, dtype=column_types, parse_dates=parse_dates)
+        if parse_dates and column_types:
+            true_types = {k: v for k, v in column_types.items() if k in (column_types.keys() ^ set(parse_dates))}
+        return pd.read_csv(
+            self.path,
+            usecols=column_types.keys(),
+            dtype=true_types,
+            parse_dates=parse_dates
+        )
 
 
 class PGSaver(Saver, _id="postgresql"):
@@ -172,13 +180,18 @@ class InfiSaver(Saver, _id="clickhouse"):
 
         Model = self.create_clickhouse_table(column_types)
 
-        # in case new columns have been added, we recreate the table
+        # in case new columns have been added, 
+        # but the table already exists
+        # we recreate the table and insert old entries
         if self.db.does_table_exist(Model):
             ExistingModel = self.db.get_model_for_table("dff_stats", system_table=False)
             if Model.fields() != ExistingModel.fields():
                 existing_df = self.load()
                 self.db.drop_table(ExistingModel)
                 df = pd.concat([existing_df, df], axis=0)
+                self.db.create_table(Model)
+        else:
+            self.db.create_table(Model)
 
         def lazyupload(df):
             for _, row in df.iterrows():
@@ -186,8 +199,7 @@ class InfiSaver(Saver, _id="clickhouse"):
                 for column in parse_dates:
                     row[column] = row[column].to_pydatetime()
                 yield Model(**row)
-
-        self.db.create_table(Model)
+        
         self.db.insert(lazyupload(df), batch_size=1000)
 
     def load(self, **kwargs) -> pd.DataFrame:
@@ -235,12 +247,3 @@ class InfiSaver(Saver, _id="clickhouse"):
         return dff_stats
 
 
-class MongoSaver(Saver, _id="mongo"):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def save(self):
-        return
-
-    def load(self):
-        return

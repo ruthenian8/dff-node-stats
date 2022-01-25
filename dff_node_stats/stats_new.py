@@ -1,5 +1,5 @@
 # %%
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import datetime
 from functools import cached_property
 
@@ -8,7 +8,7 @@ from pydantic import validate_arguments
 from dff.core import Context, Actor
 from dff.core.types import ActorStage
 
-from .collectors import *
+from . import collectors as DSC
 from .savers import Saver
 
 
@@ -16,17 +16,21 @@ class Stats:
     def __init__(
         self,
         saver: Saver,
-        collectors: List[Collector],
+        collectors: Optional[List[DSC.Collector]]=None,
     ) -> None:
-
+        col_default = [DSC.DefaultCollector()]
+        collectors = col_default if collectors is None else col_default + collectors
+        type_check = lambda x: isinstance(x, DSC.Collector) and not isinstance(x, type)
+        if not all(map(type_check, collectors)):
+            raise TypeError("Param `collectors` should be a list of collector instances")
         column_dtypes = dict()
         parse_dates = list()
         for collector in collectors:
             column_dtypes.update(collector.column_dtypes)
             parse_dates.extend(collector.parse_dates)
-        # print(column_dtypes)
+
         self.saver: Saver = saver
-        self.collectors: List[Collector] = collectors
+        self.collectors: List[DSC.Collector] = collectors
         self.column_dtypes: Dict[str, str] = column_dtypes
         self.parse_dates: List[str] = parse_dates
         self.dfs: list = []
@@ -75,34 +79,34 @@ class Stats:
         self.add_df(stats=stats)
 
 
-class StatsBuilder:
-    def __init__(self) -> None:
-        self.collector_mapping: Dict[str, Collector] = {
-            "NodeLabelCollector": NodeLabelCollector(),
-            "RequestCollector": RequestCollector(),
-            "ResponseCollector": ResponseCollector(),
-        }
+# class StatsBuilder:
+#     def __init__(self) -> None:
+#         self.collector_mapping: Dict[str, DSC.Collector] = {
+#             "NodeLabelCollector": DSC.NodeLabelCollector(),
+#             "RequestCollector": DSC.RequestCollector(),
+#             "ResponseCollector": DSC.ResponseCollector(),
+#         }
 
-    def __call__(
-        self, saver: Optional[Saver] = None, collectors: Optional[List[str]] = None
-    ) -> Stats:
-        if saver is None:
-            saver = Saver("csv://examples/stats.csv")
-        if collectors is None:
-            collectors = ["NodeLabelCollector"]
-        return Stats(
-            saver,
-            [
-                DefaultCollector(),
-                *[
-                    self.collector_mapping[i]
-                    for i in collectors
-                    if i in self.collector_mapping
-                ],
-            ],
-        )
+#     def __call__(
+#         self, saver: Optional[Saver] = None, collectors: Optional[List[str]] = None
+#     ) -> Stats:
+#         if saver is None:
+#             saver = Saver("csv://examples/stats.csv")
+#         if collectors is None:
+#             collectors = ["NodeLabelCollector"]
+#         return Stats(
+#             saver,
+#             [
+#                 DSC.DefaultCollector(),
+#                 *[
+#                     self.collector_mapping[i]
+#                     for i in collectors
+#                     if i in self.collector_mapping
+#                 ],
+#             ],
+#         )
 
-    def register(self, collector: Collector) -> None:
-        if not isinstance(collector, Collector):
-            raise TypeError("The class should implement the Collector protocol")
-        self.collector_mapping[collector.__class__.__name__] = collector
+#     def register(self, collector: DSC.Collector) -> None:
+#         if not isinstance(collector, DSC.Collector):
+#             raise TypeError("The class should implement the DSC.Collector protocol")
+#         self.collector_mapping[collector.__class__.__name__] = collector

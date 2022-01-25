@@ -27,18 +27,6 @@ class FilterType(NamedTuple):
 
 
 default_filters = [
-    # FilterType(
-    #     "Choose start date",
-    #     "start_time",
-    #     lambda x, y: x >= y,
-    #     datetime.datetime.now() - datetime.timedelta(days=1),
-    # ),
-    # FilterType(
-    #     "Choose end date",
-    #     "start_time",
-    #     lambda x, y: x <= y,
-    #     datetime.datetime.now() + datetime.timedelta(days=1),
-    # ),
     FilterType("Choose context_id", "context_id", lambda x, y: x == y, "None"),
 ]
 
