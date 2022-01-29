@@ -1,0 +1,10 @@
+requests>=2.26.0
+streamlit>=1.1.0
+graphviz==0.17
+plotly==5.5.0
+infi.clickhouse-orm==2.1.1
+ipywidgets==7.6.5
+traitlets==5.1.1
+psycopg2==2.9.2
+SQLAlchemy==1.4.27
+pytest

@@ -1,5 +1,5 @@
 import random
-from typing import Callable, Iterable, Tuple
+from typing import Callable, Iterable
 from base64 import b64encode
 from io import BytesIO
 
@@ -7,9 +7,11 @@ import graphviz
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-from plotly.basedatatypes import BaseFigure
-from dff_node_stats.utils import requires_transform, transform_once, requires_columns
 from plotly.colors import qualitative
+from plotly.basedatatypes import BaseFigure
+
+from dff_node_stats.utils import requires_transform, transform_once, requires_columns
+
 
 VisualizerType = Callable[[pd.DataFrame], BaseFigure]
 

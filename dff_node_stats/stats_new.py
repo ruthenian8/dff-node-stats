@@ -2,6 +2,7 @@
 from typing import Any, Dict, List, Optional
 import datetime
 from functools import cached_property
+from copy import copy
 
 import pandas as pd
 from pydantic import validate_arguments
@@ -35,6 +36,10 @@ class Stats:
         self.parse_dates: List[str] = parse_dates
         self.dfs: list = []
         self.start_time: Optional[datetime.datetime] = None
+
+    
+    def __deepcopy__(self, *args, **kwargs):
+        return copy(self)
 
     @cached_property
     def dataframe(self) -> pd.DataFrame:
@@ -77,36 +82,3 @@ class Stats:
                 collector.collect_stats(ctx, actor, start_time=self.start_time)
             )
         self.add_df(stats=stats)
-
-
-# class StatsBuilder:
-#     def __init__(self) -> None:
-#         self.collector_mapping: Dict[str, DSC.Collector] = {
-#             "NodeLabelCollector": DSC.NodeLabelCollector(),
-#             "RequestCollector": DSC.RequestCollector(),
-#             "ResponseCollector": DSC.ResponseCollector(),
-#         }
-
-#     def __call__(
-#         self, saver: Optional[Saver] = None, collectors: Optional[List[str]] = None
-#     ) -> Stats:
-#         if saver is None:
-#             saver = Saver("csv://examples/stats.csv")
-#         if collectors is None:
-#             collectors = ["NodeLabelCollector"]
-#         return Stats(
-#             saver,
-#             [
-#                 DSC.DefaultCollector(),
-#                 *[
-#                     self.collector_mapping[i]
-#                     for i in collectors
-#                     if i in self.collector_mapping
-#                 ],
-#             ],
-#         )
-
-#     def register(self, collector: DSC.Collector) -> None:
-#         if not isinstance(collector, DSC.Collector):
-#             raise TypeError("The class should implement the DSC.Collector protocol")
-#         self.collector_mapping[collector.__class__.__name__] = collector
