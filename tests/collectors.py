@@ -20,7 +20,3 @@ def test_inheritance():
     new_collector = NewCollector()
 
     assert isinstance(new_collector, collectors.Collector)
-
-
-
-
