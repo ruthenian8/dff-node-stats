@@ -1,7 +1,7 @@
 from typing import List, Dict, Protocol, runtime_checkable, Any
 import datetime
 
-from pydantic import validate_arguments, Field
+from pydantic import validate_arguments
 from dff.core import Context, Actor
 import pandas as pd
 
@@ -22,9 +22,7 @@ class Collector(Protocol):
         """
         return []
 
-    def collect_stats(
-        self, ctx: Context, actor: Actor, *args, **kwargs
-    ) -> Dict[str, Any]:
+    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> Dict[str, Any]:
         """
         Extract the required data from the context
         """
@@ -46,9 +44,7 @@ class DefaultCollector(Collector):
         return ["start_time"]
 
     @validate_arguments
-    def collect_stats(
-        self, ctx: Context, actor: Actor, *args, **kwargs
-    ) -> Dict[str, Any]:
+    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> Dict[str, Any]:
         indexes = list(ctx.labels) or [-1]
         current_index = indexes[-1]
         start_time = kwargs.get("start_time") or datetime.datetime.now()
@@ -73,9 +69,7 @@ class NodeLabelCollector(Collector):
         return []
 
     @validate_arguments
-    def collect_stats(
-        self, ctx: Context, actor: Actor, *args, **kwargs
-    ) -> Dict[str, Any]:
+    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> Dict[str, Any]:
         last_label = ctx.last_label or actor.start_label
         return {
             "flow_label": [last_label[0]],
@@ -93,9 +87,7 @@ class RequestCollector(Collector):
         return []
 
     @validate_arguments
-    def collect_stats(
-        self, ctx: Context, actor: Actor, *args, **kwargs
-    ) -> Dict[str, Any]:
+    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> Dict[str, Any]:
         return {"user_request": [ctx.last_request or ""]}
 
 
@@ -109,9 +101,7 @@ class ResponseCollector(Collector):
         return []
 
     @validate_arguments
-    def collect_stats(
-        self, ctx: Context, actor: Actor, *args, **kwargs
-    ) -> Dict[str, Any]:
+    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> Dict[str, Any]:
         return {"bot_response": [ctx.last_response or ""]}
 
 
@@ -141,9 +131,7 @@ class ContextCollector(Collector):
         return self._parse_dates
 
     @validate_arguments
-    def collect_stats(
-        self, ctx: Context, actor: Actor, *args, **kwargs
-    ) -> Dict[str, Any]:
+    def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> Dict[str, Any]:
         misc_stats = dict()
         for key in self.column_dtypes:
             value = ctx.misc.get(key, None)

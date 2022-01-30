@@ -31,7 +31,7 @@ setuptools.setup(
         "dev": ["fastapi>=0.68.0", "uvicorn>=0.14.0", "streamlit>=1.1.0", "graphviz==0.17"],
         "all": ["fastapi>=0.68.0", "uvicorn>=0.14.0", "streamlit>=1.1.0", "graphviz==0.17"],
         "pg": ["psycopg2>=2.9.2", "SQLAlchemy==1.4.27"],
-        "clickhouse": ["infi.clickhouse-orm==2.1.1"]
+        "clickhouse": ["infi.clickhouse-orm==2.1.1"],
     },
     install_requires=["pandas>=1.3.1", "dff>=0.1a5", "tqdm==4.62.3", "pydantic>=1.8.2"],
 )

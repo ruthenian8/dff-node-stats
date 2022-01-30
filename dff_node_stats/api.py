@@ -8,6 +8,7 @@ from dff_node_stats.utils import requires_transform, requires_columns, transform
 
 RouteType = Callable[[FastAPI, Optional[pd.DataFrame]], FastAPI]
 
+
 def add_default_routes(app: FastAPI, df: pd.DataFrame) -> FastAPI:
     """
     Launch an API server for a given dataframe
@@ -44,11 +45,7 @@ def add_default_routes(app: FastAPI, df: pd.DataFrame) -> FastAPI:
     return app
 
 
-def api_run(
-    df: pd.DataFrame,
-    routes: Optional[RouteType]=None, 
-    port: int=8000
-) -> None:
+def api_run(df: pd.DataFrame, routes: Optional[RouteType] = None, port: int = 8000) -> None:
     app = FastAPI()
     app = add_default_routes(app) if not routes else routes(app)
     uvicorn.run(app, host="0.0.0.0", port=port)

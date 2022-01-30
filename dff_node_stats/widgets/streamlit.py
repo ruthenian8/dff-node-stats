@@ -9,10 +9,11 @@ from .widget import AbstractDasboard, FilterType
 
 
 class StreamlitDashboard(AbstractDasboard):
-    def __init__(self,
+    def __init__(
+        self,
         df: pd.DataFrame,
-        plots: Optional[List[vs.VisualizerType]]=None,
-        filters: Optional[List[FilterType]]=None
+        plots: Optional[List[vs.VisualizerType]] = None,
+        filters: Optional[List[FilterType]] = None,
     ) -> None:
         AbstractDasboard.__init__(self, df, plots, filters)
 
@@ -42,15 +43,14 @@ class StreamlitDashboard(AbstractDasboard):
                     """
                     Column {} for filter {}
                     not found in the dataframe
-                    """.format(_filter.colname, _filter.label)
-                )        
+                    """.format(
+                        _filter.colname, _filter.label
+                    )
+                )
             filters.append(
                 st.sidebar.selectbox(
                     _filter.label,
-                    options=(
-                        [_filter.default]
-                        + self._df_cache[_filter.colname].unique().tolist()
-                    ),
+                    options=([_filter.default] + self._df_cache[_filter.colname].unique().tolist()),
                 )
             )
         return tuple(filters)

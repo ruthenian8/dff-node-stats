@@ -27,20 +27,17 @@ default_filters = [
 ]
 
 
-class AbstractDasboard():
-    def __init__(self,
+class AbstractDasboard:
+    def __init__(
+        self,
         df: pd.DataFrame,
-        plots: Optional[List[vs.VisualizerType]]=None,
-        filters: Optional[List[FilterType]]=None
+        plots: Optional[List[vs.VisualizerType]] = None,
+        filters: Optional[List[FilterType]] = None,
     ) -> None:
-        self._filters: List[FilterType] = (
-            default_filters if filters is None else default_filters + filters
-        )
-        self._plots: List[vs.VisualizerType] = (
-            default_plots if plots is None else default_plots + plots
-        )
-        self._df_cache = df # original df used to construct the widget
-        self._df = df # current state
+        self._filters: List[FilterType] = default_filters if filters is None else default_filters + filters
+        self._plots: List[vs.VisualizerType] = default_plots if plots is None else default_plots + plots
+        self._df_cache = df  # original df used to construct the widget
+        self._df = df  # current state
 
     def plots(self):
         raise NotImplementedError

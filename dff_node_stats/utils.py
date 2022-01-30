@@ -15,6 +15,7 @@ def transform_once(func: TransformType):
     """
     Caches the transformations results by columns
     """
+
     @wraps(func)
     def wrapper(dataframe: pd.DataFrame):
         cols_as_string = ".".join(dataframe.columns)

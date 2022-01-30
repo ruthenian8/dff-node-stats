@@ -17,7 +17,7 @@ class Stats:
     def __init__(
         self,
         saver: Saver,
-        collectors: Optional[List[DSC.Collector]]=None,
+        collectors: Optional[List[DSC.Collector]] = None,
     ) -> None:
         col_default = [DSC.DefaultCollector()]
         collectors = col_default if collectors is None else col_default + collectors
@@ -37,23 +37,18 @@ class Stats:
         self.dfs: list = []
         self.start_time: Optional[datetime.datetime] = None
 
-    
     def __deepcopy__(self, *args, **kwargs):
         return copy(self)
 
     @cached_property
     def dataframe(self) -> pd.DataFrame:
-        return self.saver.load(
-            column_types=self.column_dtypes, parse_dates=self.parse_dates
-        )
+        return self.saver.load(column_types=self.column_dtypes, parse_dates=self.parse_dates)
 
     def add_df(self, stats: Dict[str, Any]) -> None:
         self.dfs += [pd.DataFrame(stats)]
 
     def save(self, *args, **kwargs):
-        self.saver.save(
-            self.dfs, column_types=self.column_dtypes, parse_dates=self.parse_dates
-        )
+        self.saver.save(self.dfs, column_types=self.column_dtypes, parse_dates=self.parse_dates)
         self.dfs.clear()
 
     @validate_arguments
@@ -61,9 +56,7 @@ class Stats:
         actor.handlers[stage] = actor.handlers.get(stage, []) + [handler]
         return actor
 
-    def update_actor_handlers(
-        self, actor: Actor, auto_save: bool = True, *args, **kwargs
-    ):
+    def update_actor_handlers(self, actor: Actor, auto_save: bool = True, *args, **kwargs):
         self._update_handlers(actor, ActorStage.CONTEXT_INIT, self.get_start_time)
         self._update_handlers(actor, ActorStage.FINISH_TURN, self.collect_stats)
         if auto_save:
@@ -78,7 +71,5 @@ class Stats:
     def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
         stats = dict()
         for collector in self.collectors:
-            stats.update(
-                collector.collect_stats(ctx, actor, start_time=self.start_time)
-            )
+            stats.update(collector.collect_stats(ctx, actor, start_time=self.start_time))
         self.add_df(stats=stats)

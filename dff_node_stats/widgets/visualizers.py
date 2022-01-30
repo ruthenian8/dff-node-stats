@@ -41,8 +41,8 @@ def colorize(target: Iterable):
 def show_table(df: pd.DataFrame) -> BaseFigure:
     fig = go.Figure(
         data=go.Table(
-            header=dict(values=list(df.columns), align='left'),
-            cells=dict(values=[df[col] for col in df.columns], align='left')
+            header=dict(values=list(df.columns), align="left"),
+            cells=dict(values=[df[col] for col in df.columns], align="left"),
         )
     )
     fig.update_layout(title="Data")
@@ -54,8 +54,8 @@ def show_duration_time(df: pd.DataFrame) -> BaseFigure:
     dt = df.describe().duration_time
     fig = go.Figure(
         data=go.Table(
-            header=dict(values=list(dt.keys()), align='left'),
-            cells=dict(values=list(dt.values), align='left')
+            header=dict(values=list(dt.keys()), align="left"),
+            cells=dict(values=list(dt.values), align="left"),
         )
     )
     fig.update_layout(title="Timings")
@@ -67,11 +67,7 @@ def show_node_counters(df: pd.DataFrame) -> BaseFigure:
     fig = go.Figure().update_layout(title="Node counters")
     for color, flow_label in colorize(df["flow_label"].unique()):
         subset = df.loc[df.flow_label == flow_label, "node_label"].value_counts()
-        fig.add_trace(
-            go.Bar(
-                x=subset.keys(), y=subset.values, name=flow_label, marker_color=color
-            )
-        )
+        fig.add_trace(go.Bar(x=subset.keys(), y=subset.values, name=flow_label, marker_color=color))
     return fig
 
 
@@ -80,18 +76,12 @@ def show_node_counters(df: pd.DataFrame) -> BaseFigure:
 def get_nodes_and_edges(df: pd.DataFrame):
     for context_id in df.context_id.unique():
         ctx_index = df.context_id == context_id
-        df.loc[ctx_index, "node"] = (
-            df.loc[ctx_index, "flow_label"] + ":" + df.loc[ctx_index, "node_label"]
-        )
+        df.loc[ctx_index, "node"] = df.loc[ctx_index, "flow_label"] + ":" + df.loc[ctx_index, "node_label"]
         df.loc[ctx_index, "edge"] = (
-            df.loc[ctx_index, "node"]
-            .shift(periods=1)
-            .combine(df.loc[ctx_index, "node"], lambda *x: list(x))
+            df.loc[ctx_index, "node"].shift(periods=1).combine(df.loc[ctx_index, "node"], lambda *x: list(x))
         )
         flow_label = df.loc[ctx_index, "flow_label"]
-        df.loc[ctx_index, "edge_type"] = flow_label.where(
-            flow_label.shift(periods=1) == flow_label, "MIXED"
-        )
+        df.loc[ctx_index, "edge_type"] = flow_label.where(flow_label.shift(periods=1) == flow_label, "MIXED")
     return df
 
 
@@ -99,9 +89,7 @@ def get_nodes_and_edges(df: pd.DataFrame):
 def show_transition_trace(df: pd.DataFrame) -> BaseFigure:
     df_trace = df[["history_id", "flow_label", "node"]]
     df_trace = df_trace.drop(columns=["flow_label"])
-    fig = px.density_heatmap(
-        df_trace, x="history_id", y="node", color_continuous_scale='YlGnBu'
-    )
+    fig = px.density_heatmap(df_trace, x="history_id", y="node", color_continuous_scale="YlGnBu")
     fig.update_layout(title="Transition Trace")
     return fig
 
@@ -152,9 +140,7 @@ def show_transition_counters(df: pd.DataFrame) -> BaseFigure:
     fig = go.Figure().update_layout(title="Transitions counters")
     for color, edge_type in colorize(df["edge_type"].unique()):
         subset = df.loc[df.edge_type == edge_type, "edge"].astype("str").value_counts()
-        fig.add_trace(
-            go.Bar(x=subset.keys(), y=subset.values, name=edge_type, marker_color=color)
-        )
+        fig.add_trace(go.Bar(x=subset.keys(), y=subset.values, name=edge_type, marker_color=color))
     return fig
 
 
