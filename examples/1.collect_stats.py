@@ -137,7 +137,7 @@ plot = {
 }
 
 stats = dff_node_stats.Stats(
-    saver=dff_node_stats.Saver("postgresql://root:qwerty@localhost:5432/test"), collectors=[DSC.NodeLabelCollector()]
+    saver=dff_node_stats.Saver("csv://examples/stats.csv"), collectors=[DSC.NodeLabelCollector()]
 )
 
 

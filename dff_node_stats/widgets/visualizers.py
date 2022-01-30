@@ -54,8 +54,7 @@ def show_duration_time(df: pd.DataFrame) -> BaseFigure:
     dt = df.describe().duration_time
     fig = go.Figure(
         data=go.Table(
-            header=dict(values=list(dt.keys()), align="left"),
-            cells=dict(values=list(dt.values), align="left"),
+            header=dict(values=list(dt.keys()), align="left"), cells=dict(values=list(dt.values), align="left")
         )
     )
     fig.update_layout(title="Timings")
