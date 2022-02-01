@@ -1,3 +1,11 @@
+"""
+Visualizers
+***********
+| This module implements visualizer functions and visualization utilities.
+| :py:const:`~dff_node_stats.widgets.visualizers.VisualizerType` is a prototype for both ready and custom visualizers.
+| Function :py:func:`~dff_node_stats.widgets.visualizers.colorize` is used to produce a color on each turn of an iterator.
+
+"""
 import random
 from typing import Callable, Iterable
 from base64 import b64encode
@@ -14,12 +22,18 @@ from dff_node_stats.utils import requires_transform, transform_once, requires_co
 
 
 VisualizerType = Callable[[pd.DataFrame], BaseFigure]
+"""
+| The prototype for visualizer functions: 
+| They are required to take a pandas dataframe and return a plotly graph.
+| It makes functions with this signature compatible with both Jupyter and Streamlit.
 
+"""
 
 def generate_random_colors():
     """
-    Retrieves colours from the standard Plotly palette.
-    Generates random colors on exhaustion.
+    | Retrieves colours from the standard Plotly palette.
+    | Generates random colors on exhaustion.
+
     """
     reserve = []
     for element in qualitative.Plotly:
@@ -32,13 +46,27 @@ def generate_random_colors():
 
 def colorize(target: Iterable):
     """
-    Produces a random color each iteration,
-    when paired with an iterator
+    Produces a random color each iteration when paired with an iterator
+
+    Example::
+
+        for color, x in colorize(y)
+
+    Parameters
+    ----------
+
+    target: Interable
+        The object to iterate over.
+
     """
     return zip(generate_random_colors(), target)
 
 
 def show_table(df: pd.DataFrame) -> BaseFigure:
+    """
+    Displays the dataframe.
+
+    """
     fig = go.Figure(
         data=go.Table(
             header=dict(values=list(df.columns), align="left"),
@@ -51,6 +79,10 @@ def show_table(df: pd.DataFrame) -> BaseFigure:
 
 @requires_columns(["duration_time"])
 def show_duration_time(df: pd.DataFrame) -> BaseFigure:
+    """
+    Displays the node timings.
+
+    """
     dt = df.describe().duration_time
     fig = go.Figure(
         data=go.Table(
@@ -63,6 +95,10 @@ def show_duration_time(df: pd.DataFrame) -> BaseFigure:
 
 @requires_columns(["flow_label", "node_label"])
 def show_node_counters(df: pd.DataFrame) -> BaseFigure:
+    """
+    Displays the node counters.
+
+    """
     fig = go.Figure().update_layout(title="Node counters")
     for color, flow_label in colorize(df["flow_label"].unique()):
         subset = df.loc[df.flow_label == flow_label, "node_label"].value_counts()
@@ -73,6 +109,10 @@ def show_node_counters(df: pd.DataFrame) -> BaseFigure:
 @requires_columns(["flow_label", "node_label"])
 @transform_once
 def get_nodes_and_edges(df: pd.DataFrame):
+    """
+    Transform function that adds info about nodes and edges to the dataframe
+
+    """
     for context_id in df.context_id.unique():
         ctx_index = df.context_id == context_id
         df.loc[ctx_index, "node"] = df.loc[ctx_index, "flow_label"] + ":" + df.loc[ctx_index, "node_label"]
@@ -86,6 +126,10 @@ def get_nodes_and_edges(df: pd.DataFrame):
 
 @requires_transform(get_nodes_and_edges)
 def show_transition_trace(df: pd.DataFrame) -> BaseFigure:
+    """
+    Displays information about node traversal in the form of a heatmap.
+
+    """
     df_trace = df[["history_id", "flow_label", "node"]]
     df_trace = df_trace.drop(columns=["flow_label"])
     fig = px.density_heatmap(df_trace, x="history_id", y="node", color_continuous_scale="YlGnBu")
@@ -93,16 +137,19 @@ def show_transition_trace(df: pd.DataFrame) -> BaseFigure:
     return fig
 
 
-# TODO
 @requires_transform(get_nodes_and_edges)
 def show_transition_graph(df: pd.DataFrame) -> BaseFigure:
+    """
+    Displays the graph of node traversal.
 
+    """
     node_counter = df.node.value_counts()
     edge_counter = df.edge.value_counts()
     node2code = {key: f"n{index}" for index, key in enumerate(df.node.unique())}
 
     graph = graphviz.Digraph()
     graph.attr(compound="true")
+
     for color, (i, flow_label) in colorize(enumerate(df["flow_label"].unique())):
         with graph.subgraph(name=f"cluster{i}") as sub_graph:
             sub_graph.attr(style="filled", color=color.lower())
@@ -124,6 +171,7 @@ def show_transition_graph(df: pd.DataFrame) -> BaseFigure:
         if isinstance(in_node, str):
             label = f"(probs={counter/node_counter[in_node]:.2f})"
             graph.edge(node2code[in_node], node2code[out_node], label=label)
+
     _bytes = graph.pipe(format="png")
     prefix = "data:image/png;base64,"
     with BytesIO(_bytes) as stream:
@@ -136,15 +184,26 @@ def show_transition_graph(df: pd.DataFrame) -> BaseFigure:
 
 @requires_transform(get_nodes_and_edges)
 def show_transition_counters(df: pd.DataFrame) -> BaseFigure:
+    """
+    Displays the counts of node transitions.
+
+    """    
     fig = go.Figure().update_layout(title="Transitions counters")
+
     for color, edge_type in colorize(df["edge_type"].unique()):
+        
         subset = df.loc[df.edge_type == edge_type, "edge"].astype("str").value_counts()
+        
         fig.add_trace(go.Bar(x=subset.keys(), y=subset.values, name=edge_type, marker_color=color))
     return fig
 
 
 @requires_transform(get_nodes_and_edges)
 def show_transition_duration(df: pd.DataFrame) -> BaseFigure:
+    """
+    Displays the duration of node transitions.
+
+    """
     fig = go.Figure().update_layout(title="Transitions duration [sec]")
     edge_time = df[["edge", "edge_type", "duration_time"]]
     edge_time = edge_time.astype({"edge": "str"})
@@ -152,7 +211,9 @@ def show_transition_duration(df: pd.DataFrame) -> BaseFigure:
     edge_time.index = edge_time.edge
 
     for color, edge_type in colorize(df["edge_type"].unique()):
+
         subset = edge_time.loc[edge_time["edge_type"] == edge_type, "duration_time"]
+        
         fig.add_trace(
             go.Bar(
                 x=subset.keys(),

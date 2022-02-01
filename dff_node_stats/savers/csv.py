@@ -1,3 +1,11 @@
+"""
+CSV
+---------------------------
+Provides the CSV version of the :py:class:`~dff_node_stats.savers.saver.Saver`. 
+You don't need to interact with this class manually, as it will be automatically 
+initialized when you construct a :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+
+"""
 from typing import List, Optional, Union, Dict
 import pathlib
 
@@ -5,7 +13,22 @@ import pandas as pd
 
 
 class CsvSaver:
-    """Class to save stats to a csv file"""
+    """
+    Saves and reads the stats dataframe from a csv file.
+    You don't need to interact with this class manually, as it will be automatically 
+    initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+    
+    Parameters
+    ----------
+
+    path: str
+        | The construction path. 
+        | The part after :// should contain a path to the file that pandas will be able to recognize.
+        
+        >>> CsvSaver("csv://foo/bar.csv")
+    table: str
+        Does not affect the class. Added for constructor uniformity.
+    """
 
     def __init__(self, path: str, table: str = "dff_stats") -> None:
         path = path.partition("://")[2]

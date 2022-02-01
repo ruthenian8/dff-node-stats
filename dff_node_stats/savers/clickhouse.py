@@ -1,3 +1,11 @@
+"""
+Clickhouse
+---------------------------
+Provides the Clickhouse version of the :py:class:`~dff_node_stats.savers.saver.Saver`. 
+You don't need to interact with this class manually, as it will be automatically 
+imported and initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+
+"""
 from typing import List, Optional, Union, Dict
 
 from infi.clickhouse_orm.database import Database
@@ -8,7 +16,22 @@ import pandas as pd
 
 
 class ClickHouseSaver:
-    """Class to save data to Clickhouse database"""
+    """
+    Saves and reads the stats dataframe from a csv file.
+    You don't need to interact with this class manually, as it will be automatically 
+    initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+    
+    Parameters
+    ----------
+
+    path: str
+        | The construction path. 
+        | It should match the sqlalchemy :py:class:`~sqlalchemy.engine.Engine` initialization string.
+        
+        >>> ClickHouseSaver("clickhouse://user:password@localhost:8000/default")
+    table: str
+        Sets the name of the db table to use. Defaults to "dff_stats".
+    """
 
     def __init__(self, path: str, table: str = "dff_stats") -> None:
         self.path = path

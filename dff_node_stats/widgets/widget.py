@@ -1,10 +1,20 @@
+"""
+Widget
+**********
+| This module provides utilities for visualizing dff statistics.
+| :py:class:`~dff_node_stats.widgets.widget.AbstractDasboard` is the protocol class that is implemented by concrete dashboards.
+| :py:class:`~dff_node_stats.widgets.widget.FilterType` standardizes custom filters.
+| :py:const:`~dff_node_stats.widgets.widget.default_plots` are the default plots for the dashboard.
+| :py:const:`~dff_node_stats.widgets.widget.default_filters` is a list of default filters.
+
+"""
 from typing import Any, Callable, List, Optional, NamedTuple
 
 import pandas as pd
 
 from . import visualizers as vs
 
-default_plots = [
+default_plots: List[vs.VisualizerType] = [
     vs.show_table,
     vs.show_duration_time,
     vs.show_transition_graph,
@@ -16,18 +26,47 @@ default_plots = [
 
 
 class FilterType(NamedTuple):
+    """
+    Instances of :py:class:`~dff_node_stats.widgets.widget.FilterType` can be passed to
+    a dashboard on construction to add custom filters.
+
+    Attributes:
+        label: The label that will be displayed near the filter.
+        
+        colname: The name of the column to apply the rule to.
+
+        comparison_func:  A boolean function that will be used to compare the entered values to column values. In most cases lambda x, y: x == y is sufficient.
+
+        default: The default value that will be displayed in the filter.
+
+    """
     label: str
     colname: str
     comparison_func: Callable[[Any, Any], bool]
     default: str = "None"
 
 
-default_filters = [
+default_filters: List[FilterType] = [
     FilterType("Choose context_id", "context_id", lambda x, y: x == y, "None"),
 ]
 
 
-class AbstractDasboard:
+class AbstractDashboard:
+    """
+    An abstract class that other dashboards inherit from.
+
+    Parameters
+    ----------
+
+    df: pd.DataFrame
+        The dataframe containing stats data to display.
+    plots: Optional[List[vs.VisualizerType]]
+        An optional list of user-defined visualizers. It will be used to add new plots.
+    filters: Optional[List[Callable]]
+        An optional list of :py:class:`~dff_node_stats.widgets.widget.FilterType` instances that will be used
+        to construct additional fiters. 
+    """
+
     def __init__(
         self,
         df: pd.DataFrame,

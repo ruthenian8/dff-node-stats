@@ -1,13 +1,29 @@
+"""
+Collectors
+**********
+| This module provides the basic (:py:class:`~dff_node_stats.collectors.Collector`) class,
+| as well as a set of ready collectors that can be used out of the box.
+| Collectors are passed to the (:py:class:`~dff_node_stats.stats.Stats`) class on construction.
+| Their method collect_stats is invoked each turn of the (:py:class:`~df_engine.core.actor.Actor`)
+| to extract and save (:py:class:`~df_engine.core.context.Context`) parameters.
+
+"""
 from typing import List, Dict, Protocol, runtime_checkable, Any
 import datetime
 
 from pydantic import validate_arguments
-from dff.core import Context, Actor
+from df_engine.core import Context, Actor
 import pandas as pd
 
 
 @runtime_checkable
 class Collector(Protocol):
+    """
+    | Base protocol class that defines the required methods for a collector object.
+    | User-defined collectors do not have to inherit from this class, but implementing all methods is obligatory.
+    
+    """
+
     @property
     def column_dtypes(self) -> Dict[str, str]:
         """
@@ -107,7 +123,9 @@ class ResponseCollector(Collector):
 
 class ContextCollector(Collector):
     """
-    :param column_dtypes: names and pd types of columns
+    Parameters
+    ----------
+    :param column_dtypes: names and pandas types of columns
     :param parse_dates: names of columns with datetime
     The user needs to provide a datatype for each
     key that must be extracted from the ctx.misc

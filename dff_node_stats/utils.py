@@ -1,3 +1,12 @@
+"""
+Utils
+**********
+Utilities for processing statistics inside the module.
+
+#. :py:const:`TransformType <dff_node_stats.utils.TransformType>` defines the signature that the user-created transform functions should comply with.
+#. py:const:`DffStatsException <dff_node_stats.utils.DffStatsException>` should be raised in module-specific error conditions.
+
+"""
 from functools import partial, wraps
 from typing import List, Callable
 
@@ -5,17 +14,28 @@ import pandas as pd
 
 
 TransformType = Callable[[pd.DataFrame], pd.DataFrame]
+"""
+| The prototype for transform functions: 
+| They are required to take and return a pandas dataframe.
+
+"""
 
 
 class DffStatsException(Exception):
+    """Exception to raise for module-specific errors."""
     pass
 
 
 def transform_once(func: TransformType):
     """
     Caches the transformations results by columns
-    """
 
+    Parameters
+    ----------
+
+    func: :py:const:`~dff_node_stats.utils.TransformType`
+        A function that transforms the target pandas dataframe.
+    """
     @wraps(func)
     def wrapper(dataframe: pd.DataFrame):
         cols_as_string = ".".join(dataframe.columns)
@@ -31,10 +51,16 @@ def transform_once(func: TransformType):
 
 def check_transform(transform: TransformType, exctype: type):
     """
-    Applies a specified transform operation to the dataset
-    before the decorated function is executed
-    """
+    Applies a specified transform operation to the dataset before the decorated function is executed.
 
+    Parameters
+    ----------
+
+    func: :py:const:`~dff_node_stats.utils.TransformType`
+        A transformation function to apply in advance.
+    exctype: type
+        An exception to raise in case an error occurs.
+    """
     def check_func(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -54,9 +80,16 @@ def check_transform(transform: TransformType, exctype: type):
 def check_columns(cols: List[str], exctype: type):
     """
     Raises an error, if the columns needed for a transformation
-    or for a plotting operation are missing.
-    """
+    or for making a plot are missing.
 
+    Parameters
+    ----------
+
+    cols: list
+        A list of columns, that are used in the decorated function.
+    exctype: type
+        An exception class to raise in case an error occurs.
+    """
     def check_func(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):

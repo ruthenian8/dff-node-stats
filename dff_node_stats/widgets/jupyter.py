@@ -1,3 +1,9 @@
+"""
+Jupyter
+---------------------------
+Provides the Jupyter version of the :py:class:`~dff_node_stats.widgets.widget.AbstractDashboard` . 
+
+"""
 from typing import List, Optional
 from functools import partial
 
@@ -6,10 +12,15 @@ import pandas as pd
 from ipywidgets import widgets
 
 from . import visualizers as vs
-from .widget import AbstractDasboard, FilterType
+from .widget import AbstractDashboard, FilterType
 
 
-class WidgetDashboard(AbstractDasboard, widgets.VBox):
+class WidgetDashboard(AbstractDashboard, widgets.VBox):
+    """
+    | Jupyter-specific implementation of the :py:class:`~dff_node_stats.widgets.widget.AbstractDashboard` class.
+    | Inherits the construction parameters.
+
+    """
     def __init__(
         self,
         df: pd.DataFrame,
@@ -17,7 +28,7 @@ class WidgetDashboard(AbstractDasboard, widgets.VBox):
         filters: Optional[List[FilterType]] = None,
     ) -> None:
         widgets.VBox.__init__(self)
-        AbstractDasboard.__init__(self, df, plots, filters)
+        AbstractDashboard.__init__(self, df, plots, filters)
         self._controls = self._construct_controls()
 
     @property

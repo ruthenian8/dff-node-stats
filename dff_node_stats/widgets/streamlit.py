@@ -1,3 +1,9 @@
+"""
+Streamlit
+---------------------------
+Provides the Streamlit version of the :py:class:`~dff_node_stats.widgets.widget.AbstractDashboard` . 
+
+"""
 from typing import List, Optional
 from functools import partial
 
@@ -5,17 +11,22 @@ import pandas as pd
 import streamlit as st
 
 from . import visualizers as vs
-from .widget import AbstractDasboard, FilterType
+from .widget import AbstractDashboard, FilterType
 
 
-class StreamlitDashboard(AbstractDasboard):
+class StreamlitDashboard(AbstractDashboard):
+    """
+    | Streamlit-specific implementation of the :py:class:`~dff_node_stats.widgets.widget.AbstractDashboard` class.
+    | Inherits the construction parameters.
+
+    """
     def __init__(
         self,
         df: pd.DataFrame,
         plots: Optional[List[vs.VisualizerType]] = None,
         filters: Optional[List[FilterType]] = None,
     ) -> None:
-        AbstractDasboard.__init__(self, df, plots, filters)
+        super().__init__(self, df, plots, filters)
 
     @st.cache(allow_output_mutation=True)
     def _slice(self, df_origin: pd.DataFrame, *args):
