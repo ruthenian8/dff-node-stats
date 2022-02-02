@@ -29,6 +29,7 @@ VisualizerType = Callable[[pd.DataFrame], BaseFigure]
 
 """
 
+
 def generate_random_colors():
     """
     | Retrieves colours from the standard Plotly palette.
@@ -187,13 +188,13 @@ def show_transition_counters(df: pd.DataFrame) -> BaseFigure:
     """
     Displays the counts of node transitions.
 
-    """    
+    """
     fig = go.Figure().update_layout(title="Transitions counters")
 
     for color, edge_type in colorize(df["edge_type"].unique()):
-        
+
         subset = df.loc[df.edge_type == edge_type, "edge"].astype("str").value_counts()
-        
+
         fig.add_trace(go.Bar(x=subset.keys(), y=subset.values, name=edge_type, marker_color=color))
     return fig
 
@@ -213,7 +214,7 @@ def show_transition_duration(df: pd.DataFrame) -> BaseFigure:
     for color, edge_type in colorize(df["edge_type"].unique()):
 
         subset = edge_time.loc[edge_time["edge_type"] == edge_type, "duration_time"]
-        
+
         fig.add_trace(
             go.Bar(
                 x=subset.keys(),

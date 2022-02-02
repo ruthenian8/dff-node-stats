@@ -38,8 +38,8 @@ class Stats:
     saver: :py:class:`~dff_node_stats.savers.Saver`
         An instance of the Saver class that is used to save the collected data in the desired storage.
     collectors: Optional[List[:py:class:`~dff_node_stats.collectors.Collector`]]
-        Instances of the :py:class:`~dff_node_stats.collectors.Collector` class. 
-        Their method :py:meth:`~dff_node_stats.collectors.Collector.collect_stats` 
+        Instances of the :py:class:`~dff_node_stats.collectors.Collector` class.
+        Their method :py:meth:`~dff_node_stats.collectors.Collector.collect_stats`
         is invoked each turn of the :py:class:`~df_engine.core.actor.Actor` to save the desired information.
 
     """

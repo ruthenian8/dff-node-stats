@@ -93,7 +93,7 @@ class Saver(Protocol):
         parse_dates: Union[List[str], bool] = False,
     ) -> None:
         """
-        Save the data to a database or a file. 
+        Save the data to a database or a file.
         Append if the table already exists.
 
         Parameters
@@ -117,7 +117,7 @@ class Saver(Protocol):
         ----------
 
         column_types: Optional[Dict[str, str]] = None
-        parse_dates: Union[List[str], bool] = False        
+        parse_dates: Union[List[str], bool] = False
         """
         raise NotImplementedError
 

@@ -21,7 +21,7 @@ class Collector(Protocol):
     """
     | Base protocol class that defines the required methods for a collector object.
     | User-defined collectors do not have to inherit from this class, but implementing all methods is obligatory.
-    
+
     """
 
     @property

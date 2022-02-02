@@ -25,7 +25,7 @@ RouteType = Callable[[FastAPI, Optional[pd.DataFrame]], FastAPI]
 def add_default_routes(app: FastAPI, df: pd.DataFrame) -> FastAPI:
     """
     | Add a standard set of routes to the FastAPI object, using the provided dataframe
-    
+
     Parameters
     ----------
 
@@ -34,6 +34,7 @@ def add_default_routes(app: FastAPI, df: pd.DataFrame) -> FastAPI:
     df: :py:class:`~pandas.DataFrame`
         The dataframe to retrieve data from.
     """
+
     @transform_once
     @requires_columns(["flow_label", "node_label"])
     def transitions(df: pd.DataFrame) -> pd.DataFrame:
@@ -68,14 +69,14 @@ def add_default_routes(app: FastAPI, df: pd.DataFrame) -> FastAPI:
 def api_run(df: pd.DataFrame, routes: Optional[RouteType] = None, port: int = 8000) -> None:
     """
     | Run a FastAPI server with a user-provided dataframe
-    
+
     Parameters
     ----------
 
     df: :py:class:`~pandas.DataFrame`
         The dataframe to retrieve data from.
     routes: :py:const:`RouteType <dff_node_stats.api.RouteType>`
-        Optional function that attaches the user-defined endpoints to the API, 
+        Optional function that attaches the user-defined endpoints to the API,
         overriding the default ones.
     port: int
         The port the API will listen to.

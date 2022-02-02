@@ -32,8 +32,4 @@ def test_saver_registry():
 
     assert issubclass(MongoSaver, Saver)
 
-    mongo_saver = Saver("mongo://mongoaddress")
-
-    assert isinstance(mongo_saver, Saver)
-    assert isinstance(mongo_saver, MongoSaver)
-    assert mongo_saver.path == "mongo://mongoaddress"
+    assert Saver._saver_mapping.get("mongo") == "MongoSaver"

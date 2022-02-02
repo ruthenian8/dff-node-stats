@@ -21,6 +21,7 @@ class WidgetDashboard(AbstractDashboard, widgets.VBox):
     | Inherits the construction parameters.
 
     """
+
     def __init__(
         self,
         df: pd.DataFrame,

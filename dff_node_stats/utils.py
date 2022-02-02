@@ -23,6 +23,7 @@ TransformType = Callable[[pd.DataFrame], pd.DataFrame]
 
 class DffStatsException(Exception):
     """Exception to raise for module-specific errors."""
+
     pass
 
 
@@ -36,6 +37,7 @@ def transform_once(func: TransformType):
     func: :py:const:`~dff_node_stats.utils.TransformType`
         A function that transforms the target pandas dataframe.
     """
+
     @wraps(func)
     def wrapper(dataframe: pd.DataFrame):
         cols_as_string = ".".join(dataframe.columns)
@@ -61,6 +63,7 @@ def check_transform(transform: TransformType, exctype: type):
     exctype: type
         An exception to raise in case an error occurs.
     """
+
     def check_func(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -90,6 +93,7 @@ def check_columns(cols: List[str], exctype: type):
     exctype: type
         An exception class to raise in case an error occurs.
     """
+
     def check_func(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):

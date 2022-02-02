@@ -32,7 +32,7 @@ class FilterType(NamedTuple):
 
     Attributes:
         label: The label that will be displayed near the filter.
-        
+
         colname: The name of the column to apply the rule to.
 
         comparison_func:  A boolean function that will be used to compare the entered values to column values. In most cases lambda x, y: x == y is sufficient.
@@ -40,6 +40,7 @@ class FilterType(NamedTuple):
         default: The default value that will be displayed in the filter.
 
     """
+
     label: str
     colname: str
     comparison_func: Callable[[Any, Any], bool]
@@ -60,11 +61,11 @@ class AbstractDashboard:
 
     df: pd.DataFrame
         The dataframe containing stats data to display.
-    plots: Optional[List[vs.VisualizerType]]
+    plots: Optional[List[Callable]]
         An optional list of user-defined visualizers. It will be used to add new plots.
-    filters: Optional[List[Callable]]
+    filters: Optional[List[FilterType]]
         An optional list of :py:class:`~dff_node_stats.widgets.widget.FilterType` instances that will be used
-        to construct additional fiters. 
+        to construct additional fiters.
     """
 
     def __init__(

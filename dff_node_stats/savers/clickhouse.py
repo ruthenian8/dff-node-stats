@@ -18,16 +18,16 @@ import pandas as pd
 class ClickHouseSaver:
     """
     Saves and reads the stats dataframe from a csv file.
-    You don't need to interact with this class manually, as it will be automatically 
+    You don't need to interact with this class manually, as it will be automatically
     initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
-    
+
     Parameters
     ----------
 
     path: str
-        | The construction path. 
+        | The construction path.
         | It should match the sqlalchemy :py:class:`~sqlalchemy.engine.Engine` initialization string.
-        
+
         >>> ClickHouseSaver("clickhouse://user:password@localhost:8000/default")
     table: str
         Sets the name of the db table to use. Defaults to "dff_stats".

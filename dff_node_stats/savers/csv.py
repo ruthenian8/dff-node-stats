@@ -15,16 +15,16 @@ import pandas as pd
 class CsvSaver:
     """
     Saves and reads the stats dataframe from a csv file.
-    You don't need to interact with this class manually, as it will be automatically 
+    You don't need to interact with this class manually, as it will be automatically
     initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
-    
+
     Parameters
     ----------
 
     path: str
-        | The construction path. 
+        | The construction path.
         | The part after :// should contain a path to the file that pandas will be able to recognize.
-        
+
         >>> CsvSaver("csv://foo/bar.csv")
     table: str
         Does not affect the class. Added for constructor uniformity.
