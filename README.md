@@ -37,7 +37,7 @@ stats = Stats(
 )
 # As an alternative, you can use a database. Currently, Clickhouse and Postgreql are supported
 stats = Stats(
-    saver=Saver("postgres://user:password@localhost:5432/default")
+    saver=Saver("postgresql://user:password@localhost:5432/default")
 )
 
 # You can optionally add predefined Collectors to gather additional data

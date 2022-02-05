@@ -18,7 +18,6 @@ default_plots: List[vs.VisualizerType] = [
     vs.show_table,
     vs.show_duration_time,
     vs.show_transition_graph,
-    vs.show_transition_trace,
     vs.show_node_counters,
     vs.show_transition_counters,
     vs.show_transition_duration,

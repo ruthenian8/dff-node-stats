@@ -8,6 +8,7 @@ initialized when you construct a :py:class:`~dff_node_stats.savers.saver.Saver` 
 """
 from typing import List, Optional, Union, Dict
 import pathlib
+import os
 
 import pandas as pd
 
@@ -41,12 +42,10 @@ class CsvSaver:
         parse_dates: Union[List[str], bool] = False,
     ) -> None:
 
-        for key in parse_dates:
-            if key in column_types:
-                column_types.pop(key)
-        saved_df = (
-            self.load(column_types=column_types, parse_dates=parse_dates) if self.path.exists() else pd.DataFrame()
-        )
+        if self.path.exists() and os.path.getsize(self.path) > 0:
+            saved_df = self.load(column_types=column_types, parse_dates=parse_dates)
+        else:
+            saved_df = pd.DataFrame()
         pd.concat([saved_df] + dfs).to_csv(self.path, index=False)
 
     def load(
@@ -55,7 +54,7 @@ class CsvSaver:
         parse_dates: Union[List[str], bool] = False,
     ) -> pd.DataFrame:
         if parse_dates and column_types:
-            true_types = {k: v for k, v in column_types.items() if k in (column_types.keys() ^ set(parse_dates))}
+            true_types = {k: v for k, v in column_types.items() if k in (column_types.keys() - set(parse_dates))}
         return pd.read_csv(
             self.path,
             usecols=column_types.keys(),

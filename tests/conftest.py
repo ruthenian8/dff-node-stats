@@ -1,52 +1,60 @@
-import os
-import dff_node_stats
+import sys
+from typing import Callable
 
 import pytest
-from sqlalchemy import create_engine
+from dff_node_stats import Saver, Stats
+from dff_node_stats import collectors as DSC
 
 from . import config
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def data_generator():
-    from .examples.1.collect_stats import main
+    sys.path.insert(0, '../')
+    main: Callable
+    from examples.collect_stats import main
     yield main
 
 
 @pytest.fixture(scope="session")
-def test_file(tmpdir_factory):
+def testing_file(tmpdir_factory):
     fn = tmpdir_factory.mktemp("data").join("stats.csv")
     return str(fn)
 
 
 @pytest.fixture(scope='session')
-def test_saver(test_file):
-    yield dff_node_stats.Saver("csv://{}".format(test_file))
+def testing_saver(testing_file):
+    yield Saver("csv://{}".format(testing_file))
+
+
+@pytest.fixture(scope='session')
+def testing_dataframe(data_generator, testing_saver):
+    stats = Stats(
+        saver=testing_saver,
+        collectors=[DSC.NodeLabelCollector()]
+    )
+    stats_object: Stats = data_generator(stats, 3)
+    stats_object.save()
+    yield stats_object.dataframe
 
 
 @pytest.fixture(scope="session")
-def PG_connection(scope='session'):
-    engine = create_engine("postgresql://{}:{}@{}:{}/{}".format(
+def PG_uri_string():
+    return "postgresql://{}:{}@{}:{}/{}".format(
         config.PG_USERNAME,
         config.PG_PASSWORD,
         config.HOST,
         config.PG_PORT,
         config.DATABASE
-    ))
-    connection = engine.connect()
-    yield connection
-    connection.close()
+    )
 
 
 @pytest.fixture(scope="session")
-def CH_connection():
-    engine = create_engine("clickhouse://{}:{}@{}:{}/{}".format(
+def CH_uri_string():
+    return "clickhouse://{}:{}@{}:{}/{}".format(
         config.CH_USERNAME,
         config.CH_PASSWORD,
         config.HOST,
         config.CH_PORT,
         config.DATABASE
-    ))
-    connection = engine.connect()
-    yield connection
-    connection.close()
+    )

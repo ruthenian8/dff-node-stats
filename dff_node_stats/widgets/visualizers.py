@@ -25,7 +25,10 @@ VisualizerType = Callable[[pd.DataFrame], BaseFigure]
 """
 | The prototype for visualizer functions: 
 | They are required to take a pandas dataframe and return a plotly graph.
-| It makes functions with this signature compatible with both Jupyter and Streamlit.
+| It makes functions of this kind compatible with both Jupyter and Streamlit.
+
+As long as you follow this signature, any visualizer you define on your own
+should be successfully visualized.
 
 """
 

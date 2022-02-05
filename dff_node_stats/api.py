@@ -35,9 +35,9 @@ def add_default_routes(app: FastAPI, df: pd.DataFrame) -> FastAPI:
         The dataframe to retrieve data from.
     """
 
-    @transform_once
     @requires_columns(["flow_label", "node_label"])
     def transitions(df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
         df["node"] = df.apply(lambda row: f"{row.flow_label}:{row.node_label}", axis=1)
         df = df.drop(["flow_label", "node_label"], axis=1)
         df = df.sort_values(["context_id"], kind="stable")
@@ -57,7 +57,7 @@ def add_default_routes(app: FastAPI, df: pd.DataFrame) -> FastAPI:
     @requires_transform(transitions)
     def transition_probs(df) -> Dict[str, float]:
         tc = {k: int(v) for k, v in dict(df).items()}
-        return {k: v / sum(tc.values, 0) for k, v in tc.items()}
+        return {k: v / sum(tc.values(), 0) for k, v in tc.items()}
 
     @app.get("/api/v1/stats/transition-probs", response_model=Dict[str, float])
     async def get_transition_probs():
@@ -82,5 +82,5 @@ def api_run(df: pd.DataFrame, routes: Optional[RouteType] = None, port: int = 80
         The port the API will listen to.
     """
     app = FastAPI()
-    app = add_default_routes(app) if not routes else routes(app)
+    app = add_default_routes(app, df) if not routes else routes(app, df)
     uvicorn.run(app, host="0.0.0.0", port=port)

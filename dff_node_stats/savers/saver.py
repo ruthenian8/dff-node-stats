@@ -2,31 +2,35 @@
 Saver
 ******
 Provides the base class :py:class:`~dff_node_stats.savers.saver.Saver`. 
-It is a protocol class that defines methods for saving and loading dataframes.
+It is an interface class that defines methods for saving and loading dataframes.
 On the other hand, it is also used to automatically construct the child classes 
 depending on the input parameters. See the class documentation for more info.
 
 """
-from typing import Dict, List, Union, Optional, Protocol, runtime_checkable
+from typing import Dict, List, Union, Optional
 import pathlib
 import importlib
 
 import pandas as pd
 
 
-@runtime_checkable
-class Saver(Protocol):
+class Saver():
     """
-    As a protocol, :py:class:`~dff_node_stats.savers.saver.Saver` defines two methods:
+    :py:class:`~dff_node_stats.savers.saver.Saver` interface requires two methods to be impemented:
 
     #. :py:meth:`~dff_node_stats.savers.saver.Saver.save`
     #. :py:meth:`~dff_node_stats.savers.saver.Saver.load`
 
-    | Both of them should be overridden for an object to be considered a Saver instance.
-    | Feel free to create your own Savers. They don't need to inherit from the class directly.
-    |
     | A call to Saver is needed to instantiate one of the predefined child classes.
     | The subclass is chosen depending on the `path` parameter value (see Parameters).
+
+    | Your own Saver can be implemented by following the current structure: 
+    | You can add this class to a separate module in this directory and then register it at runtime
+    | by subclassing the Saver class, passing the module name as the `storage_type` parameter::
+
+        MongoSaver(Saver, storage_type="mongo")
+
+    | As a result, the Saver class will look for `MongoSaver` implementation in `mongo.py` 
 
     Parameters
     ----------
@@ -43,20 +47,19 @@ class Saver(Protocol):
     """
 
     _saver_mapping = {}
-    _path = None
-
+    
     def __init_subclass__(cls, storage_type: str, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         cls._saver_mapping[storage_type] = cls.__name__
 
     def __new__(cls, path: Optional[str] = None, table: str = "dff_stats"):
-        if not path and not cls._path:
+        if not path:
             raise ValueError(
                 """
             Saver should be initialized with a string
             """
             )
-        cls._path = path = path or cls._path  # need this workaround cause pydantic constantly calls __new__
+        
         storage_and_path = path.partition("://")
         if not all(storage_and_path):
             raise ValueError(

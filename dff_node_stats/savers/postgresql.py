@@ -7,6 +7,7 @@ imported and initialized when you construct :py:class:`~dff_node_stats.savers.sa
 
 """
 from typing import List, Optional, Union, Dict
+from numpy import sort
 
 import pandas as pd
 from sqlalchemy import create_engine, inspect
@@ -45,20 +46,24 @@ class PostgresSaver:
         parse_dates: Union[List[str], bool] = False,
     ) -> None:
 
-        # recreate table if the schema was altered
         df = pd.concat(dfs)
-        if inspect(self.engine).has_table(self.table):
-            metadata = MetaData()
-            ExistingModel = Table(self.table, metadata, autoload_with=self.engine)
-            # if current schema contains new columns, drop the table to recreate it later
-            existing_columns = set(ExistingModel.columns)
-            if not len(column_types.keys() & existing_columns) == len(existing_columns):
-                dates_to_parse = list(set(parse_dates) & existing_columns)
-                existing_df = self.load(parse_dates=dates_to_parse)
-                df = pd.concat([existing_df, df], axis=0)
-                ExistingModel.drop(bind=self.engine)
+        
+        if not inspect(self.engine).has_table(self.table):
+            df.to_sql(name=self.table, con=self.engine, if_exists="append")
+        
+        metadata = MetaData()
+        ExistingModel = Table(self.table, metadata, autoload_with=self.engine)
+        existing_columns = set(ExistingModel.columns)
 
-        df.to_sql(name=self.table, con=self.engine, if_exists="append")
+        if bool(column_types.keys() ^ existing_columns):  # recreate table if the schema was altered
+            dates_to_parse = list(set(parse_dates) & existing_columns) # make sure we do not parse non-existent cols
+            existing_df = self.load(parse_dates=dates_to_parse)
+
+            shallow_df, wider_df = sorted([df, existing_df], key=lambda x: len(x.columns))
+            df = wider_df.append(shallow_df)
+
+        df.to_sql(name=self.table, con=self.engine, if_exists="replace")
+        
 
     def load(
         self,
