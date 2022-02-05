@@ -47,7 +47,6 @@ if "sqlalchemy" in sys.modules:
         connection.close()        
 
 
-@pytest.mark.xfail
 @pytest.mark.skipif(
     "sqlalchemy" not in sys.modules,
     reason="Postgres extra not installed"
@@ -59,28 +58,28 @@ def test_PG_saving(PG_connection, PG_uri_string, data_generator):
         saver=Saver(PG_uri_string)
     )
     stats_object = data_generator(stats, 3)
+    initial_cols = set(stats_object.dfs[0].columns)
     stats_object.save()
     result = PG_connection.execute("SELECT COUNT(*) FROM dff_stats")
     first = result.first()
     assert int(first[0]) > 0
     df = stats_object.dataframe
-    assert (df.columns == stats.dfs[0].columns)
+    assert (set(df.columns) == initial_cols)
 
 
-@pytest.mark.xfail
 @pytest.mark.skipif(
-    "infi" not in sys.modules,
+    ("infi" not in sys.modules or "sqlalchemy" not in sys.modules),
     reason="Clickhouse extra not installed"
 )
 def test_CH_saving(CH_connection, CH_uri_string, data_generator):
-    if sqlalchemy.inspect(CH_connection.engine).has_table('dff_stats'):
-        CH_connection.execute("TRUNCATE TABLE dff_stats")
     stats = Stats(
         saver=Saver(CH_uri_string)
     )
     stats_object = data_generator(stats, 3)
+    initial_cols = set(stats_object.dfs[0].columns)
     stats_object.save()
     result = CH_connection.execute("SELECT COUNT (*) FROM dff_stats")
-    assert int(result.first()) > 0
+    first = result.first()
+    assert int(first[0]) > 0
     df = stats_object.dataframe
-    assert (df.columns == stats.dfs[0].columns)
+    assert (set(df.columns) == initial_cols)

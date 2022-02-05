@@ -49,7 +49,7 @@ class PostgresSaver:
         df = pd.concat(dfs)
         
         if not inspect(self.engine).has_table(self.table):
-            df.to_sql(name=self.table, con=self.engine, if_exists="append")
+            df.to_sql(name=self.table, index=False, con=self.engine, if_exists="append")
         
         metadata = MetaData()
         ExistingModel = Table(self.table, metadata, autoload_with=self.engine)
@@ -60,9 +60,9 @@ class PostgresSaver:
             existing_df = self.load(parse_dates=dates_to_parse)
 
             shallow_df, wider_df = sorted([df, existing_df], key=lambda x: len(x.columns))
-            df = wider_df.append(shallow_df)
+            df = wider_df.append(shallow_df, ignore_index=True)
 
-        df.to_sql(name=self.table, con=self.engine, if_exists="replace")
+        df.to_sql(name=self.table, index=False, con=self.engine, if_exists="replace")
         
 
     def load(

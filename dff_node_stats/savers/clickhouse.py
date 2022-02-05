@@ -55,25 +55,35 @@ class ClickHouseSaver:
 
         Model = self.create_clickhouse_table(column_types, self.table)
 
-        # in case new columns have been added,
-        # but the table already exists
-        # we recreate the table and insert old entries
-        if self.db.does_table_exist(Model):
-            ExistingModel = self.db.get_model_for_table(self.table, system_table=False)
-            if Model.fields() != ExistingModel.fields():
-                existing_df = self.load()
-                self.db.drop_table(ExistingModel)
-                df = pd.concat([existing_df, df], axis=0)
-                self.db.create_table(Model)
-        else:
-            self.db.create_table(Model)
-
         def lazyupload(df):
             for _, row in df.iterrows():
                 row = row.to_dict()
                 for column in parse_dates:
                     row[column] = row[column].to_pydatetime()
                 yield Model(**row)
+
+        # in case new columns have been added,
+        # but the table already exists
+        # we recreate the table and insert old entries
+        if self.db.does_table_exist(Model):
+            ExistingModel = self.db.get_model_for_table(self.table, system_table=False)
+            existing_fields = set(ExistingModel.fields())
+            if set(Model.fields()) ^ existing_fields:
+                
+                dates_to_parse = [
+                    col for col in parse_dates if col in existing_fields
+                ]
+                existing_df = self.load(parse_dates=dates_to_parse)
+                shallow_df, wider_df = sorted(
+                    [df, existing_df],
+                    key=lambda x: len(x.columns)
+                )
+                df = wider_df.append(shallow_df, ignore_index=True)
+                
+                self.db.drop_table(ExistingModel)
+                self.db.create_table(Model)
+        else:
+            self.db.create_table(Model)
 
         self.db.insert(lazyupload(df), batch_size=1000)
 
@@ -84,12 +94,9 @@ class ClickHouseSaver:
     ) -> pd.DataFrame:
 
         Model = self.db.get_model_for_table(self.table, system_table=False)
-        results = self.db.select(query=f"SELECT * FROM {self.table}", model_class=Model)
-        if len(results) <= 1:
-            raise Exception(f"`{self.table}` table is empty!")
-        df = pd.DataFrame.from_records([item.to_dict() for item in results])
-        for column in parse_dates:
-            df[column] = df[column].astype("datetime64[ns]")
+        response = self.db.select(query=f"SELECT * FROM {self.table}", model_class=Model)
+        results = [item.to_dict() for item in response]
+        df = pd.DataFrame.from_records(results)
         return df
 
     @staticmethod
