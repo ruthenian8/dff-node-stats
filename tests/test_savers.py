@@ -9,6 +9,7 @@ except ImportError:
 import pytest
 from dff_node_stats import Saver, Stats
 
+
 def test_uri():
     with pytest.raises(ValueError) as error:
         saver = Saver("erroneous")
@@ -32,6 +33,7 @@ def test_saver_registry():
 
 
 if "sqlalchemy" in sys.modules:
+
     @pytest.fixture(scope="session")
     def PG_connection(PG_uri_string):
         engine = sqlalchemy.create_engine(PG_uri_string)
@@ -44,19 +46,14 @@ if "sqlalchemy" in sys.modules:
         engine = sqlalchemy.create_engine(CH_uri_string)
         connection = engine.connect()
         yield connection
-        connection.close()        
+        connection.close()
 
 
-@pytest.mark.skipif(
-    "sqlalchemy" not in sys.modules,
-    reason="Postgres extra not installed"
-)
+@pytest.mark.skipif("sqlalchemy" not in sys.modules, reason="Postgres extra not installed")
 def test_PG_saving(PG_connection, PG_uri_string, data_generator):
-    if sqlalchemy.inspect(PG_connection.engine).has_table('dff_stats'):
+    if sqlalchemy.inspect(PG_connection.engine).has_table("dff_stats"):
         PG_connection.execute("TRUNCATE dff_stats")
-    stats = Stats(
-        saver=Saver(PG_uri_string)
-    )
+    stats = Stats(saver=Saver(PG_uri_string))
     stats_object = data_generator(stats, 3)
     initial_cols = set(stats_object.dfs[0].columns)
     stats_object.save()
@@ -64,17 +61,14 @@ def test_PG_saving(PG_connection, PG_uri_string, data_generator):
     first = result.first()
     assert int(first[0]) > 0
     df = stats_object.dataframe
-    assert (set(df.columns) == initial_cols)
+    assert set(df.columns) == initial_cols
 
 
 @pytest.mark.skipif(
-    ("infi" not in sys.modules or "sqlalchemy" not in sys.modules),
-    reason="Clickhouse extra not installed"
+    ("infi" not in sys.modules or "sqlalchemy" not in sys.modules), reason="Clickhouse extra not installed"
 )
 def test_CH_saving(CH_connection, CH_uri_string, data_generator):
-    stats = Stats(
-        saver=Saver(CH_uri_string)
-    )
+    stats = Stats(saver=Saver(CH_uri_string))
     stats_object = data_generator(stats, 3)
     initial_cols = set(stats_object.dfs[0].columns)
     stats_object.save()
@@ -82,4 +76,4 @@ def test_CH_saving(CH_connection, CH_uri_string, data_generator):
     first = result.first()
     assert int(first[0]) > 0
     df = stats_object.dataframe
-    assert (set(df.columns) == initial_cols)
+    assert set(df.columns) == initial_cols

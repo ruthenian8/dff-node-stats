@@ -69,17 +69,12 @@ class ClickHouseSaver:
             ExistingModel = self.db.get_model_for_table(self.table, system_table=False)
             existing_fields = set(ExistingModel.fields())
             if set(Model.fields()) ^ existing_fields:
-                
-                dates_to_parse = [
-                    col for col in parse_dates if col in existing_fields
-                ]
+
+                dates_to_parse = [col for col in parse_dates if col in existing_fields]
                 existing_df = self.load(parse_dates=dates_to_parse)
-                shallow_df, wider_df = sorted(
-                    [df, existing_df],
-                    key=lambda x: len(x.columns)
-                )
+                shallow_df, wider_df = sorted([df, existing_df], key=lambda x: len(x.columns))
                 df = wider_df.append(shallow_df, ignore_index=True)
-                
+
                 self.db.drop_table(ExistingModel)
                 self.db.create_table(Model)
         else:

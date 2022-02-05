@@ -47,23 +47,22 @@ class PostgresSaver:
     ) -> None:
 
         df = pd.concat(dfs)
-        
+
         if not inspect(self.engine).has_table(self.table):
             df.to_sql(name=self.table, index=False, con=self.engine, if_exists="append")
-        
+
         metadata = MetaData()
         ExistingModel = Table(self.table, metadata, autoload_with=self.engine)
         existing_columns = set(ExistingModel.columns)
 
         if bool(column_types.keys() ^ existing_columns):  # recreate table if the schema was altered
-            dates_to_parse = list(set(parse_dates) & existing_columns) # make sure we do not parse non-existent cols
+            dates_to_parse = list(set(parse_dates) & existing_columns)  # make sure we do not parse non-existent cols
             existing_df = self.load(parse_dates=dates_to_parse)
 
             shallow_df, wider_df = sorted([df, existing_df], key=lambda x: len(x.columns))
             df = wider_df.append(shallow_df, ignore_index=True)
 
         df.to_sql(name=self.table, index=False, con=self.engine, if_exists="replace")
-        
 
     def load(
         self,

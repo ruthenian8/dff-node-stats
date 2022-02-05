@@ -23,14 +23,17 @@ def test_error_raising():
 
 
 @pytest.mark.skipif("plotly" not in sys.modules, reason="plotly not installed")
-@pytest.mark.parametrize("plottype", [
-    (vs.show_table),
-    (vs.show_duration_time),
-    (vs.show_transition_graph),
-    (vs.show_transition_trace),
-    (vs.show_transition_duration),
-    (vs.show_transition_counters)
-])
+@pytest.mark.parametrize(
+    "plottype",
+    [
+        (vs.show_table),
+        (vs.show_duration_time),
+        (vs.show_transition_graph),
+        (vs.show_transition_trace),
+        (vs.show_transition_duration),
+        (vs.show_transition_counters),
+    ],
+)
 def test_plots(testing_dataframe, plottype):
     fig = plottype(testing_dataframe)
     assert isinstance(fig, BaseFigure)

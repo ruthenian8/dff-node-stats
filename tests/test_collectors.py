@@ -23,24 +23,18 @@ def test_inheritance():
 
 
 def test_default_collection(data_generator, testing_saver):
-    stats = Stats(
-        saver=testing_saver,
-        collectors=None
-    )    
+    stats = Stats(saver=testing_saver, collectors=None)
     stats_object: Stats = data_generator(stats, 3)
     assert len(stats_object.dfs) > 0
     first = stats_object.dfs[0]
     assert "context_id" in first.columns
     assert "history_id" in first.columns
     assert "start_time" in first.columns
-    assert "duration_time" in first.columns    
+    assert "duration_time" in first.columns
 
 
 def test_node_label_collection(data_generator, testing_saver):
-    stats = Stats(
-        saver=testing_saver,
-        collectors=[DSC.NodeLabelCollector()]
-    )
+    stats = Stats(saver=testing_saver, collectors=[DSC.NodeLabelCollector()])
     stats_object: Stats = data_generator(stats, 3)
     assert len(stats_object.dfs) > 0
     first = stats_object.dfs[0]
@@ -49,10 +43,7 @@ def test_node_label_collection(data_generator, testing_saver):
 
 
 def test_request_collection(data_generator, testing_saver):
-    stats = Stats(
-        saver=testing_saver,
-        collectors=[DSC.RequestCollector()]
-    )    
+    stats = Stats(saver=testing_saver, collectors=[DSC.RequestCollector()])
     stats_object: Stats = data_generator(stats, 3)
     assert len(stats_object.dfs) > 0
     first = stats_object.dfs[0]
@@ -60,10 +51,7 @@ def test_request_collection(data_generator, testing_saver):
 
 
 def test_response_collection(data_generator, testing_saver):
-    stats = Stats(
-        saver=testing_saver,
-        collectors=[DSC.ResponseCollector()]
-    )
+    stats = Stats(saver=testing_saver, collectors=[DSC.ResponseCollector()])
     stats_object: Stats = data_generator(stats, 3)
     assert len(stats_object.dfs) > 0
     first = stats_object.dfs[0]
@@ -71,15 +59,9 @@ def test_response_collection(data_generator, testing_saver):
 
 
 def test_context_collection(data_generator, testing_saver):
-    stats = Stats(
-        saver=testing_saver,
-        collectors=[
-            DSC.ContextCollector(column_dtypes={"foo": "str"}, parse_dates=[])
-        ]
-    )
+    stats = Stats(saver=testing_saver, collectors=[DSC.ContextCollector(column_dtypes={"foo": "str"}, parse_dates=[])])
     stats_object: Stats = data_generator(stats, 3)
     assert len(stats_object.dfs) > 0
     first = stats_object.dfs[0]
     assert "foo" in first.columns
     assert "bar" in first["foo"].values
-

@@ -28,6 +28,7 @@ class StreamlitDashboard(AbstractDashboard):
         filters: Optional[List[FilterType]] = None,
     ) -> None:
         super().__init__(df, plots, filters)
+        self._df: pd.DataFrame = self._slice(self._df_cache, *self.controls)
 
     @st.cache(allow_output_mutation=True)
     def _slice(self, df_origin: pd.DataFrame, *args):

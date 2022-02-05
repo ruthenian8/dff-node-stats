@@ -14,7 +14,7 @@ import importlib
 import pandas as pd
 
 
-class Saver():
+class Saver:
     """
     :py:class:`~dff_node_stats.savers.saver.Saver` interface requires two methods to be impemented:
 
@@ -24,13 +24,13 @@ class Saver():
     | A call to Saver is needed to instantiate one of the predefined child classes.
     | The subclass is chosen depending on the `path` parameter value (see Parameters).
 
-    | Your own Saver can be implemented by following the current structure: 
+    | Your own Saver can be implemented by following the current structure:
     | You can add this class to a separate module in this directory and then register it at runtime
     | by subclassing the Saver class, passing the module name as the `storage_type` parameter::
 
         MongoSaver(Saver, storage_type="mongo")
 
-    | As a result, the Saver class will look for `MongoSaver` implementation in `mongo.py` 
+    | As a result, the Saver class will look for `MongoSaver` implementation in `mongo.py`
 
     Parameters
     ----------
@@ -47,7 +47,7 @@ class Saver():
     """
 
     _saver_mapping = {}
-    
+
     def __init_subclass__(cls, storage_type: str, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         cls._saver_mapping[storage_type] = cls.__name__
@@ -59,7 +59,7 @@ class Saver():
             Saver should be initialized with a string
             """
             )
-        
+
         storage_and_path = path.partition("://")
         if not all(storage_and_path):
             raise ValueError(
