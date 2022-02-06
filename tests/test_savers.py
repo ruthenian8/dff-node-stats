@@ -49,6 +49,7 @@ if "sqlalchemy" in sys.modules:
         connection.close()
 
 
+@pytest.mark.xfail
 @pytest.mark.skipif("sqlalchemy" not in sys.modules, reason="Postgres extra not installed")
 def test_PG_saving(PG_connection, PG_uri_string, data_generator):
     if sqlalchemy.inspect(PG_connection.engine).has_table("dff_stats"):
@@ -64,6 +65,7 @@ def test_PG_saving(PG_connection, PG_uri_string, data_generator):
     assert set(df.columns) == initial_cols
 
 
+@pytest.mark.xfail
 @pytest.mark.skipif(
     ("infi" not in sys.modules or "sqlalchemy" not in sys.modules), reason="Clickhouse extra not installed"
 )
