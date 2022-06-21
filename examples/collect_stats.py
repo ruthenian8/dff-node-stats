@@ -136,7 +136,7 @@ plot = {
 def main(stats_object: dff_node_stats.Stats, n_iterations: int = 300):
     actor = Actor(plot, start_label=("root", "start"), fallback_label=("root", "fallback"))
 
-    stats_object.update_actor_handlers(actor, auto_save=False)
+    stats_object.update_actor_haupdate_actor_handlersndlers(actor, auto_save=False)
     ctxs = {}
     for i in tqdm.tqdm(range(n_iterations)):
         for j in range(4):
@@ -154,7 +154,7 @@ def main(stats_object: dff_node_stats.Stats, n_iterations: int = 300):
             in_text = random.choice(answers) if answers else "go to fallback"
             ctx.add_request(in_text)
             ctx = actor(ctx)
-            ctx.clear(hold_last_n_indexes=3)
+            ctx.clear(hold_last_n_indices=3)
             ctxs[j] = ctx
     return stats_object
 

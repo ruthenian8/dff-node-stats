@@ -87,10 +87,10 @@ class Stats:
         return actor
 
     def update_actor_handlers(self, actor: Actor, auto_save: bool = True, *args, **kwargs):
-        self._update_handlers(actor, ActorStage.CONTEXT_INIT, self.get_start_time)
-        self._update_handlers(actor, ActorStage.FINISH_TURN, self.collect_stats)
+        actor = self._update_handlers(actor, ActorStage.CONTEXT_INIT, self.get_start_time)
+        actor = self._update_handlers(actor, ActorStage.FINISH_TURN, self.collect_stats)
         if auto_save:
-            self._update_handlers(actor, ActorStage.FINISH_TURN, self.save)
+            actor = self._update_handlers(actor, ActorStage.FINISH_TURN, self.save)
 
     @validate_arguments
     def get_start_time(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:

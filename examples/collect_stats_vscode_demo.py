@@ -85,7 +85,7 @@ def main(stats_object: dff_node_stats.Stats, n_iterations: int = 300):
             in_text = random.choice(answers) if answers else "go to fallback"
             ctx.add_request(in_text)
             ctx = actor(ctx)
-            ctx.clear(hold_last_n_indexes=3)
+            ctx.clear(hold_last_n_indices=3)
             ctxs[j] = ctx
     return stats_object
 
