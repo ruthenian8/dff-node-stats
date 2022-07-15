@@ -1,0 +1,713 @@
+dashboard_title: DFF Node Stats
+description: null
+css: ''
+slug: null
+uuid: 68bce374-99bc-4890-b8c2-cb172409b894
+position:
+  CHART-Af3zvLsiKV:
+    children: []
+    id: CHART-Af3zvLsiKV
+    meta:
+      chartId: 15
+      height: 66
+      sliceName: Node visit ratio monitor
+      uuid: 6fafe59c-0fec-4cd8-a8b3-c0bfaffb2135
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    - ROW-7g6_n72hZ
+    type: CHART
+  CHART-CuCYDOlGEu:
+    children: []
+    id: CHART-CuCYDOlGEu
+    meta:
+      chartId: 1
+      height: 50
+      sliceName: Table
+      sliceNameOverride: Stats table
+      uuid: 38d353dc-c0ef-41a0-97c7-3dcbebab9e02
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-JCU6rANFP
+    - ROW-EaYAQjv4W
+    type: CHART
+  CHART-DxY0c3RnIv:
+    children: []
+    id: CHART-DxY0c3RnIv
+    meta:
+      chartId: 7
+      height: 61
+      sliceName: Node counts
+      uuid: 0c47c7b5-f500-46cb-97e3-9ebb637f0c8a
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-VUknWnOAy
+    - ROW-PvToekFjO
+    type: CHART
+  CHART-_5j3bfyEfx:
+    children: []
+    id: CHART-_5j3bfyEfx
+    meta:
+      chartId: 5
+      height: 63
+      sliceName: Transition timings [seconds]
+      uuid: 66b2cd13-c1d6-4e07-a30b-85f200743499
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-VUknWnOAy
+    - ROW-ePfyMWCnHJ
+    type: CHART
+  CHART-explore-10-1:
+    children: []
+    id: CHART-explore-10-1
+    meta:
+      chartId: 10
+      height: 73
+      sliceName: Transition layout
+      sliceNameOverride: Dialogue layout
+      uuid: 801e8c66-f693-46e3-a9a5-7b2b0b08a4a7
+      width: 6
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-JCU6rANFP
+    - ROW-Ccs1FbcI-
+    type: CHART
+  CHART-explore-11-1:
+    children: []
+    id: CHART-explore-11-1
+    meta:
+      chartId: 11
+      height: 56
+      sliceName: Node visits [cloud]
+      uuid: b25b4292-ff21-4164-98ac-b1cba95e2994
+      width: 8
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    - ROW-rR4J0eAhh
+    type: CHART
+  CHART-explore-13-1:
+    children: []
+    id: CHART-explore-13-1
+    meta:
+      chartId: 13
+      height: 74
+      sliceName: Transition ratio [chord]
+      uuid: 388d2359-8d13-4795-8dc9-1cb5dfa92ee1
+      width: 6
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-JCU6rANFP
+    - ROW-Ccs1FbcI-
+    type: CHART
+  CHART-explore-14-1:
+    children: []
+    id: CHART-explore-14-1
+    meta:
+      chartId: 14
+      height: 105
+      sliceName: Node visits [sunburst]
+      uuid: e955f48c-824c-423c-a11c-5b5dca162927
+      width: 6
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    - ROW-ZcN9G9RL5
+    type: CHART
+  CHART-explore-17-1:
+    children: []
+    id: CHART-explore-17-1
+    meta:
+      chartId: 17
+      height: 50
+      sliceName: Service load [max dialogue length]
+      uuid: 276c3aa7-89bc-49ff-91b6-6232ae35c854
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    - ROW-8mDf9VqR4
+    type: CHART
+  CHART-explore-18-1:
+    children: []
+    id: CHART-explore-18-1
+    meta:
+      chartId: 18
+      height: 50
+      sliceName: Service load [time]
+      uuid: 8e513891-d1fa-4118-a100-1479121f555e
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    - ROW-ho8keHnrd
+    type: CHART
+  CHART-explore-19-1:
+    children: []
+    id: CHART-explore-19-1
+    meta:
+      chartId: 19
+      height: 50
+      sliceName: Service rating
+      uuid: 0083c193-fb87-454a-bf9b-45eefd0abf35
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    - ROW-7-Se9kjzE
+    type: CHART
+  CHART-explore-20-1:
+    children: []
+    id: CHART-explore-20-1
+    meta:
+      chartId: 20
+      height: 50
+      sliceName: Attitude last week
+      sliceNameOverride: Service rating last week
+      uuid: 97c4f9e2-ffee-4695-b5a8-0c74643046d1
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    - ROW-ksepbeQu6
+    type: CHART
+  CHART-explore-21-1:
+    children: []
+    id: CHART-explore-21-1
+    meta:
+      chartId: 21
+      height: 60
+      sliceName: Flow visit ratio monitor
+      uuid: ba02528b-184b-4304-b027-f2b7d9011ab0
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    - ROW-ZTVWOu2o0
+    type: CHART
+  CHART-explore-22-1:
+    children: []
+    id: CHART-explore-22-1
+    meta:
+      chartId: 22
+      height: 61
+      sliceName: Terminal labels
+      sliceNameOverride: Terminal labels monitor
+      uuid: cf066e41-a9e8-4f54-a875-ebf4da350b59
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    - ROW-LhKWfqM7V
+    type: CHART
+  CHART-explore-3-1:
+    children: []
+    id: CHART-explore-3-1
+    meta:
+      chartId: 3
+      height: 67
+      sliceName: Node Visits
+      uuid: 012a1905-5a00-4186-bb83-05f24b92ba43
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    - ROW-13wceqsDp
+    type: CHART
+  CHART-explore-9-1:
+    children: []
+    id: CHART-explore-9-1
+    meta:
+      chartId: 9
+      height: 105
+      sliceName: Node visits [ratio]
+      uuid: f9fb7893-3533-4519-bbc4-1f4853f380e1
+      width: 6
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    - ROW-ZcN9G9RL5
+    type: CHART
+  CHART-mYC2udeF3a:
+    children: []
+    id: CHART-mYC2udeF3a
+    meta:
+      chartId: 16
+      height: 50
+      sliceName: Service load [users]
+      uuid: b5d43314-514c-464e-9fcc-f897e3ae0963
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    - ROW-Ae7v1prsp2
+    type: CHART
+  CHART-wci7CHiza6:
+    children: []
+    id: CHART-wci7CHiza6
+    meta:
+      chartId: 6
+      height: 66
+      sliceName: Transition counts
+      uuid: 9fcc7cc1-9257-4c0d-b377-b3a60a8bf3df
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-VUknWnOAy
+    - ROW-TRNUnY9X_Y
+    type: CHART
+  COLUMN-JRaDi96UVP:
+    children: []
+    id: COLUMN-JRaDi96UVP
+    meta:
+      background: BACKGROUND_TRANSPARENT
+      width: 2
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    - ROW-rR4J0eAhh
+    type: COLUMN
+  COLUMN-WysgPuf0P1:
+    children: []
+    id: COLUMN-WysgPuf0P1
+    meta:
+      background: BACKGROUND_TRANSPARENT
+      width: 2
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    - ROW-rR4J0eAhh
+    type: COLUMN
+  DASHBOARD_VERSION_KEY: v2
+  GRID_ID:
+    children:
+    - HEADER-nYVwogYInk
+    - TABS-Xoi5oUBxZI
+    - ROW-N-EN4MUKD1
+    id: GRID_ID
+    parents:
+    - ROOT_ID
+    type: GRID
+  HEADER-nYVwogYInk:
+    children: []
+    id: HEADER-nYVwogYInk
+    meta:
+      background: BACKGROUND_TRANSPARENT
+      headerSize: LARGE_HEADER
+      text: DFF Node Stats
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    type: HEADER
+  HEADER_ID:
+    id: HEADER_ID
+    meta:
+      text: DFF Node Stats
+    type: HEADER
+  ROOT_ID:
+    children:
+    - GRID_ID
+    id: ROOT_ID
+    type: ROOT
+  ROW-13wceqsDp:
+    children:
+    - CHART-explore-3-1
+    id: ROW-13wceqsDp
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    type: ROW
+  ROW-7-Se9kjzE:
+    children:
+    - CHART-explore-19-1
+    id: ROW-7-Se9kjzE
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    type: ROW
+  ROW-7g6_n72hZ:
+    children:
+    - CHART-Af3zvLsiKV
+    id: ROW-7g6_n72hZ
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    type: ROW
+  ROW-8mDf9VqR4:
+    children:
+    - CHART-explore-17-1
+    id: ROW-8mDf9VqR4
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    type: ROW
+  ROW-Ae7v1prsp2:
+    children:
+    - CHART-mYC2udeF3a
+    id: ROW-Ae7v1prsp2
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    type: ROW
+  ROW-Ccs1FbcI-:
+    children:
+    - CHART-explore-10-1
+    - CHART-explore-13-1
+    id: ROW-Ccs1FbcI-
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-JCU6rANFP
+    type: ROW
+  ROW-EaYAQjv4W:
+    children:
+    - CHART-CuCYDOlGEu
+    id: ROW-EaYAQjv4W
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-JCU6rANFP
+    type: ROW
+  ROW-LhKWfqM7V:
+    children:
+    - CHART-explore-22-1
+    id: ROW-LhKWfqM7V
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    type: ROW
+  ROW-PvToekFjO:
+    children:
+    - CHART-DxY0c3RnIv
+    id: ROW-PvToekFjO
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-VUknWnOAy
+    type: ROW
+  ROW-TRNUnY9X_Y:
+    children:
+    - CHART-wci7CHiza6
+    id: ROW-TRNUnY9X_Y
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-VUknWnOAy
+    type: ROW
+  ROW-ZTVWOu2o0:
+    children:
+    - CHART-explore-21-1
+    id: ROW-ZTVWOu2o0
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    type: ROW
+  ROW-ZcN9G9RL5:
+    children:
+    - CHART-explore-9-1
+    - CHART-explore-14-1
+    id: ROW-ZcN9G9RL5
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    type: ROW
+  ROW-ePfyMWCnHJ:
+    children:
+    - CHART-_5j3bfyEfx
+    id: ROW-ePfyMWCnHJ
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-VUknWnOAy
+    type: ROW
+  ROW-ho8keHnrd:
+    children:
+    - CHART-explore-18-1
+    id: ROW-ho8keHnrd
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    type: ROW
+  ROW-ksepbeQu6:
+    children:
+    - CHART-explore-20-1
+    id: ROW-ksepbeQu6
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-6zE8noCIsx
+    type: ROW
+  ROW-rR4J0eAhh:
+    children:
+    - COLUMN-JRaDi96UVP
+    - CHART-explore-11-1
+    - COLUMN-WysgPuf0P1
+    id: ROW-rR4J0eAhh
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-Gw0Ffh1lG
+    type: ROW
+  TAB-6zE8noCIsx:
+    children:
+    - ROW-Ae7v1prsp2
+    - ROW-8mDf9VqR4
+    - ROW-ho8keHnrd
+    - ROW-7-Se9kjzE
+    - ROW-ksepbeQu6
+    - ROW-ZTVWOu2o0
+    - ROW-7g6_n72hZ
+    - ROW-LhKWfqM7V
+    id: TAB-6zE8noCIsx
+    meta:
+      defaultText: Tab title
+      placeholder: Tab title
+      text: Service stats
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    type: TAB
+  TAB-Gw0Ffh1lG:
+    children:
+    - ROW-13wceqsDp
+    - ROW-ZcN9G9RL5
+    - ROW-rR4J0eAhh
+    id: TAB-Gw0Ffh1lG
+    meta:
+      defaultText: Tab title
+      placeholder: Tab title
+      text: General stats
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    type: TAB
+  TAB-JCU6rANFP:
+    children:
+    - ROW-EaYAQjv4W
+    - ROW-Ccs1FbcI-
+    id: TAB-JCU6rANFP
+    meta:
+      defaultText: Tab title
+      placeholder: Tab title
+      text: Overview
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    type: TAB
+  TAB-VUknWnOAy:
+    children:
+    - ROW-PvToekFjO
+    - ROW-TRNUnY9X_Y
+    - ROW-ePfyMWCnHJ
+    id: TAB-VUknWnOAy
+    meta:
+      defaultText: Tab title
+      placeholder: Tab title
+      text: Additional stats
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    type: TAB
+  TABS-Xoi5oUBxZI:
+    children:
+    - TAB-JCU6rANFP
+    - TAB-Gw0Ffh1lG
+    - TAB-VUknWnOAy
+    - TAB-6zE8noCIsx
+    id: TABS-Xoi5oUBxZI
+    meta: {}
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    type: TABS
+  ROW-N-EN4MUKD1:
+    children:
+    - CHART-CSCYFXBK
+    id: ROW-N-EN4MUKD1
+    meta:
+      '0': ROOT_ID
+      background: BACKGROUND_TRANSPARENT
+    type: ROW
+    parents:
+    - ROOT_ID
+    - GRID_ID
+  CHART-CSCYFXBK:
+    children: []
+    id: CHART-CSCYFXBK
+    meta:
+      chartId: 23
+      height: 50
+      sliceName: Sankey
+      uuid: a87d9345-49f7-49c7-80ff-610b3bee31e0
+      width: 4
+    type: CHART
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-N-EN4MUKD1
+metadata:
+  color_scheme: echarts4Colors
+  label_colors: {}
+  shared_label_colors:
+    animals:ask_about_breed: '#749f87'
+    animals:ask_about_color: '#6e6f74'
+    animals:have_pets: '#c26031'
+    animals:like_animals: '#bda59a'
+    animals:tell_fact_about_breed: '#2f3a54'
+    animals:what_animal: '#91c7b3'
+    news:ask_about_science: '#618ba8'
+    news:ask_about_sport: '#91c7be'
+    news:science_news: '#749f90'
+    news:sport_news: '#cab822'
+    news:what_news: '#c4cad3'
+    root:fallback: '#546270'
+    small_talk:ask_some_questions: '#ca9722'
+    small_talk:ask_talk_about: '#d4a365'
+    animals: '#c24331'
+    news: '#2f4154'
+    root: '#6199a8'
+    small_talk: '#d48d65'
+    animals, what_animal: '#749f8c'
+    animals, ask_about_breed: '#91c7b9'
+    small_talk, ask_some_questions: '#2f3254'
+    animals, like_animals: '#618ba8'
+    root, start: '#c27d31'
+    animals, ask_about_color: '#c4cad3'
+    root, fallback: '#caa822'
+    news, what_news: '#545d70'
+    animals, have_pets: '#2f3a54'
+    animals, tell_fact_about_breed: '#d4a365'
+    news, ask_about_science: '#749f90'
+    small_talk, ask_talk_about: '#617da8'
+    news, ask_about_sport: '#cab822'
+    news, science_news: '#bdac9a'
+    news, sport_news: '#6e6e74'
+    root:start: '#bdac9a'
+    'null': '#c23531'
+    ask_some_questions: '#c23531'
+    ask_talk_about: '#2f4554'
+    start: '#61a0a8'
+    fallback: '#d48265'
+    tell_fact_about_breed: '#91c7ae'
+    like_animals: '#749f83'
+    ask_about_breed: '#ca8622'
+    what_animal: '#bda29a'
+    have_pets: '#6e7074'
+    ask_about_color: '#546570'
+    what_news: '#c4ccd3'
+    science_news: '#c25231'
+    sport_news: '#2f3e54'
+    ask_about_science: '#6192a8'
+    ask_about_sport: '#d49865'
+  timed_refresh_immune_slices: []
+  expanded_slices: {}
+  refresh_frequency: 0
+  show_native_filters: true
+  default_filters: '{}'
+  chart_configuration: {}
+version: 1.0.0

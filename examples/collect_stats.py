@@ -23,7 +23,7 @@ transitions = {
         "have_pets": ["yes"],
         "like_animals": ["yes"],
         "what_animal": ["bird", "dog"],
-        "ask_about_breed": ["pereat", "bulldog", "i do not known"],
+        "ask_about_breed": ["pereat", "bulldog", "i do not know"],
     },
     "news": {
         "what_news": ["science", "sport"],
@@ -136,19 +136,19 @@ plot = {
 def main(stats_object: dff_node_stats.Stats, n_iterations: int = 300):
     actor = Actor(plot, start_label=("root", "start"), fallback_label=("root", "fallback"))
 
-    stats_object.update_actor_haupdate_actor_handlersndlers(actor, auto_save=False)
+    stats_object.update_actor_handlers(actor, auto_save=False)
     ctxs = {}
     for i in tqdm.tqdm(range(n_iterations)):
         for j in range(4):
             ctx = ctxs.get(j, Context(id=uuid.uuid4()))
             ctx.misc["foo"] = "bar" # need this to test Context collection
-            ctx.misc["baz"] = "qux"
+            ctx.misc["attitude"] = str(random.randint(-2, 2))
             label = ctx.last_label if ctx.last_label else actor.fallback_label
             flow, node = label[:2]
             if [flow, node] == ["root", "fallback"]:
                 ctx = Context()
                 ctx.misc["foo"] = "bar" # need this to test Context collection
-                ctx.misc["baz"] = "qux"
+                ctx.misc["attitude"] = str(random.randint(-2, 2))
                 flow, node = ["root", "start"]
             answers = list(transitions.get(flow, {}).get(node, []))
             in_text = random.choice(answers) if answers else "go to fallback"
@@ -165,8 +165,9 @@ if __name__ == "__main__":
         stats_file.unlink()
 
     stats = dff_node_stats.Stats(
-        saver=dff_node_stats.Saver("csv://examples/stats.csv"),
-        collectors=[DSC.NodeLabelCollector()]
+        saver=dff_node_stats.Saver("postgresql://root:qwerty@0.0.0.0:5432/test"),
+        mock_dates=True
     ) 
-    stats_object = main(stats)
+    stats_object = main(stats, n_iterations=400)
+    print(len(stats_object.dfs))
     stats_object.save()

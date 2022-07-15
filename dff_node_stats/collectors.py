@@ -8,7 +8,7 @@ Collectors
 | to extract and save (:py:class:`~df_engine.core.context.Context`) parameters.
 
 """
-from typing import List, Dict, Protocol, runtime_checkable, Any
+from typing import List, Dict, Optional, Protocol, runtime_checkable, Any
 import datetime
 
 from pydantic import validate_arguments
@@ -78,6 +78,7 @@ class NodeLabelCollector(Collector):
         return {
             "flow_label": "str",
             "node_label": "str",
+            "full_label": "str"
         }
 
     @property
@@ -90,6 +91,7 @@ class NodeLabelCollector(Collector):
         return {
             "flow_label": [last_label[0]],
             "node_label": [last_label[1]],
+            "full_label": [":".join(last_label[:2])]
         }
 
 
@@ -135,9 +137,15 @@ class ContextCollector(Collector):
     optionally listed in 'parse_dates'
     """
 
-    def __init__(self, column_dtypes: Dict[str, str], parse_dates: List[str]) -> None:
+    def __init__(
+        self,
+        column_dtypes: Dict[str, str],
+        source_field: str = "misc",
+        parse_dates: Optional[List[str]] = None
+    ) -> None:
+        self._source_field = source_field
         self._column_dtypes = column_dtypes
-        self._parse_dates = parse_dates
+        self._parse_dates = parse_dates or []
         return
 
     @property
@@ -150,8 +158,8 @@ class ContextCollector(Collector):
 
     @validate_arguments
     def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> Dict[str, Any]:
-        misc_stats = dict()
+        ctx_stats = dict()
         for key in self.column_dtypes:
-            value = ctx.misc.get(key, None)
-            misc_stats[key] = [value]
-        return misc_stats
+            value = ctx.__dict__.get(self._source_field, {}).get(key, None)
+            ctx_stats[key] = [value]
+        return ctx_stats
