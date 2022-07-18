@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  psql:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: $PG_USERNAME
+      POSTGRES_PASSWORD: $PG_PASSWORD
+      POSTGRES_DB: test
+    ports:
+      - '5432:5432'
+  clickhouse:
+    image: yandex/clickhouse-server:latest
+    restart: unless-stopped
+    ports:
+      - '8123:8123'
