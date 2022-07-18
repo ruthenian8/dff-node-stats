@@ -46,15 +46,12 @@ class Stats:
     """
 
     def __init__(
-        self,
-        saver: Saver,
-        collectors: Optional[List[DSC.Collector]] = None,
-        mock_dates: bool = False
+        self, saver: Saver, collectors: Optional[List[DSC.Collector]] = None, mock_dates: bool = False
     ) -> None:
         col_default = [
             DSC.DefaultCollector(),
             DSC.NodeLabelCollector(),
-            DSC.ContextCollector(column_dtypes={"attitude": "int64"}, source_field="misc")
+            DSC.ContextCollector(column_dtypes={"attitude": "int64"}, source_field="misc"),
         ]
         collectors = col_default if collectors is None else col_default + collectors
         type_check = lambda x: isinstance(x, DSC.Collector) and not isinstance(x, type)
@@ -108,11 +105,13 @@ class Stats:
         for collector in self.collectors:
             stats.update(collector.collect_stats(ctx, actor, start_time=self.start_time))
         if self._mock_dates:
-            date_offset: int = hash(str(stats["context_id"])) % 30 # yields a 'random' number from 0 to 99 equal for same contexts
+            date_offset: int = (
+                hash(str(stats["context_id"])) % 30
+            )  # yields a 'random' number from 0 to 99 equal for same contexts
             hour_offset: int = hash(str(stats["context_id"])) % 24
             minute_offset: int = hash(str(stats["context_id"])) % 60
             stats["start_time"] = [
-                stats["start_time"][0] - datetime.timedelta(days = date_offset, hours=hour_offset, minutes=minute_offset)
-            ] # mock different dates
-            stats["duration_time"] = [stats["duration_time"][0] + randint(4,12)]
+                stats["start_time"][0] - datetime.timedelta(days=date_offset, hours=hour_offset, minutes=minute_offset)
+            ]  # mock different dates
+            stats["duration_time"] = [stats["duration_time"][0] + randint(4, 12)]
         self.add_df(stats=stats)

@@ -141,13 +141,13 @@ def main(stats_object: dff_node_stats.Stats, n_iterations: int = 300):
     for i in tqdm.tqdm(range(n_iterations)):
         for j in range(4):
             ctx = ctxs.get(j, Context(id=uuid.uuid4()))
-            ctx.misc["foo"] = "bar" # need this to test Context collection
+            ctx.misc["foo"] = "bar"  # need this to test Context collection
             ctx.misc["attitude"] = str(random.randint(-2, 2))
             label = ctx.last_label if ctx.last_label else actor.fallback_label
             flow, node = label[:2]
             if [flow, node] == ["root", "fallback"]:
                 ctx = Context()
-                ctx.misc["foo"] = "bar" # need this to test Context collection
+                ctx.misc["foo"] = "bar"  # need this to test Context collection
                 ctx.misc["attitude"] = str(random.randint(-2, 2))
                 flow, node = ["root", "start"]
             answers = list(transitions.get(flow, {}).get(node, []))
@@ -165,9 +165,8 @@ if __name__ == "__main__":
         stats_file.unlink()
 
     stats = dff_node_stats.Stats(
-        saver=dff_node_stats.Saver("postgresql://root:qwerty@0.0.0.0:5432/test"),
-        mock_dates=True
-    ) 
+        saver=dff_node_stats.Saver("clickhouse://root:qwerty@0.0.0.0:8123/test"), mock_dates=True
+    )
     stats_object = main(stats, n_iterations=400)
     print(len(stats_object.dfs))
     stats_object.save()

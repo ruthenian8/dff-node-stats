@@ -232,6 +232,22 @@ position:
     - TAB-6zE8noCIsx
     - ROW-LhKWfqM7V
     type: CHART
+  CHART-explore-23-1:
+    children: []
+    id: CHART-explore-23-1
+    meta:
+      chartId: 23
+      height: 50
+      sliceName: Sankey
+      uuid: a87d9345-49f7-49c7-80ff-610b3bee31e0
+      width: 12
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-JCU6rANFP
+    - ROW-wZ9pXj5nX
+    type: CHART
   CHART-explore-3-1:
     children: []
     id: CHART-explore-3-1
@@ -327,7 +343,6 @@ position:
     children:
     - HEADER-nYVwogYInk
     - TABS-Xoi5oUBxZI
-    - ROW-N-EN4MUKD1
     id: GRID_ID
     parents:
     - ROOT_ID
@@ -549,6 +564,18 @@ position:
     - TABS-Xoi5oUBxZI
     - TAB-Gw0Ffh1lG
     type: ROW
+  ROW-wZ9pXj5nX:
+    children:
+    - CHART-explore-23-1
+    id: ROW-wZ9pXj5nX
+    meta:
+      background: BACKGROUND_TRANSPARENT
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - TABS-Xoi5oUBxZI
+    - TAB-JCU6rANFP
+    type: ROW
   TAB-6zE8noCIsx:
     children:
     - ROW-Ae7v1prsp2
@@ -587,6 +614,7 @@ position:
   TAB-JCU6rANFP:
     children:
     - ROW-EaYAQjv4W
+    - ROW-wZ9pXj5nX
     - ROW-Ccs1FbcI-
     id: TAB-JCU6rANFP
     meta:
@@ -625,88 +653,13 @@ position:
     - ROOT_ID
     - GRID_ID
     type: TABS
-  ROW-N-EN4MUKD1:
-    children:
-    - CHART-CSCYFXBK
-    id: ROW-N-EN4MUKD1
-    meta:
-      '0': ROOT_ID
-      background: BACKGROUND_TRANSPARENT
-    type: ROW
-    parents:
-    - ROOT_ID
-    - GRID_ID
-  CHART-CSCYFXBK:
-    children: []
-    id: CHART-CSCYFXBK
-    meta:
-      chartId: 23
-      height: 50
-      sliceName: Sankey
-      uuid: a87d9345-49f7-49c7-80ff-610b3bee31e0
-      width: 4
-    type: CHART
-    parents:
-    - ROOT_ID
-    - GRID_ID
-    - ROW-N-EN4MUKD1
 metadata:
   color_scheme: echarts4Colors
   label_colors: {}
-  shared_label_colors:
-    animals:ask_about_breed: '#749f87'
-    animals:ask_about_color: '#6e6f74'
-    animals:have_pets: '#c26031'
-    animals:like_animals: '#bda59a'
-    animals:tell_fact_about_breed: '#2f3a54'
-    animals:what_animal: '#91c7b3'
-    news:ask_about_science: '#618ba8'
-    news:ask_about_sport: '#91c7be'
-    news:science_news: '#749f90'
-    news:sport_news: '#cab822'
-    news:what_news: '#c4cad3'
-    root:fallback: '#546270'
-    small_talk:ask_some_questions: '#ca9722'
-    small_talk:ask_talk_about: '#d4a365'
-    animals: '#c24331'
-    news: '#2f4154'
-    root: '#6199a8'
-    small_talk: '#d48d65'
-    animals, what_animal: '#749f8c'
-    animals, ask_about_breed: '#91c7b9'
-    small_talk, ask_some_questions: '#2f3254'
-    animals, like_animals: '#618ba8'
-    root, start: '#c27d31'
-    animals, ask_about_color: '#c4cad3'
-    root, fallback: '#caa822'
-    news, what_news: '#545d70'
-    animals, have_pets: '#2f3a54'
-    animals, tell_fact_about_breed: '#d4a365'
-    news, ask_about_science: '#749f90'
-    small_talk, ask_talk_about: '#617da8'
-    news, ask_about_sport: '#cab822'
-    news, science_news: '#bdac9a'
-    news, sport_news: '#6e6e74'
-    root:start: '#bdac9a'
-    'null': '#c23531'
-    ask_some_questions: '#c23531'
-    ask_talk_about: '#2f4554'
-    start: '#61a0a8'
-    fallback: '#d48265'
-    tell_fact_about_breed: '#91c7ae'
-    like_animals: '#749f83'
-    ask_about_breed: '#ca8622'
-    what_animal: '#bda29a'
-    have_pets: '#6e7074'
-    ask_about_color: '#546570'
-    what_news: '#c4ccd3'
-    science_news: '#c25231'
-    sport_news: '#2f3e54'
-    ask_about_science: '#6192a8'
-    ask_about_sport: '#d49865'
+  shared_label_colors: {}
   timed_refresh_immune_slices: []
   expanded_slices: {}
-  refresh_frequency: 0
+  refresh_frequency: 1800
   show_native_filters: true
   default_filters: '{}'
   chart_configuration: {}

@@ -1,58 +1,127 @@
-# Statistics collection extension for Dialog Flow Framework
-dff_node_stats is package, that extends basic [dialog_flow_engine](https://github.com/deepmipt/dialog_flow_engine) by adding statistic collection **and** dashboard for visualization.
+# Statistics collection for Dialog Flow Engine
 
-# Installation
-Installation:
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Statistics collection](#statistics-collection)
+    - [Run mock examples of statisctics collection](#run-mock-examples-of-statisctics-collection)
+- [Display your data](#display-your-data)
+    - [Create a Superset instance](#create-a-superset-instance)
+    - [Adjust Dashboard Configuration](#adjust-dashboard-configuration)
+    - [Import the Dashboard Config](#import-the-dashboard-config)
+- [Preset support](#preset-support)
+
+## Introduction
+
+Dialog Flow Node Stats, or `dff_node_stats` is a module, that extends [dialog_flow_engine](https://github.com/deepmipt/dialog_flow_engine). It collects usage statistics for your conversational service and allows you to visualize them using a pre-configured dashboard for [Apache Superset](https://superset.apache.org/) and [Preset](https://preset.io/).
+
+Currently, we offer support for multiple database types that can be used to store your data:
+
+* [Postgresql](https://www.postgresql.org/)
+* [Clickhouse](https://clickhouse.com/)
+
+In the future, we intend to add support for other SQL-compatible backends.
+
+## Installation
+
 ```bash
-# install dialog flow framework
-pip install dff_engine
-# Install dff_node_stats
-pip install dff_node_stats #basic
+pip install dff_node_stats[postgres]
+pip install dff_node_stats[clickhouse]
 ```
-# Register a callback for stats collection
 
-Insert stats in your dff code:
+## Statistics collection
+
+Assuming that you have defined a `df_engine` **Actor** and assigned it to `actor` variable, you can update your code with the following snippets.
+
 ```python
 # import dependencies
-from df_engine.core.script import Script
-from df_engine.core.actor import Actor
 from dff_node_stats import Stats, Saver
-# ....
-# Define a plot and an actor
-script = Script(foo)
-actor = Actor(script=script, start_node=("a", "b"), fallback_node=("b", "c"))
+# ...
 
 # Define a destination for stats saving
-stats = Stats(
-    saver=Saver("csv://examples/stats.csv")
-)
-# As an alternative, you can use a database. Currently, Clickhouse and Postgres are supported
-stats = Stats(
-    saver=Saver("postgresql://user:password@localhost:5432/default")
-)
+db_uri = "postgresql://user:password@host:5432/default"
+# for clickhouse:
+# db_uri = "clickhouse://user:password@host:8123/default"
+stats = Stats(saver=Saver(db_uri))
 
-# Add handlers to actor
+# Update the Actor with stats collection callbacks
 stats.update_actor_handlers(actor, auto_save=False)
-
-# ....
-# Handle user requests
-# ....
 ```
 
-# Configure and launch an Apache Superset dashboard
+### Run mock examples of statisctics collection
+
+The repository contains several code examples of how the add-on can be used to collect user data.
 
 ```bash
-# you can pass configuration settings via parameters 
-python configure.py opts --db.type=postgresql --db.user=user --db.password=pass --db.host=localhost --db.port=8322 --db.name=default --db.table=some
-# or write them to a file and pass it to parameters
-python configure.py cfg_file config.yaml
+# run one of the two df engine dialog bots and collect stats
+python examples/collect_stats.py
+python examples/collect_stats_vscode_demo.py
 ```
 
-# Run Examples:
+## Display your data
+
+### Create a Superset instance
+
+There are multiple ways to create an Apache Superset instance: you can install it locally or use a [Docker image](https://hub.docker.com/r/apache/superset) with docker or docker-compose. Whichever option you pick, you will still be able to import the standard dashboard template.
+
+* **However, if you intend to use Clickhouse, keep in mind that it requires `clickhouse-connect` library to be installed.** 
+The easiest solution is to use a dockerfile with the following structure:
+
+```dockerfile
+FROM apache/superset
+USER root
+RUN pip install clickhouse-connect
+USER superset
+```
+* Please, consult the [Superset documentation](https://superset.apache.org/docs/databases/installing-database-drivers/) for dependency installation instructions, if you deploy Superset locally.
+
+### Adjust Dashboard Configuration
+
+In order to run the dashboard in Apache Superset, you should update the default configuration with the credentials of your local database.
+One way is to pass the settings to a configuration script as parameters.
+
 ```bash
-# run dff dialog bot and collect stats
-python examples/1.collect_stats.py
-# or this one, they have differences only in a dialog scripts
-python examples/1.collect_stats_vscode_demo.py
-
+python -m dff_node_stats opts \
+    --db.type=clickhousedb+connect \
+    --db.user=user \
+    --db.host=localhost \
+    --db.port=5432 \
+    --db.name=mydb \
+    --db.table=mytable
 ```
+
+**NB: At this moment, the two possible values for the db.type parameter are: `clickhousedb+connect` and `postgresql`.**
+
+An alternative way is to pass the settings in a YAML file. 
+
+
+Assuming that you have a file `config.yaml` that contains the following entries, 
+
+```yaml
+db:
+  type: clickhousedb+connect
+  name: test
+  user: user
+  host: localhost
+  port: 5432
+  table: dff_stats
+```
+
+you can forward it to the script like this:
+
+```bash
+python -m dff_node_stats cfg_file config.yaml
+```
+
+The script will update the default YAML configuration files with the settings of your choice. Then, the files will be packed into a zip-archive `superset_dashboard.zip`, which will be saved to the current working folder.
+
+### Import the Dashboard Config
+
+The archive `superset_dashboard.zip` can be imported via Superset GUI.
+
+Log in to Superset, open the `Dashboards` tab and press the **import** button on the right of the screen. You will be prompted for the database password. If all of the database credentials match, the dashboard will appear in the dashboard list.
+
+## Preset support
+
+You can also import the dashboard to [Preset](https://preset.io/), a cloud-hosted Superset instance. This is a perfect option, if your database is also hosted remotely. Use the GUI to import `superset_dashboard.zip`, like we did with Superset.
+
+The service needs to be able to access and fetch your data, so do not forget to [whitelist Preset IPs](https://docs.preset.io/docs/connecting-your-data) on the database host machine, before you import the dashboard. 

@@ -93,11 +93,10 @@ def main(stats_object: dff_node_stats.Stats, n_iterations: int = 300):
 if __name__ == "__main__":
     stats_file = pathlib.Path("examples/stats.csv")
     if stats_file.exists():
-        stats_file.unlink()    
+        stats_file.unlink()
 
     stats = dff_node_stats.Stats(
-        saver=dff_node_stats.Saver("csv://examples/stats.csv"),
-        collectors=[DSC.NodeLabelCollector()]
-    )    
+        saver=dff_node_stats.Saver("csv://examples/stats.csv"), collectors=[DSC.NodeLabelCollector()]
+    )
     stats_object = main(stats)
     stats_object.save()

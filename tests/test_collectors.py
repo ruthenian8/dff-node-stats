@@ -4,6 +4,9 @@ from dff_node_stats import collectors as DSC
 from dff_node_stats import Stats
 
 
+# pytest.skip(allow_module_level=True)
+
+
 def test_inheritance():
     class NewCollector(DSC.Collector):
         @property

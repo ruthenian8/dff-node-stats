@@ -7,7 +7,6 @@ imported and initialized when you construct :py:class:`~dff_node_stats.savers.sa
 
 """
 from typing import List, Optional, Union, Dict
-from numpy import sort
 
 import pandas as pd
 from sqlalchemy import create_engine, inspect

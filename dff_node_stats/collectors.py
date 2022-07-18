@@ -13,7 +13,6 @@ import datetime
 
 from pydantic import validate_arguments
 from df_engine.core import Context, Actor
-import pandas as pd
 
 
 @runtime_checkable
@@ -75,11 +74,7 @@ class DefaultCollector(Collector):
 class NodeLabelCollector(Collector):
     @property
     def column_dtypes(self) -> Dict[str, str]:
-        return {
-            "flow_label": "str",
-            "node_label": "str",
-            "full_label": "str"
-        }
+        return {"flow_label": "str", "node_label": "str", "full_label": "str"}
 
     @property
     def parse_dates(self) -> List[str]:
@@ -88,11 +83,7 @@ class NodeLabelCollector(Collector):
     @validate_arguments
     def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> Dict[str, Any]:
         last_label = ctx.last_label or actor.start_label
-        return {
-            "flow_label": [last_label[0]],
-            "node_label": [last_label[1]],
-            "full_label": [":".join(last_label[:2])]
-        }
+        return {"flow_label": [last_label[0]], "node_label": [last_label[1]], "full_label": [":".join(last_label[:2])]}
 
 
 class RequestCollector(Collector):
@@ -138,10 +129,7 @@ class ContextCollector(Collector):
     """
 
     def __init__(
-        self,
-        column_dtypes: Dict[str, str],
-        source_field: str = "misc",
-        parse_dates: Optional[List[str]] = None
+        self, column_dtypes: Dict[str, str], source_field: str = "misc", parse_dates: Optional[List[str]] = None
     ) -> None:
         self._source_field = source_field
         self._column_dtypes = column_dtypes

@@ -1,11 +1,11 @@
+import os
+from re import L
 import sys
 from typing import Callable
 
 import pytest
 from dff_node_stats import Saver, Stats
 from dff_node_stats import collectors as DSC
-
-from . import config
 
 
 @pytest.fixture(scope="session")
@@ -37,14 +37,15 @@ def testing_dataframe(data_generator, testing_saver):
 
 
 @pytest.fixture(scope="session")
+def table():
+    yield "test"
+
+
+@pytest.fixture(scope="session")
 def PG_uri_string():
-    return "postgresql://{}:{}@{}:{}/{}".format(
-        config.PG_USERNAME, config.PG_PASSWORD, config.HOST, config.PG_PORT, config.DATABASE
-    )
+    return "postgresql://{}:{}@localhost:5432/{}".format(os.getenv("PG_USERNAME"), os.getenv("PG_PASSWORD"), "test")
 
 
 @pytest.fixture(scope="session")
 def CH_uri_string():
-    return "clickhouse://{}:{}@{}:{}/{}".format(
-        config.CH_USERNAME, config.CH_PASSWORD, config.HOST, config.CH_PORT, config.DATABASE
-    )
+    return "clickhouse://{}:{}@localhost:8123/{}".format(os.getenv("CH_USERNAME"), os.getenv("CH_PASSWORD"), "test")

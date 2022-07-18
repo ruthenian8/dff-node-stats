@@ -5,9 +5,9 @@ default_endpoint: null
 offset: 0
 cache_timeout: null
 schema: public
-sql: "WITH main AS (SELECT context_id, max(history_id) FROM dff_stats GROUP BY context_id)\
-  \ \nSELECT dff_stats.* FROM  dff_stats INNER JOIN main \nON dff_stats.context_id\
-  \ = main.context_id AND dff_stats.history_id = main.max;"
+sql: "WITH main AS (SELECT context_id, max(history_id) as max_hist FROM dff_stats\
+  \ GROUP BY context_id)     \nSELECT dff_stats.* FROM dff_stats INNER JOIN main \n\
+  ON dff_stats.context_id     = main.context_id AND dff_stats.history_id = main.max_hist;"
 params: null
 template_params: null
 filter_select_enabled: false

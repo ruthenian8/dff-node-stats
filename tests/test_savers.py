@@ -1,5 +1,6 @@
 import sys
 import pathlib
+import socket
 
 try:
     import sqlalchemy
@@ -8,6 +9,23 @@ except ImportError:
     pass
 import pytest
 from dff_node_stats import Saver, Stats
+
+
+def ping_localhost(port: int, timeout=3):
+    try:
+        socket.setdefaulttimeout(timeout)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(("localhost", port))
+    except OSError as error:
+        return False
+    else:
+        s.close()
+        return True
+
+
+POSTGRES_ACTIVE = ping_localhost(5432)
+
+CLICKHOUSE_ACTIVE = ping_localhost(8123)
 
 
 def test_uri():
@@ -32,50 +50,34 @@ def test_saver_registry():
     assert Saver._saver_mapping.get("mongo") == "MongoSaver"
 
 
-if "sqlalchemy" in sys.modules:
-
-    @pytest.fixture(scope="session")
-    def PG_connection(PG_uri_string):
-        engine = sqlalchemy.create_engine(PG_uri_string)
-        connection = engine.connect()
-        yield connection
-        connection.close()
-
-    @pytest.fixture(scope="session")
-    def CH_connection(CH_uri_string):
-        engine = sqlalchemy.create_engine(CH_uri_string)
-        connection = engine.connect()
-        yield connection
-        connection.close()
-
-
-@pytest.mark.xfail
+@pytest.mark.skipif(POSTGRES_ACTIVE is False, reason="Postgres not available")
 @pytest.mark.skipif("sqlalchemy" not in sys.modules, reason="Postgres extra not installed")
-def test_PG_saving(PG_connection, PG_uri_string, data_generator):
-    if sqlalchemy.inspect(PG_connection.engine).has_table("dff_stats"):
-        PG_connection.execute("TRUNCATE dff_stats")
-    stats = Stats(saver=Saver(PG_uri_string))
+def test_PG_saving(PG_uri_string, data_generator, table):
+    stats = Stats(saver=Saver(PG_uri_string, table=table))
+    if sqlalchemy.inspect(stats.saver.engine).has_table(table):
+        stats.saver.engine.execute(f"TRUNCATE {table}")
     stats_object = data_generator(stats, 3)
     initial_cols = set(stats_object.dfs[0].columns)
     stats_object.save()
-    result = PG_connection.execute("SELECT COUNT(*) FROM dff_stats")
+    result = stats.saver.engine.execute(f"SELECT COUNT(*) FROM {table}")
     first = result.first()
     assert int(first[0]) > 0
     df = stats_object.dataframe
     assert set(df.columns) == initial_cols
 
 
-@pytest.mark.xfail
+@pytest.mark.skipif(CLICKHOUSE_ACTIVE is False, reason="Clickhouse not available")
 @pytest.mark.skipif(
     ("infi" not in sys.modules or "sqlalchemy" not in sys.modules), reason="Clickhouse extra not installed"
 )
-def test_CH_saving(CH_connection, CH_uri_string, data_generator):
-    stats = Stats(saver=Saver(CH_uri_string))
+def test_CH_saving(CH_uri_string, data_generator, table):
+    stats = Stats(saver=Saver(CH_uri_string, table=table))
+    if stats.saver.db.does_table_exist(type(table, (clickhouse_orm.Model,), {})):
+        stats.saver.db.raw(f"TRUNCATE {table}")
     stats_object = data_generator(stats, 3)
     initial_cols = set(stats_object.dfs[0].columns)
     stats_object.save()
-    result = CH_connection.execute("SELECT COUNT (*) FROM dff_stats")
-    first = result.first()
-    assert int(first[0]) > 0
+    result = stats.saver.db.raw(f"SELECT COUNT (*) FROM {table}")
+    assert int(result) > 0
     df = stats_object.dataframe
     assert set(df.columns) == initial_cols

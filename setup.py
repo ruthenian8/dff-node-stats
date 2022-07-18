@@ -30,4 +30,8 @@ setuptools.setup(
         "tqdm>=4.62.3",
         "pydantic>=1.8.2",
     ],
+    extras_require = {
+        "postgres": ["psycopg2==2.9.2"],
+        "clickhouse": ["infi.clickhouse-orm==2.1.1"]
+    }
 )
