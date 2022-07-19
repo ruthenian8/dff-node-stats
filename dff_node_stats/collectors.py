@@ -9,6 +9,7 @@ Collectors
 
 """
 from typing import List, Dict, Optional, Any
+
 try:
     from typing import Protocol, runtime_checkable
 except ImportError:
