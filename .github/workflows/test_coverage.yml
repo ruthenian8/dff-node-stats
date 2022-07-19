@@ -31,7 +31,20 @@ jobs:
 
       - name: install dependencies
         run: |
-          make venv
+          if [ "$RUNNER_OS" == "Windows" ]; then
+              python -m pip install --upgrade pip
+              pip install -e .
+              pip install -r requirements_test.txt
+          else
+              make venv
+          fi
+        shell: bash
+
       - name: build coverage file
         run: |
-          make test
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            pytest --cache-clear --cov=df_slots tests/ > pytest-coverage.txt
+          else
+            make test
+          fi
+        shell: bash

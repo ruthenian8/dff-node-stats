@@ -23,8 +23,8 @@ venv:
 	python3 -m venv $(VENV_PATH);\
 	
 	$(VENV_PATH)/bin/pip install -e . ;
-	$(VENV_PATH)/bin/pip install -r requirements_dev.txt
-	$(VENV_PATH)/bin/pip install -r requirements_test.txt
+	$(VENV_PATH)/bin/pip install -r requirements_dev.txt ;
+	$(VENV_PATH)/bin/pip install -r requirements_test.txt ;
 	
 
 format: venv
