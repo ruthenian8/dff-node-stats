@@ -13,10 +13,10 @@ Example::
     stats.update_actor_handlers(actor, auto_save=False)
 
 """
+import datetime
 from random import randint
 from typing import Any, Dict, List, Optional
-import datetime
-from functools import cached_property
+from functools import cache
 from copy import copy
 
 import pandas as pd
@@ -74,7 +74,8 @@ class Stats:
     def __deepcopy__(self, *args, **kwargs):
         return copy(self)
 
-    @cached_property
+    @property
+    @cache
     def dataframe(self) -> pd.DataFrame:
         return self.saver.load(column_types=self.column_dtypes, parse_dates=self.parse_dates)
 
