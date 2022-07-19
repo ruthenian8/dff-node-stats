@@ -8,7 +8,6 @@ depending on the input parameters. See the class documentation for more info.
 
 """
 from typing import Dict, List, Union, Optional
-import pathlib
 import importlib
 
 import pandas as pd

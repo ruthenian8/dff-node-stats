@@ -8,7 +8,11 @@ Collectors
 | to extract and save (:py:class:`~df_engine.core.context.Context`) parameters.
 
 """
-from typing import List, Dict, Optional, Protocol, runtime_checkable, Any
+from typing import List, Dict, Optional, Any
+try:
+    from typing import Protocol, runtime_checkable
+except ImportError:
+    from typing_extensions import Protocol, runtime_checkable
 import datetime
 
 from pydantic import validate_arguments
