@@ -1,11 +1,18 @@
 version: "3.9"
 services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: ./dockerfile
+    image: superset_df_dashboard
+    ports:
+      - "8088:8088"
   psql:
     image: postgres:latest
     restart: unless-stopped
     environment:
-      POSTGRES_USER: $PG_USERNAME
-      POSTGRES_PASSWORD: $PG_PASSWORD
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: test
     ports:
       - '5432:5432'

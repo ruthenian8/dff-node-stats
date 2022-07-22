@@ -1,14 +1,13 @@
-from collections import namedtuple
 import sys
 import os
 from pathlib import Path
 import argparse
-from zipfile import main as zip_main
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from omegaconf import OmegaConf
 
 
-module_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+module_dir = os.path.dirname(os.path.abspath(__file__))
 
 database_dir = Path(os.path.join(module_dir, "superset_dashboard/databases"))
 dataset_dir = Path(os.path.join(module_dir, "superset_dashboard/datasets/dff_database"))
@@ -32,6 +31,16 @@ type_mapping_ch = {
     "INTEGER": "Nullable(Int64)",
     "DATETIME": "Nullable(DateTime)",
 }
+
+
+def addToZip(zf, path, zippath):
+    if os.path.isfile(path):
+        zf.write(path, zippath, ZIP_DEFLATED)
+    elif os.path.isdir(path):
+        if zippath:
+            zf.write(path, zippath)
+        for nm in sorted(os.listdir(path)):
+            addToZip(zf, os.path.join(path, nm), os.path.join(zippath, nm))
 
 
 sql_stmt_mapping = {
@@ -93,8 +102,16 @@ def main(parsed_args):
                 col.type = type_mapping_ch.get(col.type, col.type)
         OmegaConf.save(new_file_config, filepath)
 
-    zip_args = ["-c", "superset_dashboard.zip", os.path.join(module_dir, "superset_dashboard/")]
-    zip_main(zip_args)
+    zip_name = "superset_dashboard.zip"
+    path = os.path.join(module_dir, "superset_dashboard/")
+
+    with ZipFile(zip_name, "w", strict_timestamps=False) as zf:
+        zippath = os.path.basename(path)
+        if not zippath:
+            zippath = os.path.basename(os.path.dirname(path))
+        if zippath in ("", os.curdir, os.pardir):
+            zippath = ""
+        addToZip(zf, path, zippath)
 
 
 if __name__ == "__main__":

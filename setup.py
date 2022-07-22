@@ -25,11 +25,9 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        "pandas>=1.3.1",
-        "df_engine>=0.10.0",
-        "tqdm>=4.62.3",
-        "pydantic>=1.8.2",
+        (LOCATION / "requirements.txt").open(encoding="utf8").read().splitlines()
     ],
+    include_package_data=True,
     extras_require = {
         "postgres": ["psycopg2==2.9.2"],
         "clickhouse": ["infi.clickhouse-orm==2.1.1"]

@@ -28,3 +28,5 @@ examples/stats.*
 *env.sh
 .coverage/*
 config.xml
+s_config
+init_superset.sh
