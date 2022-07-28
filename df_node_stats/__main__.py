@@ -201,7 +201,10 @@ def make_zip_config(parsed_args: argparse.Namespace):
 
     with tempfile.TemporaryDirectory() as temp_config_dir:
         logger.info(f"Copying config files to temporary directory: {temp_config_dir}.")
-        shutil.copytree(DASHBOARD_DIR, temp_config_dir, dirs_exist_ok=True)
+        copytree_args = {}
+        if sys.version >= '3.8':
+            copytree_args['dirs_exist_ok'] = True
+        shutil.copytree(DASHBOARD_DIR, temp_config_dir, **copytree_args)
         database_dir = Path(os.path.join(temp_config_dir, "databases"))
         dataset_dir = Path(os.path.join(temp_config_dir, "datasets/dff_database"))
 

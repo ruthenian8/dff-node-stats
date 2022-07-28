@@ -139,6 +139,8 @@ df_node_stats import_dashboard \\
     --db.password=password
 ```
 
+Parameters `username` and `password` should be set to your Superset username and password.
+
 ## Preset support
 
 You can also import the dashboard to [Preset](https://preset.io/), a cloud-hosted Superset instance. This is a perfect option, if your database is also hosted remotely. Use the GUI to import the zip-archive, like we did with Superset.
