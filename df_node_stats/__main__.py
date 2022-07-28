@@ -224,7 +224,12 @@ def make_zip_config(parsed_args: argparse.Namespace):
             OmegaConf.save(new_file_config, filepath)
 
         logger.info(f"Saving the archive to {outfile_name}.")
-        with ZipFile(outfile_name, "w", strict_timestamps=False) as zf:
+
+        zip_args = {}
+        if sys.version >= "3.8":
+            zip_args["strict_timestamps"] = False
+
+        with ZipFile(outfile_name, "w", **zip_args) as zf:
             zippath = os.path.basename(nested_temp_dir)
             if not zippath:
                 zippath = os.path.basename(os.path.dirname(nested_temp_dir))
