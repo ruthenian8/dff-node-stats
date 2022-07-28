@@ -18,14 +18,16 @@ Currently, we offer support for multiple database types that can be used to stor
 
 * [Postgresql](https://www.postgresql.org/)
 * [Clickhouse](https://clickhouse.com/)
+* [MySQL](#)
 
 In the future, we intend to add support for other SQL-compatible backends.
 
 ## Installation
 
 ```bash
-pip install dff_node_stats[postgres]
-pip install dff_node_stats[clickhouse]
+pip install df_node_stats[postgres]
+pip install df_node_stats[clickhouse]
+pip install df_node_stats[mysql]
 ```
 
 ## Statistics collection
@@ -34,7 +36,7 @@ Assuming that you have defined a `df_engine` **Actor** and assigned it to `actor
 
 ```python
 # import dependencies
-from dff_node_stats import Stats, Saver
+from df_node_stats import Stats, Saver
 # ...
 
 # Define a destination for stats saving
@@ -80,7 +82,7 @@ In order to run the dashboard in Apache Superset, you should update the default 
 One way is to pass the settings to a configuration script as parameters.
 
 ```bash
-python -m dff_node_stats opts \
+df_node_stats cfg_from_opts \
     --db.type=clickhousedb+connect \
     --db.user=user \
     --db.host=localhost \
@@ -110,19 +112,35 @@ db:
 you can forward it to the script like this:
 
 ```bash
-python -m dff_node_stats cfg_file config.yaml --outfile=./superset_dashboard.zip
+df_node_stats cfg_from_file config.yaml --outfile=./superset_dashboard.zip
 ```
 
-The script will update the default YAML configuration files with the settings of your choice. Then, the files will be packed into a zip-archive `superset_dashboard.zip`, which will be saved to the current working folder.
+The script will update the default YAML configuration files with the settings of your choice. Then, the files will be packed into a zip-archive and saved to the designated file.
 
 ### Import the Dashboard Config
 
-The archive `superset_dashboard.zip` can be imported via Superset GUI.
+#### Import through GUI
+
+The configuration archive can be imported via Superset GUI.
 
 Log in to Superset, open the `Dashboards` tab and press the **import** button on the right of the screen. You will be prompted for the database password. If all of the database credentials match, the dashboard will appear in the dashboard list.
 
+#### Import through API
+
+The add-on includes a script that allows for easy interaction with Superset API.
+
+As long as you have created the zip-packed configuration, you can import it using the following command. It requires that your Superset instance should run on localhost on port 8088 (standard for Superset).
+
+```bash
+df_node_stats import_dashboard \\
+    --username=admin \\
+    --password=admin \\
+    --infile=./superset_dashboard.zip \\
+    --db.password=password
+```
+
 ## Preset support
 
-You can also import the dashboard to [Preset](https://preset.io/), a cloud-hosted Superset instance. This is a perfect option, if your database is also hosted remotely. Use the GUI to import `superset_dashboard.zip`, like we did with Superset.
+You can also import the dashboard to [Preset](https://preset.io/), a cloud-hosted Superset instance. This is a perfect option, if your database is also hosted remotely. Use the GUI to import the zip-archive, like we did with Superset.
 
 The service needs to be able to access and fetch your data, so do not forget to [whitelist Preset IPs](https://docs.preset.io/docs/connecting-your-data) on the database host machine, before you import the dashboard. 
