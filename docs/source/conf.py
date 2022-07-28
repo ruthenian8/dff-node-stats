@@ -54,7 +54,7 @@ extensions = [
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-html_short_title = None
+html_short_title = "DFF Node Stats"
 
 # -- Options for HTML output -------------------------------------------------
 

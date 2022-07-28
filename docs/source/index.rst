@@ -9,14 +9,12 @@ Welcome to DFF Node Stats documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-
 .. toctree::
    :glob:
    :maxdepth: 3
    :caption: Package Reference
 
-   reference/*
+   apiref/modules.rst
 
 Index
 ==================

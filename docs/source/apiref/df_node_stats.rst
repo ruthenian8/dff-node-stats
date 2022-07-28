@@ -1,5 +1,5 @@
-dff\_node\_stats package
-========================
+df\_node\_stats package
+=======================
 
 Subpackages
 -----------
@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   dff_node_stats.savers
+   df_node_stats.savers
 
 Submodules
 ----------
@@ -15,13 +15,13 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   dff_node_stats.collectors
-   dff_node_stats.stats
+   df_node_stats.collectors
+   df_node_stats.stats
 
 Module contents
 ---------------
 
-.. automodule:: dff_node_stats
+.. automodule:: df_node_stats
    :members:
    :undoc-members:
    :show-inheritance:

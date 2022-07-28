@@ -5,4 +5,3 @@ psycopg2==2.9.2
 SQLAlchemy==1.4.27
 sphinx>=1.7.9
 sphinx_rtd_theme>=0.4.0
-black

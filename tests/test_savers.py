@@ -2,12 +2,15 @@ import sys
 import pathlib
 import socket
 
+import pytest
+
 try:
     import sqlalchemy
     from infi import clickhouse_orm
+    import pymysql
 except ImportError:
     pass
-import pytest
+
 from df_node_stats import Saver, Stats
 
 
@@ -86,6 +89,9 @@ def test_CH_saving(CH_uri_string, data_generator, table):
 
 
 @pytest.mark.skipif(MYSQL_ACTIVE is False, reason="Mysql not available")
+@pytest.mark.skipif(
+    ("pymysql" not in sys.modules or "sqlalchemy" not in sys.modules), reason="Mysql deps missing."
+)
 def test_mysql_saving(MS_uri_string, data_generator, table):
     stats = Stats(saver=Saver(MS_uri_string, table=table))
     if sqlalchemy.inspect(stats.saver.engine).has_table(table):

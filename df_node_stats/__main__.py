@@ -200,13 +200,12 @@ def make_zip_config(parsed_args: argparse.Namespace):
     OmegaConf.resolve(user_config)
 
     with tempfile.TemporaryDirectory() as temp_config_dir:
-        logger.info(f"Copying config files to temporary directory: {temp_config_dir}.")
-        copytree_args = {}
-        if sys.version >= "3.8":
-            copytree_args["dirs_exist_ok"] = True
-        shutil.copytree(DASHBOARD_DIR, temp_config_dir, **copytree_args)
-        database_dir = Path(os.path.join(temp_config_dir, "databases"))
-        dataset_dir = Path(os.path.join(temp_config_dir, "datasets/dff_database"))
+        nested_temp_dir = os.path.join(temp_config_dir, "superset_dashboard")
+        logger.info(f"Copying config files to temporary directory: {nested_temp_dir}.")
+
+        shutil.copytree(DASHBOARD_DIR, nested_temp_dir)
+        database_dir = Path(os.path.join(nested_temp_dir, "databases"))
+        dataset_dir = Path(os.path.join(nested_temp_dir, "datasets/dff_database"))
 
         logger.info(f"Overriding the initial configuration.")
         # overwrite sqlalchemy uri
@@ -226,12 +225,12 @@ def make_zip_config(parsed_args: argparse.Namespace):
 
         logger.info(f"Saving the archive to {outfile_name}.")
         with ZipFile(outfile_name, "w", strict_timestamps=False) as zf:
-            zippath = os.path.basename(temp_config_dir)
+            zippath = os.path.basename(nested_temp_dir)
             if not zippath:
-                zippath = os.path.basename(os.path.dirname(temp_config_dir))
+                zippath = os.path.basename(os.path.dirname(nested_temp_dir))
             if zippath in ("", os.curdir, os.pardir):
                 zippath = ""
-            addToZip(zf, temp_config_dir, zippath)
+            addToZip(zf, nested_temp_dir, zippath)
 
 
 def main(parsed_args: Optional[argparse.Namespace] = None):
