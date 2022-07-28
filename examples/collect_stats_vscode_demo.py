@@ -8,8 +8,8 @@ from df_engine.core.keywords import RESPONSE, TRANSITIONS
 from df_engine.core import Context, Actor
 import df_engine.conditions as cnd
 
-import dff_node_stats
-from dff_node_stats import collectors as DSC
+import df_node_stats
+from df_node_stats import collectors as DSC
 
 
 transitions = {
@@ -68,7 +68,7 @@ flows = {
 }
 
 
-def main(stats_object: dff_node_stats.Stats, n_iterations: int = 300):
+def main(stats_object: df_node_stats.Stats, n_iterations: int = 300):
     actor = Actor(flows, start_label=("root", "start"), fallback_label=("root", "fallback"))
 
     stats_object.update_actor_handlers(actor, auto_save=False)
@@ -95,8 +95,8 @@ if __name__ == "__main__":
     if stats_file.exists():
         stats_file.unlink()
 
-    stats = dff_node_stats.Stats(
-        saver=dff_node_stats.Saver("csv://examples/stats.csv"), collectors=[DSC.NodeLabelCollector()]
+    stats = df_node_stats.Stats(
+        saver=df_node_stats.Saver("csv://examples/stats.csv"), collectors=[DSC.NodeLabelCollector()]
     )
     stats_object = main(stats)
     stats_object.save()

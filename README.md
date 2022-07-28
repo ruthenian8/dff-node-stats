@@ -86,7 +86,8 @@ python -m dff_node_stats opts \
     --db.host=localhost \
     --db.port=5432 \
     --db.name=mydb \
-    --db.table=mytable
+    --db.table=mytable \
+    --outfile=./superset_dashboard.zip
 ```
 
 **NB: At this moment, the two possible values for the db.type parameter are: `clickhousedb+connect` and `postgresql`.**
@@ -109,7 +110,7 @@ db:
 you can forward it to the script like this:
 
 ```bash
-python -m dff_node_stats cfg_file config.yaml
+python -m dff_node_stats cfg_file config.yaml --outfile=./superset_dashboard.zip
 ```
 
 The script will update the default YAML configuration files with the settings of your choice. Then, the files will be packed into a zip-archive `superset_dashboard.zip`, which will be saved to the current working folder.

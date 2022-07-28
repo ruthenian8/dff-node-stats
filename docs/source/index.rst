@@ -2,7 +2,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to DFF Stats documentation!
+Welcome to DFF Node Stats documentation!
 =================================================
 
 .. toctree::

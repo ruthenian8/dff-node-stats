@@ -81,7 +81,7 @@ class Saver:
                 )
             )
         subclass = getattr(
-            importlib.import_module(f".{storage_type}", package="dff_node_stats.savers"),
+            importlib.import_module(f".{storage_type}", package="df_node_stats.savers"),
             subclass_name,
         )
         obj = object.__new__(subclass)
@@ -138,5 +138,11 @@ class CsvSaver(Saver, storage_type="csv"):
 
 class PostgresSaver(Saver, storage_type="postgresql"):
     """PostgresSaver Class prototype"""
+
+    pass
+
+
+class MysqlSaver(Saver, storage_type="mysql+pymysql"):
+    """MysqlSaver Class prototype"""
 
     pass

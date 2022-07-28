@@ -3,6 +3,5 @@ htmlcov/
 .pytest-cache/
 __pycache__/
 env.sh
-examples/
 .github/
 init_superset.sh

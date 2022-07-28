@@ -28,7 +28,10 @@ class ClickHouseSaver:
         | The construction path.
         | It should match the sqlalchemy :py:class:`~sqlalchemy.engine.Engine` initialization string.
 
-        >>> ClickHouseSaver("clickhouse://user:password@localhost:8000/default")
+        .. code-block::
+
+            ClickHouseSaver("clickhouse://user:password@localhost:8000/default")
+
     table: str
         Sets the name of the db table to use. Defaults to "dff_stats".
     """

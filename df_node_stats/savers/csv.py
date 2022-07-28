@@ -26,7 +26,10 @@ class CsvSaver:
         | The construction path.
         | The part after :// should contain a path to the file that pandas will be able to recognize.
 
-        >>> CsvSaver("csv://foo/bar.csv")
+        .. code-block::
+
+            CsvSaver("csv://foo/bar.csv")
+
     table: str
         Does not affect the class. Added for constructor uniformity.
     """

@@ -1,11 +1,4 @@
-"""
-Postgresql
----------------------------
-Provides the Postgresql version of the :py:class:`~dff_node_stats.savers.saver.Saver`. 
-You don't need to interact with this class manually, as it will be automatically 
-imported and initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
-
-"""
+""""""
 from typing import List, Optional, Union, Dict
 
 import pandas as pd
@@ -13,30 +6,12 @@ from sqlalchemy import create_engine, inspect
 from sqlalchemy.schema import MetaData, Table
 
 
-class PostgresSaver:
-    """
-    Saves and reads the stats dataframe from a csv file.
-    You don't need to interact with this class manually, as it will be automatically
-    initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
-
-    Parameters
-    ----------
-
-    path: str
-        | The construction path.
-        | It should match the sqlalchemy :py:class:`~sqlalchemy.engine.Engine` initialization string.
-
-        >>> PostgresSaver("postgresql://user:password@localhost:5432/default")
-    table: str
-        Sets the name of the db table to use. Defaults to "dff_stats".
-    """
-
+class SqlSaver:
     def __init__(self, path: str, table: str = "dff_stats") -> None:
         self.path: str = path
-        self.schema: str = self.path[self.path.rfind("/") + 1 :]
+        self.schema: str = self.path.rpartition("/")[2]
         self.table = table
         self.engine = create_engine(self.path)
-        self.engine.dialect._psycopg2_extensions().register_adapter(dict, self.engine.dialect._psycopg2_extras().Json)
 
     def save(
         self,
@@ -49,6 +24,7 @@ class PostgresSaver:
 
         if not inspect(self.engine).has_table(self.table):
             df.to_sql(name=self.table, index=False, con=self.engine, if_exists="append")
+            return
 
         metadata = MetaData()
         ExistingModel = Table(self.table, metadata, autoload_with=self.engine)

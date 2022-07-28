@@ -3,8 +3,8 @@ import sys
 from typing import Callable
 
 import pytest
-from dff_node_stats import Saver, Stats
-from dff_node_stats import collectors as DSC
+from df_node_stats import Saver, Stats
+from df_node_stats import collectors as DSC
 
 
 @pytest.fixture(scope="session")
@@ -14,6 +14,12 @@ def data_generator():
     from examples.collect_stats import main
 
     yield main
+
+
+@pytest.fixture(scope="session")
+def testing_cfg_dir(tmpdir_factory):
+    cfg_dir = tmpdir_factory.mktemp("cfg")
+    yield str(cfg_dir)
 
 
 @pytest.fixture(scope="session")
@@ -48,3 +54,8 @@ def PG_uri_string():
 @pytest.fixture(scope="session")
 def CH_uri_string():
     return "clickhouse://{}:{}@localhost:8123/{}".format(os.getenv("CH_USERNAME"), os.getenv("CH_PASSWORD"), "test")
+
+
+@pytest.fixture(scope="session")
+def MS_uri_string():
+    return "mysql+pymysql://{}:{}@localhost:3307/{}".format(os.getenv("MS_USERNAME"), os.getenv("MS_PASSWORD"), "test")

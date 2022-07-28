@@ -8,7 +8,7 @@ readme_file = LOCATION / "README.md"
 long_description = readme_file.open(encoding="utf8").read()
 
 setuptools.setup(
-    name="dff_node_stats",
+    name="df_node_stats",
     version="0.1.2",
     scripts=[],
     author="Denis Kuznetsov",
@@ -30,6 +30,10 @@ setuptools.setup(
     include_package_data=True,
     extras_require = {
         "postgres": ["psycopg2==2.9.2"],
-        "clickhouse": ["infi.clickhouse-orm==2.1.1"]
+        "clickhouse": ["infi.clickhouse-orm==2.1.1"],
+        "mysql": ["pymysql>=1.0.2", "cryptography>=36.0.2"]
+    },
+    entry_points = {
+        'console_scripts': ['df_node_stats=df_node_stats.__main__:main'],
     }
 )

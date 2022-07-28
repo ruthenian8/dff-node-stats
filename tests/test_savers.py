@@ -8,7 +8,7 @@ try:
 except ImportError:
     pass
 import pytest
-from dff_node_stats import Saver, Stats
+from df_node_stats import Saver, Stats
 
 
 def ping_localhost(port: int, timeout=3):
@@ -26,6 +26,8 @@ def ping_localhost(port: int, timeout=3):
 POSTGRES_ACTIVE = ping_localhost(5432)
 
 CLICKHOUSE_ACTIVE = ping_localhost(8123)
+
+MYSQL_ACTIVE = ping_localhost(3307)
 
 
 def test_uri():
@@ -79,5 +81,20 @@ def test_CH_saving(CH_uri_string, data_generator, table):
     stats_object.save()
     result = stats.saver.db.raw(f"SELECT COUNT (*) FROM {table}")
     assert int(result) > 0
+    df = stats_object.dataframe
+    assert set(df.columns) == initial_cols
+
+
+@pytest.mark.skipif(MYSQL_ACTIVE is False, reason="Mysql not available")
+def test_mysql_saving(MS_uri_string, data_generator, table):
+    stats = Stats(saver=Saver(MS_uri_string, table=table))
+    if sqlalchemy.inspect(stats.saver.engine).has_table(table):
+        stats.saver.engine.execute(f"TRUNCATE {table}")
+    stats_object = data_generator(stats, 3)
+    initial_cols = set(stats_object.dfs[0].columns)
+    stats_object.save()
+    result = stats.saver.engine.execute(f"SELECT COUNT(*) FROM {table}")
+    first = result.first()
+    assert int(first[0]) > 0
     df = stats_object.dataframe
     assert set(df.columns) == initial_cols

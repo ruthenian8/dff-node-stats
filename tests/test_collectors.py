@@ -1,7 +1,7 @@
 import pytest
 
-from dff_node_stats import collectors as DSC
-from dff_node_stats import Stats
+from df_node_stats import collectors as DSC
+from df_node_stats import Stats
 
 
 # pytest.skip(allow_module_level=True)

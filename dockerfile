@@ -1,8 +1,6 @@
-FROM apache/superset
+FROM apache/superset:2.0.0rc2
 USER root
 RUN pip install clickhouse-connect
-RUN chown -R superset:superset /app
-RUN chmod 755 /app
 COPY . /app/dialog_flow_node_stats/
-RUN pip install dialog_flow_node_stats/
+RUN pip install /app/dialog_flow_node_stats/
 USER superset

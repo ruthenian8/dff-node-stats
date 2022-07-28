@@ -25,7 +25,7 @@ venv
 .vscode
 examples/stats.*
 *config.py
-*env.sh
+local.env
 .coverage/*
 config.xml
 s_config

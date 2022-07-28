@@ -1,24 +1,19 @@
-table_name: dff_acyclic_nodes
+table_name: dff_final_nodes
 main_dttm_col: start_time
 description: null
 default_endpoint: null
 offset: 0
 cache_timeout: null
 schema: public
-sql: "WITH main as (\n  SELECT DISTINCT dff_stats.context_id, history_id, start_time,\
-  \     full_label as label\n  FROM dff_stats INNER JOIN \n  (\n    WITH helper as\
-  \ (\n         SELECT DISTINCT context_id, history_id, full_label as label from dff_stats\n\
-  \         ) \n    SELECT context_id FROM helper GROUP BY context_id\n    HAVING\
-  \ count(context_id)     = COUNT(DISTINCT label)\n  ) as plain_ctx ON dff_stats.context_id\
-  \ = plain_ctx.context_id\n     ORDER BY context_id, history_id\n     ) SELECT context_id,\
-  \ history_id, start_time, label,\n    LAG(label,1) OVER (ORDER BY context_id, history_id)\
-  \ as prev_label\nFROM main;"
+sql: "WITH main AS (SELECT context_id, max(history_id) as max_hist FROM dff_stats\
+  \ GROUP BY context_id)     \nSELECT dff_stats.* FROM dff_stats INNER JOIN main \n\
+  ON dff_stats.context_id     = main.context_id AND dff_stats.history_id = main.max_hist;"
 params: null
 template_params: null
 filter_select_enabled: false
 fetch_values_predicate: null
 extra: null
-uuid: 2ec02aa6-e414-4103-9dc3-cba7fc7b4777
+uuid: d7f6546e-1e3a-479d-8531-05b5e73e5c05
 metrics:
 - metric_name: count
   verbose_name: COUNT(*)
@@ -26,14 +21,27 @@ metrics:
   expression: COUNT(*)
   description: null
   d3format: null
-  extra: {}
+  extra:
+    warning_markdown: ''
   warning_text: null
 columns:
 - column_name: start_time
   verbose_name: null
   is_dttm: true
   is_active: true
-  type: DATETIME
+  type: Nullable(DateTime)
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: {}
+- column_name: duration_time
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: Nullable(Float64)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -45,7 +53,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: LONGINTEGER
+  type: Nullable(Int64)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -53,11 +61,23 @@ columns:
   description: null
   python_date_format: null
   extra: {}
-- column_name: prev_label
+- column_name: node_label
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: STRING
+  type: Nullable(String)
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: {}
+- column_name: flow_label
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: Nullable(String)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -69,7 +89,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: STRING
+  type: Nullable(String)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -77,11 +97,11 @@ columns:
   description: null
   python_date_format: null
   extra: {}
-- column_name: label
+- column_name: attitude
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: STRING
+  type: Nullable(String)
   advanced_data_type: null
   groupby: true
   filterable: true

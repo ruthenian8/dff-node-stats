@@ -9,8 +9,7 @@ sql: "WITH main AS (\n  SELECT context_id, history_id,\n  start_time, duration_t
   \     flow_label, node_label, attitude, full_label as label\n     FROM dff_stats\
   \ ORDER BY context_id, history_id)\n SELECT context_id, history_id,\n  start_time,\
   \     duration_time,\n  flow_label, node_label, label, CAST(attitude AS Integer)\
-  \ as attitude,\n  LAG(label,1) OVER (ORDER BY context_id, history_id) as prev_label\n\
-  \     FROM main;"
+  \ as attitude,\n  neighbor(label, -1) as prev_label\n     FROM main;"
 params: null
 template_params: null
 filter_select_enabled: false
@@ -23,7 +22,7 @@ columns:
   verbose_name: null
   is_dttm: true
   is_active: true
-  type: DATETIME
+  type: Nullable(DateTime)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -35,7 +34,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: FLOAT
+  type: Nullable(Float64)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -47,7 +46,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: LONGINTEGER
+  type: Nullable(Int64)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -59,7 +58,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: INTEGER
+  type: Nullable(Int64)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -71,7 +70,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: STRING
+  type: Nullable(String)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -83,7 +82,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: STRING
+  type: Nullable(String)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -95,7 +94,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: STRING
+  type: Nullable(String)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -107,7 +106,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: STRING
+  type: Nullable(String)
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -119,7 +118,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: STRING
+  type: Nullable(String)
   advanced_data_type: null
   groupby: true
   filterable: true
