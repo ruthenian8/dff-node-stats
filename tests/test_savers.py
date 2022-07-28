@@ -89,9 +89,7 @@ def test_CH_saving(CH_uri_string, data_generator, table):
 
 
 @pytest.mark.skipif(MYSQL_ACTIVE is False, reason="Mysql not available")
-@pytest.mark.skipif(
-    ("pymysql" not in sys.modules or "sqlalchemy" not in sys.modules), reason="Mysql deps missing."
-)
+@pytest.mark.skipif(("pymysql" not in sys.modules or "sqlalchemy" not in sys.modules), reason="Mysql deps missing.")
 def test_mysql_saving(MS_uri_string, data_generator, table):
     stats = Stats(saver=Saver(MS_uri_string, table=table))
     if sqlalchemy.inspect(stats.saver.engine).has_table(table):
