@@ -1,15 +1,17 @@
 import uuid
 import random
-import pathlib
-
 import tqdm
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).absolute().parent))
 
 from df_engine.core.keywords import RESPONSE, TRANSITIONS
 from df_engine.core import Context, Actor
 import df_engine.conditions as cnd
 
-import df_node_stats
-from df_node_stats import collectors as DSC
+from df_node_stats import Saver, Stats
+from example_utils import parse_args
 
 transitions = {
     "root": {
@@ -42,7 +44,7 @@ transitions = {
     },
 }
 # a dialog script
-plot = {
+script = {
     "root": {
         "start": {
             RESPONSE: "Hi",
@@ -133,8 +135,8 @@ plot = {
 }
 
 
-def main(stats_object: df_node_stats.Stats, n_iterations: int = 300):
-    actor = Actor(plot, start_label=("root", "start"), fallback_label=("root", "fallback"))
+def main(stats_object: Stats, n_iterations: int = 300):
+    actor = Actor(script, start_label=("root", "start"), fallback_label=("root", "fallback"))
 
     stats_object.update_actor_handlers(actor, auto_save=False)
     ctxs = {}
@@ -160,13 +162,10 @@ def main(stats_object: df_node_stats.Stats, n_iterations: int = 300):
 
 
 if __name__ == "__main__":
-    stats_file = pathlib.Path("examples/stats.csv")
-    if stats_file.exists():
-        stats_file.unlink()
+    args = parse_args()
+    saver = Saver("{type}://{user}:{password}@{host}:{port}/{name}".format(**args["db"]), table=args["db"]["table"])
 
-    stats = df_node_stats.Stats(
-        saver=df_node_stats.Saver("clickhouse://root:qwerty@0.0.0.0:8123/test"), mock_dates=True
-    )
+    stats = Stats(saver=saver, mock_dates=True)
     stats_object = main(stats, n_iterations=400)
     print(len(stats_object.dfs))
     stats_object.save()

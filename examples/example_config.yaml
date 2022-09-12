@@ -1,7 +1,7 @@
 db:
-  type: clickhousedb+connect
+  type: postgresql
   name: test
-  user: root
-  host: 172.25.128.1
-  port: 8123
+  user: postgres
+  host: 0.0.0.0
+  port: 5432
   table: dff_stats

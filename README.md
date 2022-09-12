@@ -1,5 +1,26 @@
 # Statistics collection for Dialog Flow Engine
 
+## Demo
+
+```bash
+# assuming that you cloned the repository
+pip install .[postgres] # install
+
+docker-compose up -d psql # launch images
+docker-compose up -d superset
+
+make collect-examples DB_PASSWORD=pass # collect examples
+
+df_node_stats cfg_from_file examples/config.yaml --outfile=superset_dashboard.zip # visualize examples
+df_node_stats import_dashboard \
+    --username=admin \
+    --password=admin \
+    --infile=superset_dashboard.zip \
+    --db.password=password
+```
+
+## Index
+
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Statistics collection](#statistics-collection)
@@ -49,14 +70,24 @@ stats = Stats(saver=Saver(db_uri))
 stats.update_actor_handlers(actor, auto_save=False)
 ```
 
-### Run mock examples of statisctics collection
+### Statistics collection demo
 
-The repository contains several code examples of how the add-on can be used to collect user data.
+The easiest way to understand, how the statistics collection works, is to try out one of the demo scripts.
+Normally, in order to do so, you should pass your db connection parameters either as cli arguments or as a file.
 
 ```bash
-# run one of the two df engine dialog bots and collect stats
-python examples/collect_stats.py
-python examples/collect_stats_vscode_demo.py
+python examples/collect_stats.py cfg_from_file --db.password=xxx myconfig.yaml
+python examples/collect_stats_vscode_demo.py cfg_from_file --db.password=xxx myconfig.yaml
+python examples/pipeline.py cfg_from_file --db.password=xxx myconfig.yaml
+```
+
+However, we also provide a makefile shortcut, in which the connection parameters are set to defaults (see `.env_file` and `examples/example_config.yaml`). This means that all you have to do to get an example database is to run:
+
+```bash
+pip install df_node_stats[postgres]
+docker-compose up psql
+make wait-db
+make collect-examples DB_PASSWORD=pass
 ```
 
 ## Display your data

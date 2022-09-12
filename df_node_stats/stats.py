@@ -87,18 +87,15 @@ class Stats:
     def _update_handlers(self, actor: Actor, stage: ActorStage, handler) -> Actor:
         actor.handlers[stage] = actor.handlers.get(stage, []) + [handler]
 
-    def update_actor_handlers(self, actor: Actor, auto_save: bool = True, *args, **kwargs):
+    def update_actor_handlers(self, actor: Actor, auto_save: bool = True):
         self._update_handlers(actor, ActorStage.CONTEXT_INIT, self.get_start_time)
         self._update_handlers(actor, ActorStage.FINISH_TURN, self.collect_stats)
         if auto_save:
             self._update_handlers(actor, ActorStage.FINISH_TURN, self.save)
 
-    @validate_arguments
-    def get_start_time(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
+    def get_start_time(self, ctx: Context, actor: Actor) -> None:
         self.start_time = datetime.datetime.now()
-        self.collect_stats(ctx, actor, *args, **kwargs)
 
-    @validate_arguments
     def collect_stats(self, ctx: Context, actor: Actor, *args, **kwargs) -> None:
         stats = dict()
         for collector in self.collectors:
@@ -114,3 +111,7 @@ class Stats:
             ]  # mock different dates
             stats["duration_time"] = [stats["duration_time"][0] + randint(4, 12)]
         self.add_df(stats=stats)
+
+    def collect_and_save_stats(self, ctx: Context, actor: Actor):
+        self.collect_stats(ctx, actor)
+        self.save()

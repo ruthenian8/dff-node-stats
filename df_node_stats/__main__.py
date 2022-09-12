@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 parser = argparse.ArgumentParser()
-subparsers = parser.add_subparsers()
+subparsers = parser.add_subparsers(dest="cmd", description="update or import config", required=True)
 opts_parser = subparsers.add_parser("cfg_from_opts")
 opts_parser.add_argument(
     "-dT", "--db.type", choices=["postgresql", "mysql+mysqldb", "clickhousedb+connect"], required=True

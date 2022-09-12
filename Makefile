@@ -3,6 +3,7 @@ SHELL = /bin/bash
 VENV_PATH = venv
 VERSIONING_FILES =  setup.py makefile docs/source/conf.py df_node_stats/__init__.py
 CURRENT_VERSION = 0.1.0
+DB_PASSWORD=${POSTGRES_PASSWORD}
 
 help:
 	@echo "Thanks for your interest in Dialog Flow Framework!"
@@ -16,6 +17,9 @@ help:
 	@echo "make version_major: increment version major in metadata files 8.8.1 -> 9.0.0"
 	@echo "make version_minor: increment version minor in metadata files 9.1.1 -> 9.2.0"
 	@echo "make version_patch: increment patch number in metadata files 9.9.1 -> 9.9.2"
+	@echo "make collect_examples: Run examplesEnter DB_PASSWORD value after target"
+	@echo "make docker_up: create containers for all databases."
+	@echo "make wait_db: wait until container creation is over."
 	@echo
 
 venv:
@@ -26,6 +30,17 @@ venv:
 	$(VENV_PATH)/bin/pip install -r requirements_dev.txt ;
 	$(VENV_PATH)/bin/pip install -r requirements_test.txt ;
 	
+docker_up:
+	docker-compose up -d
+.PHONY: docker_up	
+	
+wait_db: docker_up
+	while ! docker-compose exec psql pg_isready; do sleep 1; done > /dev/null
+.PHONY: wait_db
+
+collect-examples: venv
+	@$(VENV_PATH)/bin/python examples/collect_stats.py cfg_from_file --db.password=$(DB_PASSWORD) examples/example_config.yaml
+.PHONY: collect-examples
 
 format: venv
 	@$(VENV_PATH)/bin/python -m black --exclude="setup\.py|venv\/" --line-length=120 .
