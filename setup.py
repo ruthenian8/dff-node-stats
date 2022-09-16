@@ -8,7 +8,7 @@ readme_file = LOCATION / "README.md"
 long_description = readme_file.open(encoding="utf8").read()
 
 setuptools.setup(
-    name="df_node_stats",
+    name="df_stats",
     version="0.1.2",
     scripts=[],
     author="Denis Kuznetsov",
@@ -34,6 +34,6 @@ setuptools.setup(
         "mysql": ["pymysql>=1.0.2", "cryptography>=36.0.2"]
     },
     entry_points = {
-        'console_scripts': ['df_node_stats=df_node_stats.__main__:main'],
+        'console_scripts': ['df_stats=df_stats.__main__:main'],
     }
 )

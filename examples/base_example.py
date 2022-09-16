@@ -4,10 +4,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).absolute().parent))
 
 from df_runner import Pipeline, CLIMessengerInterface
-from df_node_stats import Stats, Saver
+from df_stats import Stats, Saver
 
-from collect_stats import script
-from example_utils import parse_args
+from example_utils import parse_args, script
 
 if __name__ == "__main__":
     args = parse_args()
@@ -22,7 +21,7 @@ if __name__ == "__main__":
         ("root", "fallback"),
         {},
         CLIMessengerInterface(),
-        [stats.get_start_time],
-        [stats.collect_and_save_stats],
+        [],
+        [],
     )
     pipeline.run()

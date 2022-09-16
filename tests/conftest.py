@@ -3,8 +3,8 @@ import sys
 from typing import Callable
 
 import pytest
-from df_node_stats import Saver, Stats
-from df_node_stats import collectors as DSC
+from df_stats import Saver, Stats
+from df_stats import collectors as DSC
 
 
 @pytest.fixture(scope="session")

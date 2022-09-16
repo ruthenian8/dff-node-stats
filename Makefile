@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 
 VENV_PATH = venv
-VERSIONING_FILES =  setup.py makefile docs/source/conf.py df_node_stats/__init__.py
+VERSIONING_FILES =  setup.py makefile docs/source/conf.py df_stats/__init__.py
 CURRENT_VERSION = 0.1.0
 DB_PASSWORD=${POSTGRES_PASSWORD}
 
@@ -59,14 +59,14 @@ lint: venv
 .PHONY: lint
 
 test: venv
-	@$(VENV_PATH)/bin/python -m pytest --cov-report html --cov-report term --cov=df_node_stats tests/
+	@$(VENV_PATH)/bin/python -m pytest --cov-report html --cov-report term --cov=df_stats tests/
 .PHONY: test
 
 test_all: venv test lint
 .PHONY: test_all
 
 doc: venv
-	$(VENV_PATH)/bin/sphinx-apidoc -e -f -o docs/source/apiref df_node_stats
+	$(VENV_PATH)/bin/sphinx-apidoc -e -f -o docs/source/apiref df_stats
 	$(VENV_PATH)/bin/sphinx-build -M clean docs/source docs/build
 	$(VENV_PATH)/bin/sphinx-build -M html docs/source docs/build
 .PHONY: doc

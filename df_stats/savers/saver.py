@@ -12,6 +12,8 @@ import importlib
 
 import pandas as pd
 
+from df_stats.stats import StatsData
+
 
 class Saver:
     """
@@ -81,7 +83,7 @@ class Saver:
                 )
             )
         subclass = getattr(
-            importlib.import_module(f".{storage_type}", package="df_node_stats.savers"),
+            importlib.import_module(f".{storage_type}", package="df_stats.savers"),
             subclass_name,
         )
         obj = object.__new__(subclass)
@@ -90,9 +92,7 @@ class Saver:
 
     def save(
         self,
-        dfs: List[pd.DataFrame],
-        column_types: Optional[Dict[str, str]] = None,
-        parse_dates: Union[List[str], bool] = False,
+        data_dicts: List[StatsData],
     ) -> None:
         """
         Save the data to a database or a file.
@@ -107,11 +107,7 @@ class Saver:
         """
         raise NotImplementedError
 
-    def load(
-        self,
-        column_types: Optional[Dict[str, str]] = None,
-        parse_dates: Union[List[str], bool] = False,
-    ) -> pd.DataFrame:
+    def load(self) -> List[StatsData]:
         """
         Load the data from a database or a file.
 

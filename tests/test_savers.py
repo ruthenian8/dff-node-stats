@@ -11,7 +11,7 @@ try:
 except ImportError:
     pass
 
-from df_node_stats import Saver, Stats
+from df_stats import Saver, Stats
 
 
 def ping_localhost(port: int, timeout=3):

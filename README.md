@@ -11,8 +11,8 @@ docker-compose up -d superset
 
 make collect-examples DB_PASSWORD=pass # collect examples
 
-df_node_stats cfg_from_file examples/config.yaml --outfile=superset_dashboard.zip # visualize examples
-df_node_stats import_dashboard \
+df_stats cfg_from_file examples/config.yaml --outfile=superset_dashboard.zip # visualize examples
+df_stats import_dashboard \
     --username=admin \
     --password=admin \
     --infile=superset_dashboard.zip \
@@ -46,9 +46,9 @@ In the future, we intend to add support for other SQL-compatible backends.
 ## Installation
 
 ```bash
-pip install df_node_stats[postgres]
-pip install df_node_stats[clickhouse]
-pip install df_node_stats[mysql]
+pip install df_stats[postgres]
+pip install df_stats[clickhouse]
+pip install df_stats[mysql]
 ```
 
 ## Statistics collection
@@ -57,7 +57,7 @@ Assuming that you have defined a `df_engine` **Actor** and assigned it to `actor
 
 ```python
 # import dependencies
-from df_node_stats import Stats, Saver
+from df_stats import Stats, Saver
 # ...
 
 # Define a destination for stats saving
@@ -84,7 +84,7 @@ python examples/pipeline.py cfg_from_file --db.password=xxx myconfig.yaml
 However, we also provide a makefile shortcut, in which the connection parameters are set to defaults (see `.env_file` and `examples/example_config.yaml`). This means that all you have to do to get an example database is to run:
 
 ```bash
-pip install df_node_stats[postgres]
+pip install df_stats[postgres]
 docker-compose up psql
 make wait-db
 make collect-examples DB_PASSWORD=pass
@@ -113,7 +113,7 @@ In order to run the dashboard in Apache Superset, you should update the default 
 One way is to pass the settings to a configuration script as parameters.
 
 ```bash
-df_node_stats cfg_from_opts \
+df_stats cfg_from_opts \
     --db.type=clickhousedb+connect \
     --db.user=user \
     --db.host=localhost \
@@ -143,7 +143,7 @@ db:
 you can forward it to the script like this:
 
 ```bash
-df_node_stats cfg_from_file config.yaml --outfile=./superset_dashboard.zip
+df_stats cfg_from_file config.yaml --outfile=./superset_dashboard.zip
 ```
 
 The script will update the default YAML configuration files with the settings of your choice. Then, the files will be packed into a zip-archive and saved to the designated file.
@@ -163,7 +163,7 @@ The add-on includes a script that allows for easy interaction with Superset API.
 As long as you have created the zip-packed configuration, you can import it using the following command. It requires that your Superset instance should run on localhost on port 8088 (standard for Superset).
 
 ```bash
-df_node_stats import_dashboard \\
+df_stats import_dashboard \\
     --username=admin \\
     --password=admin \\
     --infile=./superset_dashboard.zip \\

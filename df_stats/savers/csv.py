@@ -6,12 +6,12 @@ You don't need to interact with this class manually, as it will be automatically
 initialized when you construct a :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
 
 """
-from typing import List, Optional, Union, Dict
+import csv
+from typing import List
 import pathlib
 import os
 
-import pandas as pd
-
+from ..stats import StatsData
 
 class CsvSaver:
     """
@@ -38,29 +38,21 @@ class CsvSaver:
         path = path.partition("://")[2]
         self.path = pathlib.Path(path)
 
-    def save(
-        self,
-        dfs: List[pd.DataFrame],
-        column_types: Optional[Dict[str, str]] = None,
-        parse_dates: Union[List[str], bool] = False,
-    ) -> None:
+    async def save(self, data_dicts: List[StatsData]) -> None:
 
+        saved_data = []
         if self.path.exists() and os.path.getsize(self.path) > 0:
-            saved_df = self.load(column_types=column_types, parse_dates=parse_dates)
-        else:
-            saved_df = pd.DataFrame()
-        pd.concat([saved_df] + dfs).to_csv(self.path, index=False)
+            saved_data = await self.load()
+        
+        data = saved_data + data_dicts
 
-    def load(
-        self,
-        column_types: Optional[Dict[str, str]] = None,
-        parse_dates: Union[List[str], bool] = False,
-    ) -> pd.DataFrame:
-        if parse_dates and column_types:
-            true_types = {k: v for k, v in column_types.items() if k in (column_types.keys() - set(parse_dates))}
-        return pd.read_csv(
-            self.path,
-            usecols=column_types.keys(),
-            dtype=true_types,
-            parse_dates=parse_dates,
-        )
+        with open(self.path, "w", encoding="utf-8") as file:
+            writer = csv.writer(file, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writerow(data[0].keys())
+            for item in data:
+                writer.writerow(item.values())
+
+    async def load(self) -> List[dict]:
+        with open(self.path, "r", encoding="utf-8") as file:
+            reader = csv.DictReader(file, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            return [row for row in reader]

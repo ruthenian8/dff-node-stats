@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   df_node_stats.savers
+   df_stats.savers
 
 Submodules
 ----------
@@ -15,13 +15,13 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   df_node_stats.collectors
-   df_node_stats.stats
+   df_stats.collectors
+   df_stats.stats
 
 Module contents
 ---------------
 
-.. automodule:: df_node_stats
+.. automodule:: df_stats
    :members:
    :undoc-members:
    :show-inheritance:
