@@ -13,6 +13,7 @@ Example::
     stats.update_actor_handlers(actor, auto_save=False)
 
 """
+# TODO: fix docs
 import json
 import asyncio
 import datetime
@@ -26,9 +27,11 @@ from .savers import Saver
 STATS_KEY = "STATS"
 
 
+# TODO: rename `time` to `timestamp`
 StatsData = TypedDict("StatsData", {"context_id": str, "request_id": str, "time": str, "data_key": str, "data": str})
 
 
+# TODO: fix docs
 class Stats:
     """
     The class which is used to collect information from :py:class:`~df_engine.core.context.Context`
@@ -50,19 +53,18 @@ class Stats:
         self.saver: Saver = saver
         self.batch_size: int = batch_size
         self.data_dicts: List[StatsData] = []
-        self.start_time: Optional[datetime.datetime] = None
+        self.start_time: Optional[datetime.datetime] = None  # TODO: remove
 
     async def save(self):
-        if len(self.data_dicts) == self.batch_size:
+        if len(self.data_dicts) == self.batch_size:  # TODO: use >=
             await self.flush()
-        return
 
     async def flush(self):
         async with asyncio.Lock():
             await self.saver.save(self.data_dicts)
         self.data_dicts.clear()
 
-    def collect_stats(self, data_attr: str, data_keys: Optional[List[str]] = None) -> None:
+    def collect_stats(self, data_attr: str, data_keys: Optional[List[str]] = None) -> None: # TODO: wrong typing
         """
         data_attr: an attribute like `misc`.
         data_keys: keys of the attribute to recursively follow.
@@ -85,7 +87,7 @@ class Stats:
                 dict(
                     context_id=str(ctx.id),
                     request_id=get_last_index(ctx.requests),
-                    time=ctx.framework_states[STATS_KEY][info["component"]["name"]],
+                    time=ctx.framework_states[STATS_KEY][info["component"]["name"]], # TODO: just use datetime.datetime.now()
                     data_key=info["component"]["name"],
                     data=cast_data,
                 )
