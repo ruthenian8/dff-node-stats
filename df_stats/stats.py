@@ -26,16 +26,7 @@ from .savers import Saver
 STATS_KEY = "STATS"
 
 
-StatsData = TypedDict(
-    "StatsData",
-    {
-        "context_id": str,
-        "request_id": str,
-        "time": str,
-        "data_key": str,
-        "data": str
-    }
-)
+StatsData = TypedDict("StatsData", {"context_id": str, "request_id": str, "time": str, "data_key": str, "data": str})
 
 
 class Stats:
@@ -54,6 +45,7 @@ class Stats:
         is invoked each turn of the :py:class:`~df_engine.core.actor.Actor` to save the desired information.
 
     """
+
     def __init__(self, saver: Saver, batch_size: int) -> None:
         self.saver: Saver = saver
         self.batch_size: int = batch_size
@@ -64,7 +56,7 @@ class Stats:
         if len(self.data_dicts) == self.batch_size:
             await self.flush()
         return
-    
+
     async def flush(self):
         async with asyncio.Lock():
             await self.saver.save(self.data_dicts)
@@ -88,21 +80,17 @@ class Stats:
                 for key in data_keys:
                     data = data[key]
             cast_data = data if isinstance(data, str) else json.dumps(data)
-            
-            self.data_dicts.append(dict(
-                context_id=str(ctx.id),
-                request_id=get_last_index(ctx.requests),
-                time=ctx.framework_states[STATS_KEY][info["component"]["name"]],
-                data_key=info["component"]["name"],
-                data=cast_data
-            ))
+
+            self.data_dicts.append(
+                dict(
+                    context_id=str(ctx.id),
+                    request_id=get_last_index(ctx.requests),
+                    time=ctx.framework_states[STATS_KEY][info["component"]["name"]],
+                    data_key=info["component"]["name"],
+                    data=cast_data,
+                )
+            )
 
             await self.save()
 
-        return Wrapper(
-            name="stats_wrapper",
-            before=get_timestamp,
-            after=collect
-        )
-
-
+        return Wrapper(name="stats_wrapper", before=get_timestamp, after=collect)

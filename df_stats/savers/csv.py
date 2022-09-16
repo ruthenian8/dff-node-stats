@@ -13,6 +13,7 @@ import os
 
 from ..stats import StatsData
 
+
 class CsvSaver:
     """
     Saves and reads the stats dataframe from a csv file.
@@ -43,7 +44,7 @@ class CsvSaver:
         saved_data = []
         if self.path.exists() and os.path.getsize(self.path) > 0:
             saved_data = await self.load()
-        
+
         data = saved_data + data_dicts
 
         with open(self.path, "w", encoding="utf-8") as file:

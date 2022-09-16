@@ -53,7 +53,7 @@ class MysqlSaver(SqlSaver):
             )
         ]  # cast objects to strings
         super().save(self, dfs, column_types, parse_dates)
-    
+
     @staticmethod
     def insert_method(table, conn, keys, data_iter):
         """
@@ -75,12 +75,11 @@ class MysqlSaver(SqlSaver):
             writer.writerows(data_iter)
             s_buf.seek(0)
 
-            columns = ', '.join(['"{}"'.format(k) for k in keys])
+            columns = ", ".join(['"{}"'.format(k) for k in keys])
             if table.schema:
-                table_name = '{}.{}'.format(table.schema, table.name)
+                table_name = "{}.{}".format(table.schema, table.name)
             else:
                 table_name = table.name
 
-            sql = 'COPY {} ({}) FROM STDIN WITH CSV'.format(
-                table_name, columns)
+            sql = "COPY {} ({}) FROM STDIN WITH CSV".format(table_name, columns)
             cur.copy_expert(sql=sql, file=s_buf)
