@@ -11,7 +11,7 @@ from typing import List
 import pathlib
 import os
 
-from ..stats import StatsData
+from ..utils import StatsItem
 
 
 class CsvSaver:
@@ -39,21 +39,21 @@ class CsvSaver:
         path = path.partition("://")[2]
         self.path = pathlib.Path(path)
 
-    async def save(self, data_dicts: List[StatsData]) -> None:
+    async def save(self, data: List[StatsItem]) -> None:
 
         saved_data = []
         if self.path.exists() and os.path.getsize(self.path) > 0:
             saved_data = await self.load()
 
-        data = saved_data + data_dicts
+        data = saved_data + data
 
         with open(self.path, "w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-            writer.writerow(data[0].keys())
+            writer.writerow(data[0].dict().keys())
             for item in data:
-                writer.writerow(item.values())
+                writer.writerow(item.dict().values())
 
-    async def load(self) -> List[dict]:
+    async def load(self) -> List[StatsItem]:
         with open(self.path, "r", encoding="utf-8") as file:
             reader = csv.DictReader(file, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-            return [row for row in reader]
+            return [StatsItem.parse_obj(row) for row in reader]

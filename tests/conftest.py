@@ -11,8 +11,7 @@ from df_stats import collectors as DSC
 def data_generator():
     sys.path.insert(0, "../")
     main: Callable
-    from examples.collect_stats import main
-
+    from examples.services_basic import main
     yield main
 
 
@@ -31,14 +30,6 @@ def testing_file(tmpdir_factory):
 @pytest.fixture(scope="session")
 def testing_saver(testing_file):
     yield Saver("csv://{}".format(testing_file))
-
-
-@pytest.fixture(scope="session")
-def testing_dataframe(data_generator, testing_saver):
-    stats = Stats(saver=testing_saver, collectors=[DSC.NodeLabelCollector()])
-    stats_object: Stats = data_generator(stats, 3)
-    stats_object.save()
-    yield stats_object.dataframe
 
 
 @pytest.fixture(scope="session")

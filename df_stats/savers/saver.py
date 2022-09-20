@@ -12,7 +12,7 @@ import importlib
 
 import pandas as pd
 
-from df_stats.stats import StatsData
+from ..utils import StatsItem
 
 
 class Saver:
@@ -92,7 +92,7 @@ class Saver:
 
     def save(
         self,
-        data_dicts: List[StatsData],
+        data: List[StatsItem],
     ) -> None:
         """
         Save the data to a database or a file.
@@ -107,7 +107,7 @@ class Saver:
         """
         raise NotImplementedError
 
-    def load(self) -> List[StatsData]:
+    def load(self) -> List[StatsItem]:
         """
         Load the data from a database or a file.
 

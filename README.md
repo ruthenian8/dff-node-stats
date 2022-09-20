@@ -39,7 +39,6 @@ Currently, we offer support for multiple database types that can be used to stor
 
 * [Postgresql](https://www.postgresql.org/)
 * [Clickhouse](https://clickhouse.com/)
-* [MySQL](#)
 
 In the future, we intend to add support for other SQL-compatible backends.
 
@@ -48,7 +47,6 @@ In the future, we intend to add support for other SQL-compatible backends.
 ```bash
 pip install df_stats[postgres]
 pip install df_stats[clickhouse]
-pip install df_stats[mysql]
 ```
 
 ## Statistics collection

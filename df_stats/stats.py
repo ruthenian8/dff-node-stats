@@ -13,20 +13,22 @@ Example::
     stats.update_actor_handlers(actor, auto_save=False)
 
 """
-import json
-import asyncio
-import datetime
-from typing import List, Optional, TypedDict
 
+import asyncio
+from functools import partial
+from typing import List, Tuple, Callable, Union
+
+from df_engine.core import Context, Actor
 from df_runner import Wrapper, WrapperRuntimeInfo
-from df_engine.core.context import Context, get_last_index
+from pydantic.typing import ForwardRef
 
 from .savers import Saver
+from .utils import StatsItem, WRAPPER_NAME
 
-STATS_KEY = "STATS"
 
+Stats = ForwardRef("Stats")
 
-StatsData = TypedDict("StatsData", {"context_id": str, "request_id": str, "time": str, "data_key": str, "data": str})
+StatsFunction = Callable[[Stats, Context, Actor, WrapperRuntimeInfo], None]
 
 
 class Stats:
@@ -49,48 +51,27 @@ class Stats:
     def __init__(self, saver: Saver, batch_size: int) -> None:
         self.saver: Saver = saver
         self.batch_size: int = batch_size
-        self.data_dicts: List[StatsData] = []
-        self.start_time: Optional[datetime.datetime] = None
+        self.data: List[dict] = []
 
     async def save(self):
-        if len(self.data_dicts) == self.batch_size:
+        if len(self.data) >= self.batch_size:
             await self.flush()
         return
 
     async def flush(self):
         async with asyncio.Lock():
-            await self.saver.save(self.data_dicts)
-        self.data_dicts.clear()
+            await self.saver.save(self.data)
+        self.data.clear()
 
-    def collect_stats(self, data_attr: str, data_keys: Optional[List[str]] = None) -> None:
+    def get_wrapper(self, funcs: Union[StatsFunction, Tuple[StatsFunction, StatsFunction]]) -> None:
         """
         data_attr: an attribute like `misc`.
         data_keys: keys of the attribute to recursively follow.
         """
-
-        async def get_timestamp(ctx: Context, _, info: WrapperRuntimeInfo):
-            if STATS_KEY not in ctx.framework_states:
-                ctx.framework_states[STATS_KEY] = {}
-            ctx.framework_states[STATS_KEY][info["component"]["name"]] = str(datetime.datetime.now())
-
-        async def collect(ctx: Context, _, info: WrapperRuntimeInfo):
-            attr = getattr(ctx, data_attr)
-            data = attr
-            if data_keys:
-                for key in data_keys:
-                    data = data[key]
-            cast_data = data if isinstance(data, str) else json.dumps(data)
-
-            self.data_dicts.append(
-                dict(
-                    context_id=str(ctx.id),
-                    request_id=get_last_index(ctx.requests),
-                    time=ctx.framework_states[STATS_KEY][info["component"]["name"]],
-                    data_key=info["component"]["name"],
-                    data=cast_data,
-                )
-            )
-
-            await self.save()
-
-        return Wrapper(name="stats_wrapper", before=get_timestamp, after=collect)
+        if asyncio.iscoroutinefunction(funcs):
+            after = partial(funcs, self)
+            return Wrapper(name=WRAPPER_NAME, before=None, after=after)
+        else:
+            before = partial(funcs[0], self)
+            after = partial(funcs[1], self)
+            return Wrapper(name=WRAPPER_NAME, before=before, after=after)
