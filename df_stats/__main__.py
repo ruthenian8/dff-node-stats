@@ -81,23 +81,23 @@ TYPE_MAPPING_CH = {
 }
 
 SQL_STMT_MAPPING = {
-    "dff_acyclic_nodes.yaml": "WITH main AS (\n  SELECT DISTINCT ${db.table}.context_id, request_id, time, CAST(${lblfield} AS ${texttype}) AS label\n  \
-    FROM ${db.table} INNER JOIN \n  (\n    WITH helper AS \
-    (\n         SELECT DISTINCT context_id, request_id, CAST(${lblfield} AS ${texttype}) \
-    AS label from ${db.table}\n         ) \n    SELECT context_id FROM helper GROUP BY context_id\n\
-        HAVING count(context_id) = COUNT(DISTINCT label)\n  ) AS plain_ctx ON ${db.table}.context_id \
+    "dff_acyclic_nodes.yaml": "WITH main AS (\n  SELECT DISTINCT {table}.context_id, request_id, timestamp, CAST({lblfield} AS {texttype}) AS label\n  \
+    FROM {table} INNER JOIN \n  (\n    WITH helper AS \
+    (\n         SELECT DISTINCT context_id, request_id, CAST({lblfield} AS {texttype}) \
+    AS label from {table}\n         ) \n    SELECT context_id FROM helper GROUP BY context_id\n\
+        HAVING count(context_id) = COUNT(DISTINCT label)\n  ) AS plain_ctx ON {table}.context_id \
     = plain_ctx.context_id\n     ORDER BY context_id, request_id\n     ) SELECT context_id, \
-    request_id, time as start_time, label,\n    ${lag} \
+    request_id, timestamp as start_time, label,\n    {lag} \
     AS prev_label\nFROM main;",
-    "dff_node_stats.yaml": "WITH main AS (\n  SELECT context_id, request_id, time AS start_time, data_key, \
-    data,\n   CAST(${flowfield} AS ${texttype}) AS flow_label, \n   CAST(${nodefield} \
-    AS ${texttype}) AS node_label, \n   CAST(${lblfield} AS ${texttype}) AS label \n   FROM \
-    ${db.table} ORDER BY context_id, request_id)\nSELECT context_id, request_id, start_time, \
-    data_key, CAST(data AS ${texttype}) AS data, \nflow_label, node_label, label, ${lag} AS prev_label\nFROM main;",
-    "dff_final_nodes.yaml": "WITH main AS (SELECT context_id, max(request_id) AS max_hist FROM ${db.table} GROUP \
-    BY context_id)     \nSELECT ${db.table}.*, CAST(${flowfield} AS ${texttype}) AS flow_label, \
-    CAST(${nodefield} AS ${texttype}) AS node_label FROM ${db.table} INNER JOIN main \nON ${db.table}.context_id \
-    = main.context_id AND ${db.table}.request_id = main.max_hist;"
+    "dff_node_stats.yaml": "WITH main AS (\n  SELECT context_id, request_id, timestamp AS start_time, data_key, \
+    data,\n   CAST({flowfield} AS {texttype}) AS flow_label, \n   CAST({nodefield} \
+    AS {texttype}) AS node_label, \n   CAST({lblfield} AS {texttype}) AS label \n   FROM \
+    {table} ORDER BY context_id, request_id)\nSELECT context_id, request_id, start_time, \
+    data_key, CAST(data AS {texttype}) AS data, \nflow_label, node_label, label, {lag} AS prev_label\nFROM main;",
+    "dff_final_nodes.yaml": "WITH main AS (SELECT context_id, max(request_id) AS max_hist FROM {table} GROUP \
+    BY context_id)     \nSELECT {table}.*, CAST({flowfield} AS {texttype}) AS flow_label, \
+    CAST({nodefield} AS {texttype}) AS node_label FROM {table} INNER JOIN main \nON {table}.context_id \
+    = main.context_id AND {table}.request_id = main.max_hist;",
 }
 
 
@@ -185,34 +185,34 @@ def make_zip_config(parsed_args: argparse.Namespace):
 
     if OmegaConf.select(cli_conf, "db.type") == "clickhousedb+connect":
         params = dict(
-            lag = "neighbor(label, -1)",
-            texttype = "String",
-            lblfield = "JSON_VALUE(data, '$.label')",
-            flowfield = "JSON_VALUE(data, '$.flow')",
-            nodefield = "JSON_VALUE(data, '$.node')",
+            table="${db.table}",
+            lag="neighbor(label, -1)",
+            texttype="String",
+            lblfield="JSON_VALUE(data, '$.label')",
+            flowfield="JSON_VALUE(data, '$.flow')",
+            nodefield="JSON_VALUE(data, '$.node')",
         )
     else:
         params = dict(
-            lag = "LAG(label,1) OVER (ORDER BY context_id, request_id)",
-            texttype = "TEXT",
-            lblfield = "data -> 'label'",
-            flowfield = "data -> 'flow'",
-            nodefield = "data -> 'node'"
+            table="${db.table}",
+            lag="LAG(label,1) OVER (ORDER BY context_id, request_id)",
+            texttype="TEXT",
+            lblfield="data -> 'label'",
+            flowfield="data -> 'flow'",
+            nodefield="data -> 'node'",
         )
 
     conf = SQL_STMT_MAPPING.copy()
     for key in conf.keys():
         conf[key] = {}
-        conf[key]["sql"] = SQL_STMT_MAPPING[key]
-        for item_key, value in params.items():
-            conf[key]["sql"] = conf[key]["sql"].replace("${"+item_key+"}", value)
+        conf[key]["sql"] = SQL_STMT_MAPPING[key].format(**params)
 
     resolve_conf = OmegaConf.create(
         {
             "database": {
                 "sqlalchemy_uri": "${db.type}://${db.user}:XXXXXXXXXX@${db.host}:${db.port}/${db.name}",
             },
-            **conf
+            **conf,
         }
     )
 

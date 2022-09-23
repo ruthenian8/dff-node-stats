@@ -64,24 +64,19 @@ class Stats:
             await self.saver.save(self.data)
         self.data.clear()
 
-    def get_wrapper(self, func: StatsFunction) -> None: # TODO: wrong typing
-        """
-        data_attr: an attribute like `misc`.
-        data_keys: keys of the attribute to recursively follow.
-        """
+    def get_wrapper(self, func: StatsFunction) -> None:
         async def wrapper_func(ctx, _, info):
             return await func(self, ctx, _, info)
+
         return wrapper_func
-        
+
     def get_default_actor_wrapper(self):
         async def get_default_actor_data(stats, ctx, _, info):
             last_label = ctx.last_label or ("", "")
-            default_data = StatsItem.from_context(ctx, info, {
-                "flow": last_label[0],
-                "node": last_label[1],
-                "label": ": ".join(last_label)
-            })
+            default_data = StatsItem.from_context(
+                ctx, info, {"flow": last_label[0], "node": last_label[1], "label": ": ".join(last_label)}
+            )
             stats.data.append(default_data)
             await stats.save()
-        
+
         return self.get_wrapper(get_default_actor_data)

@@ -47,7 +47,7 @@ class PostgresSaver:
             self.metadata,
             Column("context_id", String),
             Column("request_id", Integer),
-            Column("time", DateTime), # TODO: rename `time` to `timestamp`
+            Column("timestamp", DateTime),  # TODO: rename `time` to `timestamp`
             Column("data_key", String),
             Column("data", JSON),
         )

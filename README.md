@@ -9,6 +9,18 @@ pip install .[postgres] # install
 docker-compose up -d psql # launch images
 docker-compose up -d superset
 
+#
+# when superset is launched for the first time, don't forget to use the following commands:
+#
+# docker exec -it superset superset fab create-admin --username admin \
+#              --firstname Superset \
+#              --lastname Admin \
+#              --email admin@superset.com \
+#              --password admin
+# docker exec -it superset superset db upgrade
+# docker exec -it superset superset init
+#
+
 make collect-examples DB_PASSWORD=pass # collect examples
 
 df_stats cfg_from_file examples/config.yaml --outfile=superset_dashboard.zip # visualize examples

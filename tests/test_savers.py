@@ -14,7 +14,7 @@ async def test_PG_saving(PG_uri_string, table, testing_items):
     async with saver.engine.connect() as conn:
         await conn.execute(text(f"TRUNCATE {table}"))
         await conn.commit()
-    
+
     await saver.save(testing_items)
     await saver.save(testing_items)
 
@@ -28,9 +28,9 @@ async def test_PG_saving(PG_uri_string, table, testing_items):
 async def test_CH_saving(CH_uri_string, table, testing_items):
     saver: ClickHouseSaver = Saver(CH_uri_string, table=table)
     await saver._create_table()
-    
+
     await saver.ch_client.execute(f"TRUNCATE {table}")
-    
+
     await saver.save(testing_items)
     await saver.save(testing_items)
 
