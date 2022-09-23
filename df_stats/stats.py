@@ -14,21 +14,22 @@ Example::
 
 """
 # TODO: fix docs
-import json
-import asyncio
-import datetime
-from typing import List, Optional, TypedDict
 
+import asyncio
+from functools import partial
+from typing import List, Tuple, Callable, Union
+
+from df_engine.core import Context, Actor
 from df_runner import Wrapper, WrapperRuntimeInfo
-from df_engine.core.context import Context, get_last_index
+from pydantic.typing import ForwardRef
 
 from .savers import Saver
+from .utils import StatsItem
 
-STATS_KEY = "STATS"
 
+Stats = ForwardRef("Stats")
 
-# TODO: rename `time` to `timestamp`
-StatsData = TypedDict("StatsData", {"context_id": str, "request_id": str, "time": str, "data_key": str, "data": str})
+StatsFunction = Callable[[Stats, Context, Actor, WrapperRuntimeInfo], None]
 
 
 # TODO: fix docs
@@ -49,50 +50,38 @@ class Stats:
 
     """
 
-    def __init__(self, saver: Saver, batch_size: int) -> None:
+    def __init__(self, saver: Saver, batch_size: int = 1) -> None:
         self.saver: Saver = saver
         self.batch_size: int = batch_size
-        self.data_dicts: List[StatsData] = []
-        self.start_time: Optional[datetime.datetime] = None  # TODO: remove
+        self.data: List[dict] = []
 
     async def save(self):
-        if len(self.data_dicts) == self.batch_size:  # TODO: use >=
+        if len(self.data) >= self.batch_size:
             await self.flush()
 
     async def flush(self):
         async with asyncio.Lock():
-            await self.saver.save(self.data_dicts)
-        self.data_dicts.clear()
+            await self.saver.save(self.data)
+        self.data.clear()
 
-    def collect_stats(self, data_attr: str, data_keys: Optional[List[str]] = None) -> None: # TODO: wrong typing
+    def get_wrapper(self, func: StatsFunction) -> None: # TODO: wrong typing
         """
         data_attr: an attribute like `misc`.
         data_keys: keys of the attribute to recursively follow.
         """
-
-        async def get_timestamp(ctx: Context, _, info: WrapperRuntimeInfo):
-            if STATS_KEY not in ctx.framework_states:
-                ctx.framework_states[STATS_KEY] = {}
-            ctx.framework_states[STATS_KEY][info["component"]["name"]] = str(datetime.datetime.now())
-
-        async def collect(ctx: Context, _, info: WrapperRuntimeInfo):
-            attr = getattr(ctx, data_attr)
-            data = attr
-            if data_keys:
-                for key in data_keys:
-                    data = data[key]
-            cast_data = data if isinstance(data, str) else json.dumps(data)
-
-            self.data_dicts.append(
-                dict(
-                    context_id=str(ctx.id),
-                    request_id=get_last_index(ctx.requests),
-                    time=ctx.framework_states[STATS_KEY][info["component"]["name"]], # TODO: just use datetime.datetime.now()
-                    data_key=info["component"]["name"],
-                    data=cast_data,
-                )
-            )
-
-            await self.save()
-
-        return Wrapper(name="stats_wrapper", before=get_timestamp, after=collect)
+        async def wrapper_func(ctx, _, info):
+            return await func(self, ctx, _, info)
+        return wrapper_func
+        
+    def get_default_actor_wrapper(self):
+        async def get_default_actor_data(stats, ctx, _, info):
+            last_label = ctx.last_label or ("", "")
+            default_data = StatsItem.from_context(ctx, info, {
+                "flow": last_label[0],
+                "node": last_label[1],
+                "label": ": ".join(last_label)
+            })
+            stats.data.append(default_data)
+            await stats.save()
+        
+        return self.get_wrapper(get_default_actor_data)

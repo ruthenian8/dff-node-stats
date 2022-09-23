@@ -29,9 +29,8 @@ setuptools.setup(
     ],
     include_package_data=True,
     extras_require = {
-        "postgres": ["psycopg2==2.9.2"],
-        "clickhouse": ["infi.clickhouse-orm==2.1.1"],
-        "mysql": ["pymysql>=1.0.2", "cryptography>=36.0.2"]
+        "postgres": ["asyncpg>=0.26.0"],
+        "clickhouse": ["aiochclient>=2.2.0"],
     },
     entry_points = {
         'console_scripts': ['df_stats=df_stats.__main__:main'],

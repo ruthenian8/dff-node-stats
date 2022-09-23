@@ -1,28 +1,18 @@
 import os
-import sys
-from typing import Callable
+from uuid import uuid4
+from random import choice
 
 import pytest
-from df_stats import Saver, Stats
-from df_stats import collectors as DSC
+from df_stats import Saver, StatsItem
 
 
-@pytest.fixture(scope="session")
-def data_generator():
-    sys.path.insert(0, "../")
-    main: Callable
-    from examples.collect_stats import main
-
-    yield main
-
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session")  # test saving configs to zip
 def testing_cfg_dir(tmpdir_factory):
     cfg_dir = tmpdir_factory.mktemp("cfg")
     yield str(cfg_dir)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session")  # test saving to csv
 def testing_file(tmpdir_factory):
     fn = tmpdir_factory.mktemp("data").join("stats.csv")
     return str(fn)
@@ -34,11 +24,19 @@ def testing_saver(testing_file):
 
 
 @pytest.fixture(scope="session")
-def testing_dataframe(data_generator, testing_saver):
-    stats = Stats(saver=testing_saver, collectors=[DSC.NodeLabelCollector()])
-    stats_object: Stats = data_generator(stats, 3)
-    stats_object.save()
-    yield stats_object.dataframe
+def testing_items():
+    yield [
+        StatsItem(
+            context_id=str(uuid4()), request_id=1, data_key="some_data", data={"duration": 0.0001}
+        ),
+        StatsItem(
+            context_id=str(uuid4()), request_id=1, data_key="actor_data", data={
+                "flow": choice(["one", "two", "three"]),
+                "node": choice(["node_1", "node_2", "node_3", "node_4"]),
+                "label": ":".join([choice(["one", "two", "three"]), choice(["node_1", "node_2", "node_3", "node_4"])])
+            }
+        ),
+    ] * 100
 
 
 @pytest.fixture(scope="session")
@@ -48,14 +46,9 @@ def table():
 
 @pytest.fixture(scope="session")
 def PG_uri_string():
-    return "postgresql://{}:{}@localhost:5432/{}".format(os.getenv("PG_USERNAME"), os.getenv("PG_PASSWORD"), "test")
+    return "postgresql://{}:{}@localhost:5432/{}".format("root", "qwerty", "test")
 
 
 @pytest.fixture(scope="session")
 def CH_uri_string():
-    return "clickhouse://{}:{}@localhost:8123/{}".format(os.getenv("CH_USERNAME"), os.getenv("CH_PASSWORD"), "test")
-
-
-@pytest.fixture(scope="session")
-def MS_uri_string():
-    return "mysql+pymysql://{}:{}@localhost:3307/{}".format(os.getenv("MS_USERNAME"), os.getenv("MS_PASSWORD"), "test")
+    return "clickhouse://{}:{}@localhost:8123/{}".format("root", "qwerty", "test")

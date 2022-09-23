@@ -11,20 +11,10 @@ params:
     operator: null
     sqlExpression: label <> prev_label
     subject: null
-  - clause: WHERE
-    comparator: '-1'
-    expressionType: SIMPLE
-    filterOptionName: filter_rs2fqhdccwl_c4dyl1i3ik
-    isExtra: false
-    isNew: false
-    operator: '!='
-    operatorId: NOT_EQUALS
-    sqlExpression: null
-    subject: history_id
   color_scheme: supersetColors
-  datasource: 3__table
+  datasource: 1__table
   extra_form_data: {}
-  granularity_sqla: start_time
+  granularity_sqla: time
   groupby:
   - prev_label
   - label
@@ -54,7 +44,7 @@ params:
     optionName: metric_hlw7e194evs_ghfqyq1fa7v
     sqlExpression: null
   row_limit: 10000
-  slice_id: 23
+  slice_id: 9
   time_range: No filter
   viz_type: sankey
 cache_timeout: null

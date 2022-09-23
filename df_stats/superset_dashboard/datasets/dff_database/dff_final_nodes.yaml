@@ -5,9 +5,10 @@ default_endpoint: null
 offset: 0
 cache_timeout: null
 schema: public
-sql: "WITH main AS (SELECT context_id, max(history_id) as max_hist FROM dff_stats\
-  \ GROUP BY context_id)     \nSELECT dff_stats.* FROM dff_stats INNER JOIN main \n\
-  ON dff_stats.context_id     = main.context_id AND dff_stats.history_id = main.max_hist;"
+sql: "WITH main AS (SELECT context_id, max(request_id) as max_hist FROM test GROUP\
+  \ BY context_id)     \nSELECT test.*, cast(data -> 'flow' as text) as flow_label,\
+  \ cast(data -> 'node' as text) as node_label FROM test INNER JOIN main \nON test.context_id\
+  \ = main.context_id AND test.request_id = main.max_hist;"
 params: null
 template_params: null
 filter_select_enabled: false
@@ -25,11 +26,11 @@ metrics:
     warning_markdown: ''
   warning_text: null
 columns:
-- column_name: start_time
+- column_name: time
   verbose_name: null
   is_dttm: true
   is_active: true
-  type: Nullable(DateTime)
+  type: DATETIME
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -37,11 +38,11 @@ columns:
   description: null
   python_date_format: null
   extra: {}
-- column_name: duration_time
+- column_name: request_id
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(Float64)
+  type: INTEGER
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -49,11 +50,11 @@ columns:
   description: null
   python_date_format: null
   extra: {}
-- column_name: history_id
+- column_name: data_key
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(Int64)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -65,7 +66,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -77,7 +78,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -89,7 +90,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -97,11 +98,11 @@ columns:
   description: null
   python_date_format: null
   extra: {}
-- column_name: attitude
+- column_name: data
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: JSON
   advanced_data_type: null
   groupby: true
   filterable: true

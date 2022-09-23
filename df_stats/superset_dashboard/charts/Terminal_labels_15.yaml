@@ -10,7 +10,7 @@ params:
   extra_form_data: {}
   forecastInterval: 0.8
   forecastPeriods: 10
-  granularity_sqla: start_time
+  granularity_sqla: time
   groupby:
   - flow_label
   - node_label
@@ -25,7 +25,7 @@ params:
   row_limit: 10000
   show_legend: true
   show_value: false
-  slice_id: 22
+  slice_id: 15
   stack: false
   time_grain_sqla: P1D
   time_range: No filter
