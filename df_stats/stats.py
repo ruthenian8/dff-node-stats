@@ -64,10 +64,6 @@ class Stats:
         self.data.clear()
 
     def get_wrapper(self, func: StatsFunction) -> None:
-        """
-        data_attr: an attribute like `misc`.
-        data_keys: keys of the attribute to recursively follow.
-        """
         async def wrapper_func(ctx, _, info):
             return await func(self, ctx, _, info)
         return wrapper_func

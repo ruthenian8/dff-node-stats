@@ -2,7 +2,7 @@ import json
 import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field, validator, validate_arguments
+from pydantic import BaseModel, Field
 from df_engine.core.context import Context, get_last_index
 from df_runner import WrapperRuntimeInfo
 
@@ -21,7 +21,6 @@ class StatsItem(BaseModel):
     data: dict
 
     @classmethod
-    @validate_arguments
     def from_context(cls, ctx: Context, info: WrapperRuntimeInfo, data: Any):
         context_id = str(ctx.id)
         request_id = get_last_index(ctx.requests)
