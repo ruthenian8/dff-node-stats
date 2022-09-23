@@ -12,7 +12,7 @@ from _utils import parse_args, script
 
 
 async def heavy_service(_):
-    await asyncio.sleep(random.randint(0, 5))
+    await asyncio.sleep(random.randint(0, 2))
 
 
 """

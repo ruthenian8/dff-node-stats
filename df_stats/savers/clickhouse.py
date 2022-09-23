@@ -82,7 +82,7 @@ class ClickHouseSaver:
             f"CREATE TABLE if not exists {self.table} ("
             "context_id String, "
             "request_id Int32, "
-            "time DateTime64, "
+            "timestamp DateTime64, "  # TODO: rename `time` to `timestamp`
             "data_key String, "
             "data String"
             ") ENGINE = Memory"

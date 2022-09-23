@@ -17,7 +17,7 @@ from _utils import parse_args, script
 
 
 async def heavy_service(_):
-    await asyncio.sleep(random.randint(0, 5))
+    await asyncio.sleep(random.randint(0, 2))
 
 
 async def get_service_state(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
@@ -37,10 +37,12 @@ def get_pipeline(args) -> Pipeline:
     actor = Actor(script, ("root", "start"), ("root", "fallback"))
 
     pipeline = Pipeline.from_dict(
-        {"components": [
-            Service(handler=to_service(after_wrapper=[wrapper])(heavy_service)),
-            Service(handler=to_service(after_wrapper=[wrapper])(actor))
-        ]}
+        {
+            "components": [
+                Service(handler=to_service(after_wrapper=[wrapper])(heavy_service)),
+                Service(handler=to_service(after_wrapper=[wrapper])(actor)),
+            ]
+        }
     )
     return pipeline
 

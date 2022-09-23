@@ -10,7 +10,7 @@ TURNS = [
     ("hi", "how are you"),
     ("fine", "what would you like to talk about?"),
     ("dog", "do you like it?"),
-    ("yes", "what animals do you have?")
+    ("yes", "what animals do you have?"),
 ]
 
 
@@ -30,7 +30,8 @@ def run_pipeline_test(pipeline: Pipeline, turns: List[Tuple[str, str]]):
 @pytest.mark.parametrize(
     "module_path",
     [
-        file for file in pathlib.Path(__file__).absolute().parent.parent.joinpath("examples").glob("*.py") 
+        file
+        for file in pathlib.Path(__file__).absolute().parent.parent.joinpath("examples").glob("*.py")
         if not file.stem.startswith("_")
     ],
 )

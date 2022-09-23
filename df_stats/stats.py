@@ -13,6 +13,7 @@ Example::
     stats.update_actor_handlers(actor, auto_save=False)
 
 """
+# TODO: fix docs
 
 import asyncio
 from functools import partial
@@ -31,6 +32,7 @@ Stats = ForwardRef("Stats")
 StatsFunction = Callable[[Stats, Context, Actor, WrapperRuntimeInfo], None]
 
 
+# TODO: fix docs
 class Stats:
     """
     The class which is used to collect information from :py:class:`~df_engine.core.context.Context`
@@ -56,7 +58,6 @@ class Stats:
     async def save(self):
         if len(self.data) >= self.batch_size:
             await self.flush()
-        return
 
     async def flush(self):
         async with asyncio.Lock():
@@ -66,17 +67,16 @@ class Stats:
     def get_wrapper(self, func: StatsFunction) -> None:
         async def wrapper_func(ctx, _, info):
             return await func(self, ctx, _, info)
+
         return wrapper_func
-        
+
     def get_default_actor_wrapper(self):
         async def get_default_actor_data(stats, ctx, _, info):
             last_label = ctx.last_label or ("", "")
-            default_data = StatsItem.from_context(ctx, info, {
-                "flow": last_label[0],
-                "node": last_label[1],
-                "label": ": ".join(last_label)
-            })
+            default_data = StatsItem.from_context(
+                ctx, info, {"flow": last_label[0], "node": last_label[1], "label": ": ".join(last_label)}
+            )
             stats.data.append(default_data)
             await stats.save()
-        
+
         return self.get_wrapper(get_default_actor_data)
