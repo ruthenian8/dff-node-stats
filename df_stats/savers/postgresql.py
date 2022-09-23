@@ -54,7 +54,7 @@ class PostgresSaver:
 
     async def save(self, data: List[StatsItem]) -> None:
         if not self.table_exists:
-            await self._create_table()
+            await self._create_table() # TODO: what do it do if table_exists = False, but real table exists
             self.table_exists = True
 
         async with self.engine.connect() as conn:
