@@ -47,7 +47,6 @@ from omegaconf import OmegaConf
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(dest="cmd", description="update or import config", required=True)
 opts_parser = subparsers.add_parser("cfg_from_opts")
@@ -80,6 +79,7 @@ TYPE_MAPPING_CH = {
     "DATETIME": "Nullable(DateTime)",
 }
 
+# TODO: All code are outdated
 SQL_STMT_MAPPING = {
     "dff_acyclic_nodes.yaml": "WITH main AS (\n  SELECT DISTINCT {table}.context_id, request_id, timestamp, CAST({lblfield} AS {texttype}) AS label\n  \
     FROM {table} INNER JOIN \n  (\n    WITH helper AS \

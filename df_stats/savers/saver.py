@@ -12,7 +12,8 @@ import importlib
 
 from ..utils import StatsItem
 
-
+# TODO: Documentation
+# TODO: Remove useless
 class Saver:
     """
     :py:class:`~dff_node_stats.savers.saver.Saver` interface requires two methods to be impemented:
@@ -51,7 +52,7 @@ class Saver:
         super().__init_subclass__(**kwargs)
         cls._saver_mapping[storage_type] = cls.__name__
 
-    def __new__(cls, path: Optional[str] = None, table: str = "dff_stats"):
+    def __new__(cls, path: Optional[str] = None, table: str = "dff_stats"): # TODO: This is old code
         if not path:
             raise ValueError(
                 """
