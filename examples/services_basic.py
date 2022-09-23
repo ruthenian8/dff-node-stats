@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).absolute().parent))
 
 from df_engine.core import Context, Actor
-from df_runner import Pipeline, Service, WrapperRuntimeInfo
+from df_runner import Pipeline, Service, WrapperRuntimeInfo, to_service
 from df_stats import Stats, Saver, StatsItem
 
 from _utils import parse_args, script
@@ -29,20 +29,23 @@ async def get_service_state(stats: Stats, ctx: Context, _, info: WrapperRuntimeI
     await stats.save()
 
 
-def main(args = None):
-    if args is None:
-        args = parse_args()
-
+def get_pipeline(args) -> Pipeline:
     saver = Saver(args["dsn"], table=args["table"])
-    stats = Stats(saver=saver, mock_dates=True)
+    stats = Stats(saver=saver)
     wrapper = stats.get_wrapper(get_service_state)
 
     actor = Actor(script, ("root", "start"), ("root", "fallback"))
+
     pipeline = Pipeline.from_dict(
-        {"components": [Service(handler=heavy_service, wrappers=[wrapper]), Service(handler=actor, wrappers=[wrapper])]}
+        {"components": [
+            Service(handler=to_service(after_wrapper=[wrapper])(heavy_service)),
+            Service(handler=to_service(after_wrapper=[wrapper])(actor))
+        ]}
     )
-    pipeline.run()
+    return pipeline
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    pipeline = get_pipeline(args)
+    pipeline.run()

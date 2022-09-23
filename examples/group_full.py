@@ -19,39 +19,39 @@ async def heavy_service(_):
 
 async def get_start_time(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
     start_time = datetime.now()
-    ctx.misc[get_wrapper_field(info, "time")] = start_time
+    ctx.misc[get_wrapper_field(info)] = start_time
 
 
 async def get_group_state(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
-    start_time = ctx.misc[get_wrapper_field(info, "time")]
-    data = {"execution_state": info["component"]["execution_state"], "execution_time": datetime.now() - start_time}
+    start_time = ctx.misc[get_wrapper_field(info)]
+    data = {"execution_time": datetime.now() - start_time}
     group_stats = StatsItem.from_context(ctx, info, data)
     stats.data.append(group_stats)
     await stats.save()
 
 
-def main(args = None):
-    if args is None:
-        args = parse_args()
-
+def get_pipeline(args) -> Pipeline:
     saver = Saver(args["dsn"], table=args["table"])
-    stats = Stats(saver=saver, mock_dates=True)
-    wrapper = stats.get_wrapper((get_start_time, get_group_state))
+    stats = Stats(saver=saver)
 
     actor = Actor(script, ("root", "start"), ("root", "fallback"))
+
     pipeline = Pipeline.from_dict(
         {
             "components": [
                 ServiceGroup(
-                    wrappers=[wrapper],
+                    before_wrapper=[stats.get_wrapper(get_start_time)],
+                    after_wrapper=[stats.get_wrapper(get_group_state)],
                     components=[{"handler": heavy_service}, {"handler": heavy_service}],
                 ),
                 actor,
             ],
         }
     )
-    pipeline.run()
+    return pipeline
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    pipeline = get_pipeline(args)
+    pipeline.run()

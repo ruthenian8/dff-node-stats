@@ -5,11 +5,12 @@ default_endpoint: null
 offset: 0
 cache_timeout: null
 schema: public
-sql: "WITH main AS (\n  SELECT context_id, history_id,\n  start_time, duration_time,\n\
-  \     flow_label, node_label, attitude, full_label as label\n     FROM dff_stats\
-  \ ORDER BY context_id, history_id)\n SELECT context_id, history_id,\n  start_time,\
-  \     duration_time,\n  flow_label, node_label, label, CAST(attitude AS Integer)\
-  \ as attitude,\n  neighbor(label, -1) as prev_label\n     FROM main;"
+sql: "WITH main AS (\n  SELECT context_id, request_id, time as start_time, data_key,\
+  \ data,\n   cast(data -> 'flow' as text) as flow_label, \n   cast(data -> 'node'\
+  \ as text) as node_label, \n   cast(data -> 'label' as text) as label \n   FROM\
+  \ test ORDER BY context_id, request_id)\nSELECT context_id, request_id, start_time,\
+  \ data_key, cast(data as text) as data, \nflow_label, node_label, label, LAG(label,1)\
+  \ OVER (ORDER BY context_id, request_id) as prev_label\nFROM main;"
 params: null
 template_params: null
 filter_select_enabled: false
@@ -22,7 +23,7 @@ columns:
   verbose_name: null
   is_dttm: true
   is_active: true
-  type: Nullable(DateTime)
+  type: DATETIME
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -30,11 +31,11 @@ columns:
   description: null
   python_date_format: null
   extra: {}
-- column_name: duration_time
+- column_name: request_id
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(Float64)
+  type: INTEGER
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -42,23 +43,11 @@ columns:
   description: null
   python_date_format: null
   extra: {}
-- column_name: history_id
+- column_name: data_key
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(Int64)
-  advanced_data_type: null
-  groupby: true
-  filterable: true
-  expression: null
-  description: null
-  python_date_format: null
-  extra: {}
-- column_name: attitude
-  verbose_name: null
-  is_dttm: false
-  is_active: true
-  type: Nullable(Int64)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -70,7 +59,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -82,7 +71,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -94,7 +83,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -106,7 +95,19 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: STRING
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: {}
+- column_name: data
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -118,7 +119,7 @@ columns:
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: Nullable(String)
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true

@@ -1,5 +1,5 @@
 database_name: dff_database
-sqlalchemy_uri: clickhousedb+connect://root:XXXXXXXXXX@172.25.128.1:8123/test
+sqlalchemy_uri: postgresql://root:XXXXXXXXXX@172.17.0.1:5432/test
 cache_timeout: null
 expose_in_sqllab: true
 allow_run_async: false

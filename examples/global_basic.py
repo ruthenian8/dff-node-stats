@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).absolute().parent))
 
 from df_engine.core import Context, Actor
-from df_runner import Pipeline, WrapperRuntimeInfo, GlobalWrapperType
+from df_runner import Pipeline, WrapperRuntimeInfo, GlobalWrapperType, to_service
 from df_stats import Stats, Saver, StatsItem
 
 from _utils import parse_args, script
@@ -23,12 +23,9 @@ async def get_pipeline_state(stats: Stats, ctx: Context, _, info: WrapperRuntime
     await stats.save()
 
 
-def main(args = None):
-    if args is None:
-        args = parse_args()
-
+def get_pipeline(args) -> Pipeline:
     saver = Saver(args["dsn"], table=args["table"])
-    stats = Stats(saver=saver, mock_dates=True)
+    stats = Stats(saver=saver)
     global_wrapper = stats.get_wrapper(get_pipeline_state)
 
     actor = Actor(script, ("root", "start"), ("root", "fallback"))
@@ -39,11 +36,12 @@ def main(args = None):
             actor,
         ],
     }
-
-    pipeline = Pipeline(**pipeline_dict)
+    pipeline = Pipeline.from_dict(pipeline_dict)
     pipeline.add_global_wrapper(GlobalWrapperType.AFTER_ALL, global_wrapper)
-    pipeline.run()
+    return pipeline
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    pipeline = get_pipeline(args)
+    pipeline.run()

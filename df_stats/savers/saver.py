@@ -7,10 +7,8 @@ On the other hand, it is also used to automatically construct the child classes
 depending on the input parameters. See the class documentation for more info.
 
 """
-from typing import Dict, List, Union, Optional
+from typing import List, Optional
 import importlib
-
-import pandas as pd
 
 from ..utils import StatsItem
 
@@ -134,11 +132,5 @@ class CsvSaver(Saver, storage_type="csv"):
 
 class PostgresSaver(Saver, storage_type="postgresql"):
     """PostgresSaver Class prototype"""
-
-    pass
-
-
-class MysqlSaver(Saver, storage_type="mysql+pymysql"):
-    """MysqlSaver Class prototype"""
 
     pass

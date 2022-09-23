@@ -6,12 +6,25 @@ You don't need to interact with this class manually, as it will be automatically
 imported and initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
 
 """
-from typing import List, Dict
+import json
+from typing import List
 from urllib import parse
-from ..utils import StatsItem
 
+from pydantic import validator
 from httpx import AsyncClient
 from aiochclient import ChClient
+
+from ..utils import StatsItem
+
+
+class CHItem(StatsItem):
+    data: str
+
+    @validator("data", pre=True)
+    def val_data(cls, data):
+        if not isinstance(data, str):
+            return json.dumps(data)
+        return data
 
 
 class ClickHouseSaver:
@@ -40,7 +53,7 @@ class ClickHouseSaver:
         parsed_path = parse.urlparse(path)
         auth, _, address = parsed_path.netloc.partition("@")
         self.db = parsed_path.path.strip("/")
-        self.url = parse.urlunparse((parsed_path.scheme, address, "/", "", "", ""))
+        self.url = parse.urlunparse(("http", address, "/", "", "", ""))
         self._user, _, self._password = auth.partition(":")
         self._http_client = AsyncClient()
         self._table_exists = False
@@ -55,7 +68,7 @@ class ClickHouseSaver:
             await self._create_table()
             self._table_exists = True
         await self.ch_client.execute(
-            f"INSERT INTO {self.table} VALUES", *[tuple(item.dict().values()) for item in data]
+            f"INSERT INTO {self.table} VALUES", *[tuple(CHItem.parse_obj(item).dict().values()) for item in data]
         )
 
     async def load(self) -> List[StatsItem]:
@@ -67,10 +80,10 @@ class ClickHouseSaver:
     async def _create_table(self):
         await self.ch_client.execute(
             f"CREATE TABLE if not exists {self.table} ("
-            "context_id String"
-            "request_id Int32"
-            "time DateTime64"
-            "data_key String"
-            "data Nullable(JSON)"
-            ") ENGINE = MergeTree"
+            "context_id String, "
+            "request_id Int32, "
+            "time DateTime64, "
+            "data_key String, "
+            "data String"
+            ") ENGINE = Memory"
         )

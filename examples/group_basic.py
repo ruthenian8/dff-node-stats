@@ -27,28 +27,28 @@ async def get_group_stats(stats: Stats, ctx: Context, _, info: WrapperRuntimeInf
     await stats.save()
 
 
-def main(args = None):
-    if args is None:
-        args = parse_args()
-
+def get_pipeline(args) -> Pipeline:
     saver = Saver(args["dsn"], table=args["table"])
-    stats = Stats(saver=saver, mock_dates=True)
+    stats = Stats(saver=saver)
     wrapper = stats.get_wrapper(get_group_stats)
 
     actor = Actor(script, ("root", "start"), ("root", "fallback"))
+
     pipeline = Pipeline.from_dict(
         {
             "components": [
                 ServiceGroup(
-                    wrappers=[wrapper],
+                    after_wrapper=[wrapper],
                     components=[{"handler": heavy_service}, {"handler": heavy_service}],
                 ),
                 actor,
             ],
         }
     )
-    pipeline.run()
+    return pipeline
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    pipeline = get_pipeline(args)
+    pipeline.run()

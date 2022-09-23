@@ -13,10 +13,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import inspect, Table, MetaData, Column, String, Integer, JSON, DateTime, select, insert
 
 from ..utils import StatsItem
-from .saver import Saver
 
 
-class PostgresSaver(Saver):
+class PostgresSaver:
     """
     Saves the stats dataframe to - and reads from a Postgresql database.
     You don't need to interact with this class manually, as it will be automatically
@@ -54,8 +53,12 @@ class PostgresSaver(Saver):
         )
 
     async def save(self, data: List[StatsItem]) -> None:
+        if not self.table_exists:
+            await self._create_table()
+            self.table_exists = True
+
         async with self.engine.connect() as conn:
-            await conn.execute(insert(self.table).values([item.dict() for item in data]))
+            await conn.execute(insert(self.sqla_table).values([item.dict() for item in data]))
             await conn.commit()
 
     async def load(self) -> List[StatsItem]:
@@ -79,3 +82,4 @@ class PostgresSaver(Saver):
                 return
 
             await conn.run_sync(self.metadata.create_all)
+            await conn.commit()

@@ -1,29 +1,37 @@
-slice_name: Node Visits
-viz_type: dist_bar
+slice_name: Node visits [sunburst]
+viz_type: sunburst
 params:
   adhoc_filters:
   - clause: WHERE
-    comparator: '-1'
+    comparator: null
     expressionType: SIMPLE
-    filterOptionName: filter_4dmp6xjtblv_grurgkhv0p
+    filterOptionName: filter_82x0yx6fkpv_6h8a2190nmh
     isExtra: false
     isNew: false
-    operator: '!='
-    operatorId: NOT_EQUALS
+    operator: IS NOT NULL
+    operatorId: IS_NOT_NULL
     sqlExpression: null
-    subject: history_id
-  bar_stacked: true
-  bottom_margin: auto
-  color_scheme: lyftColors
-  columns:
-  - label
-  datasource: 1__table
+    subject: flow_label
+  - clause: WHERE
+    comparator: null
+    expressionType: SIMPLE
+    filterOptionName: filter_653tn7jqmox_x65gwtz29gc
+    isExtra: false
+    isNew: false
+    operator: IS NOT NULL
+    operatorId: IS_NOT_NULL
+    sqlExpression: null
+    subject: node_label
+  color_scheme: supersetColors
+  datasource: 3__table
   extra_form_data: {}
   granularity_sqla: start_time
   groupby:
-  - history_id
-  metrics:
-  - aggregate: COUNT_DISTINCT
+  - flow_label
+  - node_label
+  linear_color_scheme: superset_seq_1
+  metric:
+    aggregate: COUNT
     column:
       advanced_data_type: null
       certification_details: null
@@ -44,25 +52,14 @@ params:
     expressionType: SIMPLE
     hasCustomLabel: false
     isNew: false
-    label: COUNT_DISTINCT(context_id)
-    optionName: metric_koq1ymw8swo_ly7sstzr8rr
+    label: COUNT(context_id)
+    optionName: metric_7mo9cnw40ph_rzxhx01jm0c
     sqlExpression: null
-  order_bars: true
-  order_desc: true
-  rich_tooltip: true
   row_limit: 10000
-  show_legend: true
-  slice_id: 3
+  slice_id: 8
   time_range: No filter
-  viz_type: dist_bar
-  x_axis_label: Dialog turn
-  x_ticks_layout: auto
-  y_axis_bounds:
-  - null
-  - null
-  y_axis_format: SMART_NUMBER
-  y_axis_label: Node visits
+  viz_type: sunburst
 cache_timeout: null
-uuid: 012a1905-5a00-4186-bb83-05f24b92ba43
+uuid: e955f48c-824c-423c-a11c-5b5dca162927
 version: 1.0.0
 dataset_uuid: fda98ab8-f550-45f1-9ded-0113f3e67260

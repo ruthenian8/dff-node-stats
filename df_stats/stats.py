@@ -23,7 +23,7 @@ from df_runner import Wrapper, WrapperRuntimeInfo
 from pydantic.typing import ForwardRef
 
 from .savers import Saver
-from .utils import StatsItem, WRAPPER_NAME
+from .utils import StatsItem
 
 
 Stats = ForwardRef("Stats")
@@ -48,7 +48,7 @@ class Stats:
 
     """
 
-    def __init__(self, saver: Saver, batch_size: int) -> None:
+    def __init__(self, saver: Saver, batch_size: int = 1) -> None:
         self.saver: Saver = saver
         self.batch_size: int = batch_size
         self.data: List[dict] = []
@@ -63,15 +63,24 @@ class Stats:
             await self.saver.save(self.data)
         self.data.clear()
 
-    def get_wrapper(self, funcs: Union[StatsFunction, Tuple[StatsFunction, StatsFunction]]) -> None:
+    def get_wrapper(self, func: StatsFunction) -> None:
         """
         data_attr: an attribute like `misc`.
         data_keys: keys of the attribute to recursively follow.
         """
-        if asyncio.iscoroutinefunction(funcs):
-            after = partial(funcs, self)
-            return Wrapper(name=WRAPPER_NAME, before=None, after=after)
-        else:
-            before = partial(funcs[0], self)
-            after = partial(funcs[1], self)
-            return Wrapper(name=WRAPPER_NAME, before=before, after=after)
+        async def wrapper_func(ctx, _, info):
+            return await func(self, ctx, _, info)
+        return wrapper_func
+        
+    def get_default_actor_wrapper(self):
+        async def get_default_actor_data(stats, ctx, _, info):
+            last_label = ctx.last_label or ("", "")
+            default_data = StatsItem.from_context(ctx, info, {
+                "flow": last_label[0],
+                "node": last_label[1],
+                "label": ": ".join(last_label)
+            })
+            stats.data.append(default_data)
+            await stats.save()
+        
+        return self.get_wrapper(get_default_actor_data)

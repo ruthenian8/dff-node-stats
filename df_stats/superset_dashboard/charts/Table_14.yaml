@@ -4,16 +4,14 @@ params:
   adhoc_filters: []
   all_columns: []
   color_pn: true
-  datasource: 1__table
+  datasource: 3__table
   extra_form_data: {}
   granularity_sqla: start_time
   groupby:
   - context_id
-  - history_id
-  - duration_time
   - start_time
-  - label
-  - prev_label
+  - data_key
+  - data
   order_by_cols: []
   order_desc: false
   percent_metrics: []
@@ -21,7 +19,7 @@ params:
   row_limit: 10000
   server_page_length: 10
   show_cell_bars: true
-  slice_id: 1
+  slice_id: 14
   table_timestamp_format: smart_date
   time_grain_sqla: null
   time_range: No filter

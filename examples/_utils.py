@@ -37,10 +37,10 @@ def parse_args():
     else:
         sys.argv = [__file__] + [f"{key}={value}" for key, value in parsed_args.__dict__.items()]
         conf = OmegaConf.from_cli()
-    
+
     return {
         "dsn": "{type}://{user}:{password}@{host}:{port}/{name}".format(**conf._content["db"]),
-        "table": conf._content["db"]["table"]
+        "table": conf._content["db"]["table"],
     }
 
 
@@ -125,7 +125,7 @@ script = {
             },
         },
         "ask_talk_about": {
-            RESPONSE: "what do you want to talk about",
+            RESPONSE: "what would you like to talk about?",
             TRANSITIONS: {
                 ("animals", "like_animals"): cnd.exact_match("dog"),
                 ("news", "what_news"): cnd.exact_match("let's talk about news"),
