@@ -18,14 +18,14 @@ async def heavy_service(_):
 
 async def get_pipeline_state(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
     data = {"runtime_state": info["component"]["execution_state"]}
-    group_stats = StatsItem.from_context(ctx, info, data)
-    stats.data.append(group_stats)
-    await stats.save()
+    return data
+    # group_stats = StatsItem.from_context(ctx, info, data)
+    # stats.data.append(group_stats)
+    # await stats.save()
 
 
 def get_pipeline(args) -> Pipeline:
-    saver = Saver(args["dsn"], table=args["table"])
-    stats = Stats(saver=saver)
+    stats = Stats(uri, table)#, saver=saver)
     global_wrapper = stats.get_wrapper(get_pipeline_state)
 
     actor = Actor(script, ("root", "start"), ("root", "fallback"))
@@ -43,5 +43,7 @@ def get_pipeline(args) -> Pipeline:
 
 if __name__ == "__main__":
     args = parse_args()
-    pipeline = get_pipeline(args)
+    uri = os.getenv()
+    table = os.getenv()
+    pipeline = get_pipeline(uri, table)
     pipeline.run()

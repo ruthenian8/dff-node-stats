@@ -21,19 +21,25 @@ both at the start and at the end of a pipeline.
 async def heavy_service(_):
     await asyncio.sleep(random.randint(0, 2))
 
+stats = {}
+async def get_start_time(stats, ctx: Context, _, info: WrapperRuntimeInfo):
+    stats["asd"]= 123
+    # start_time = datetime.now()
+    # ctx.misc[get_wrapper_field(info)] = start_time
 
-async def get_start_time(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
-    start_time = datetime.now()
-    ctx.misc[get_wrapper_field(info)] = start_time
 
-
-async def get_pipeline_state(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
-    start_time = ctx.misc[get_wrapper_field(info)]
-    data = {"execution_time": datetime.now() - start_time}
-    group_stats = StatsItem.from_context(ctx, info, data)
-    stats.data.append(group_stats)
-    await stats.save()
-
+async def get_pipeline_state(ctx: Context, _, info: WrapperRuntimeInfo)-> bool:
+    val = stats["asd"]
+    del stats["asd"]
+    stats["asd2"] = val + 1
+    return 
+    # start_time = ctx.misc[get_wrapper_field(info)]
+    # data = {"execution_time": datetime.now() - start_time}
+    # group_stats = StatsItem.from_context(ctx, info, data)
+    # stats.data.append(group_stats)
+    # await stats.save()
+# data_key = "pipeline/pre_annotator1/wrapper"
+# {"asd2":124}
 
 def get_pipeline(args) -> Pipeline:
     saver = Saver(args["dsn"], table=args["table"])
