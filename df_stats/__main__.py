@@ -103,7 +103,7 @@ SQL_STMT_MAPPING = {
 }
 
 
-# TODO: naming
+# TODO: rename addToZip, zf, path, zippath
 def addToZip(zf, path, zippath):
     """
     Recursively add files from a folder to a zip-archive.
