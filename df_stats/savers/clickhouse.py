@@ -46,22 +46,20 @@ class ClickHouseSaver:
 
     table: str
         Sets the name of the db table to use. Defaults to "dff_stats".
-    """  # TODO: fix docs
-
+    """
     def __init__(self, path: str, table: str = "df_stats") -> None:
         self.table = table
         parsed_path = parse.urlparse(path)
         auth, _, address = parsed_path.netloc.partition("@")
         self.db = parsed_path.path.strip("/")
         self.url = parse.urlunparse(("http", address, "/", "", "", ""))
-        # TODO: drop useless property from self
-        self._user, _, self._password = auth.partition(":")
-        self._http_client = AsyncClient()
+        user, _, password = auth.partition(":")
+        http_client = AsyncClient()
         self._table_exists = False
-        if not all([self.db, self.url, self._user, self._password]):
+        if not all([self.db, self.url, user, password]):
             raise ValueError("Invalid database URI or credentials")
         self.ch_client = ChClient(
-            self._http_client, url=self.url, user=self._user, password=self._password, database=self.db
+            http_client, url=self.url, user=user, password=password, database=self.db
         )
 
     async def save(self, data: List[StatsItem]) -> None:

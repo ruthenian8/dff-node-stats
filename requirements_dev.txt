@@ -1,7 +1,8 @@
 df_engine>=0.8.1
 requests>=2.26.0
-infi.clickhouse-orm==2.1.1
-psycopg2==2.9.2
+asyncpg>=0.26.0
+aiochclient>=2.2.0
+httpx<=0.23.0
 SQLAlchemy==1.4.27
 sphinx>=1.7.9
 sphinx_rtd_theme>=0.4.0

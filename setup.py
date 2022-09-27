@@ -30,7 +30,7 @@ setuptools.setup(
     include_package_data=True,
     extras_require = {
         "postgres": ["asyncpg>=0.26.0"],
-        "clickhouse": ["aiochclient>=2.2.0"],
+        "clickhouse": ["aiochclient>=2.2.0", "httpx<=0.23.0"],
     },
     entry_points = {
         'console_scripts': ['df_stats=df_stats.__main__:main'],

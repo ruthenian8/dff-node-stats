@@ -5,6 +5,7 @@ __author__ = "Denis Kuznetsov"
 __email__ = "kuznetosv.den.p@gmail.com"
 __version__ = "0.1.0"
 
-from .utils import StatsItem, get_wrapper_field, STATS_KEY
+from .utils import get_wrapper_field, STATS_KEY
+from .item import StatsItem
 from .stats import Stats
 from .savers import Saver

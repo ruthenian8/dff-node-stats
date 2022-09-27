@@ -36,7 +36,7 @@ import sys
 import argparse
 from typing import Optional
 
-from .cli import import_dashboard, make_zip_config, logger
+from .cli import import_dashboard, make_zip_config
 
 
 def main(parsed_args: Optional[argparse.Namespace] = None):

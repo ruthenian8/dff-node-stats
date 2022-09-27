@@ -14,7 +14,7 @@ from df_runner import WrapperRuntimeInfo
 from pydantic.typing import ForwardRef
 
 from .savers import Saver
-from .utils import StatsItem
+from .item import StatsItem
 
 
 Stats = ForwardRef("Stats")
@@ -22,11 +22,12 @@ Stats = ForwardRef("Stats")
 StatsFunction = Callable[[Stats, Context, Actor, WrapperRuntimeInfo], None]
 
 
-# TODO: fix docs
 class Stats:
     """
-    The class which is used to collect information from :py:class:`~df_engine.core.context.Context`
-    on each turn of the :py:class:`~df_engine.core.actor.Actor`.
+    This class is used to collect information from :py:class:`~df_engine.core.context.Context`
+    on each dialogue turn. Define a wrapper function and pass it to the `get_wrapper` method.
+    Each time the function fires, its output will be saved to a batch. When the batch size limit
+    is reached, the data will be uploaded to the database.
 
     Parameters
     ----------
