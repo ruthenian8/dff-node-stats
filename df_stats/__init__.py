@@ -8,3 +8,5 @@ __version__ = "0.1.0"
 from .utils import StatsItem, get_wrapper_field, STATS_KEY
 from .stats import Stats
 from .savers import Saver
+
+# TODO: add our basic extractor pool
