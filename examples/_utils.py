@@ -26,9 +26,9 @@ dsn_parser.add_argument("--dsn", required=True)
 def parse_args():
     parsed_args = parser.parse_args(sys.argv[1:])
 
-    if hasattr(parsed_args, "dsn"):
+    if hasattr(parsed_args, "uri"):
         dsn, _, table = parsed_args.dsn.rpartition("/")
-        return {"dsn": dsn, "table": table}
+        return {"uri": dsn, "table": table}
 
     elif hasattr(parsed_args, "file"):  # parse yaml input
         conf = OmegaConf.load(parsed_args.file)
@@ -39,7 +39,7 @@ def parse_args():
         conf = OmegaConf.from_cli()
 
     return {
-        "dsn": "{type}://{user}:{password}@{host}:{port}/{name}".format(**conf._content["db"]),
+        "uri": "{type}://{user}:{password}@{host}:{port}/{name}".format(**conf._content["db"]),
         "table": conf._content["db"]["table"],
     }
 

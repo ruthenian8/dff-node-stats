@@ -38,7 +38,7 @@ def run_pipeline_test(pipeline: Pipeline, turns: List[Tuple[str, str]]):
 def test_examples(module_path: pathlib.Path, testing_file: str):
     module = importlib.import_module(f"examples.{module_path.stem}")
     try:
-        pipeline = module.get_pipeline({"dsn": f"csv://{testing_file}", "table": ""})
+        pipeline = module.get_pipeline({"uri": f"csv://{testing_file}", "table": ""})
         run_pipeline_test(pipeline, TURNS)
     except Exception as exc:
         raise Exception(f"model_name={module_path.stem}") from exc

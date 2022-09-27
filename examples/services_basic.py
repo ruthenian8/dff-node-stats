@@ -35,18 +35,15 @@ async def heavy_service(_):
     await asyncio.sleep(random.randint(0, 2))
 
 
-async def get_service_state(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
+async def get_service_state(ctx: Context, _, info: WrapperRuntimeInfo):
     data = {
         "execution_state": info["component"]["execution_state"],
     }
-    group_stats = StatsItem.from_context(ctx, info, data)
-    stats.data.append(group_stats)
-    await stats.save()
+    return StatsItem.from_context(ctx, info, data)
 
 
 def get_pipeline(args) -> Pipeline:
-    saver = Saver(args["dsn"], table=args["table"])
-    stats = Stats(saver=saver)
+    stats = Stats.from_uri(args["uri"], table=args["table"])
     wrapper = stats.get_wrapper(get_service_state)
 
     actor = Actor(script, ("root", "start"), ("root", "fallback"))

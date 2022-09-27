@@ -2,25 +2,15 @@
 Stats
 **********
 | Defines the Stats class that is used to collect information on each turn of the :py:class:`~df_engine.core.actor.Actor` .
-| An instance of the :py:class:`~df_engine.core.actor.Actor` class should be passed to the update_actor_handlers method in order to register a callback.
-
-Example::
-
-    stats = Stats()
-
-    actor = Actor()
-
-    stats.update_actor_handlers(actor, auto_save=False)
 
 """
-# TODO: fix docs
 
 import asyncio
-from functools import partial
-from typing import List, Tuple, Callable, Union
+import functools
+from typing import List, Callable
 
 from df_engine.core import Context, Actor
-from df_runner import Wrapper, WrapperRuntimeInfo
+from df_runner import WrapperRuntimeInfo
 from pydantic.typing import ForwardRef
 
 from .savers import Saver
@@ -42,11 +32,7 @@ class Stats:
     ----------
 
     saver: :py:class:`~dff_node_stats.savers.Saver`
-        An instance of the Saver class that is used to save the collected data in the desired storage.
-    collectors: Optional[List[:py:class:`~dff_node_stats.collectors.Collector`]]
-        Instances of the :py:class:`~dff_node_stats.collectors.Collector` class.
-        Their method :py:meth:`~dff_node_stats.collectors.Collector.collect_stats`
-        is invoked each turn of the :py:class:`~df_engine.core.actor.Actor` to save the desired information.
+        An instance of the Saver class that is used to save the collected data.
 
     """
 
@@ -65,18 +51,28 @@ class Stats:
         self.data.clear()
 
     def get_wrapper(self, func: StatsFunction) -> None:
+        @functools.wraps(func)
         async def wrapper_func(ctx, _, info):
-            return await func(self, ctx, _, info)
+            result = await func(ctx, _, info)
+            if result is not None:
+                self.data.append(result)
+                await self.save()
 
         return wrapper_func
 
     def get_default_actor_wrapper(self):
-        async def get_default_actor_data(stats, ctx, _, info):
+        async def get_default_actor_data(ctx, _, info):
             last_label = ctx.last_label or ("", "")
             default_data = StatsItem.from_context(
                 ctx, info, {"flow": last_label[0], "node": last_label[1], "label": ": ".join(last_label)}
             )
-            stats.data.append(default_data)
-            await stats.save()
+            return default_data
 
         return self.get_wrapper(get_default_actor_data)
+
+    @classmethod
+    def from_uri(cls, uri: str, table: str = "df_stats"):
+        """
+        Instantiates the saver from the given arguments.
+        """
+        return cls(saver=Saver(uri, table))

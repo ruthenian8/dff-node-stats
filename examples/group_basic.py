@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).absolute().parent))
 
 from df_engine.core import Context, Actor
 from df_runner import Pipeline, ServiceGroup, WrapperRuntimeInfo
-from df_stats import Stats, StatsItem, Saver
+from df_stats import Stats, StatsItem
 
 from _utils import parse_args, script
 
@@ -23,16 +23,14 @@ to which wrapper functions can be passed.
 """
 
 
-async def get_group_stats(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
+async def get_group_stats(ctx: Context, _, info: WrapperRuntimeInfo):
     data = {"runtime_state": info["component"]["execution_state"]}
     group_stats = StatsItem.from_context(ctx, info, data)
-    stats.data.append(group_stats)
-    await stats.save()
+    return group_stats
 
 
 def get_pipeline(args) -> Pipeline:
-    saver = Saver(args["dsn"], table=args["table"])
-    stats = Stats(saver=saver)
+    stats = Stats.from_uri(args["uri"], table=args["table"])
     wrapper = stats.get_wrapper(get_group_stats)
 
     actor = Actor(script, ("root", "start"), ("root", "fallback"))

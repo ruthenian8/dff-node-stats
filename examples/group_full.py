@@ -17,23 +17,20 @@ async def heavy_service(_):
     await asyncio.sleep(random.randint(0, 2))
 
 
-async def get_start_time(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
+async def get_start_time(ctx: Context, _, info: WrapperRuntimeInfo):
     start_time = datetime.now()
     ctx.misc[get_wrapper_field(info)] = start_time
 
 
-async def get_group_state(stats: Stats, ctx: Context, _, info: WrapperRuntimeInfo):
+async def get_group_state(ctx: Context, _, info: WrapperRuntimeInfo):
     start_time = ctx.misc[get_wrapper_field(info)]
     data = {"execution_time": datetime.now() - start_time}
     group_stats = StatsItem.from_context(ctx, info, data)
-    stats.data.append(group_stats)
-    await stats.save()
+    return group_stats
 
 
 def get_pipeline(args) -> Pipeline:
-    saver = Saver(args["dsn"], table=args["table"])
-    stats = Stats(saver=saver)
-
+    stats = Stats.from_uri(args["uri"], table=args["table"])
     actor = Actor(script, ("root", "start"), ("root", "fallback"))
 
     pipeline = Pipeline.from_dict(
