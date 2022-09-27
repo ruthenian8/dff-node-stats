@@ -32,6 +32,7 @@ Examples
         -dP password
 
 """
+# TODO: what does `${db.table}` mean in the doc above
 import sys
 import os
 import argparse
@@ -46,6 +47,7 @@ import requests
 from omegaconf import OmegaConf
 
 logger = logging.getLogger(__name__)
+# TODO: replace after if __name__ == "__main__":
 logger.setLevel(logging.INFO)
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(dest="cmd", description="update or import config", required=True)
@@ -101,6 +103,7 @@ SQL_STMT_MAPPING = {
 }
 
 
+# TODO: rename addToZip, zf, path, zippath
 def addToZip(zf, path, zippath):
     """
     Recursively add files from a folder to a zip-archive.
