@@ -5,7 +5,7 @@ Provides the Clickhouse version of the :py:class:`~dff_node_stats.savers.saver.S
 You don't need to interact with this class manually, as it will be automatically 
 imported and initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
 
-"""
+"""# TODO: fix docs
 import json
 from typing import List
 from urllib import parse
@@ -46,7 +46,7 @@ class ClickHouseSaver:
 
     table: str
         Sets the name of the db table to use. Defaults to "dff_stats".
-    """
+    """# TODO: fix docs
 
     def __init__(self, path: str, table: str = "df_stats") -> None:
         self.table = table
@@ -82,7 +82,7 @@ class ClickHouseSaver:
             f"CREATE TABLE if not exists {self.table} ("
             "context_id String, "
             "request_id Int32, "
-            "timestamp DateTime64, "  # TODO: rename `time` to `timestamp`
+            "timestamp DateTime64, "
             "data_key String, "
             "data String"
             ") ENGINE = Memory"
