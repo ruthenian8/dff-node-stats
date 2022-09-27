@@ -9,8 +9,8 @@ from df_runner import WrapperRuntimeInfo
 STATS_KEY = "STATS_KEY"
 
 
-def get_wrapper_field(info: WrapperRuntimeInfo) -> str:
-    return f"{info['component']['path']}"
+def get_wrapper_field(info: WrapperRuntimeInfo, postfix: str = "") -> str:
+    return f"{info['component']['path'] + (f'-{postfix}' if postfix else '')}"
 
 
 class StatsItem(BaseModel):

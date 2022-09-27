@@ -16,7 +16,10 @@ async def heavy_service(_):
 
 
 """
-Let's suppose we want to save the runtime states of services to the database.
+Wrappers can be applied to any pipeline parameter, including service groups.
+The `ServiceGroup` constructor has `before_wrapper` and `after_wrapper` parameters, 
+to which wrapper functions can be passed.
+
 """
 
 

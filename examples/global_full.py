@@ -13,8 +13,10 @@ from df_stats import Stats, Saver, StatsItem, get_wrapper_field
 from _utils import parse_args, script
 
 """
-As is the case with services and service groups, you can add wrappers for statistics collection
-both at the start and at the end of a pipeline.
+Like with regular wrappers, you can define global statistic wrappers, 
+which will be applied to every element inside the pipeline.
+
+Use the `add_global_wrapper` method.
 """
 
 

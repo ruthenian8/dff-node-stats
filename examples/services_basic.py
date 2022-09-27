@@ -12,6 +12,21 @@ from df_stats import Stats, Saver, StatsItem
 from _utils import parse_args, script
 
 """
+To collect statistics from a service, regardless of its type, 
+you should define a processing function as a wrapper and use it to wrap the target service.
+
+These function signature equals that of regular Wrappers from df_pipeline with the exception
+that the regular arguments go after the first argument of type :py:class:`~Stats`.
+This signature allows you to use explicit calls to :py:class:`~Stats`. methods inside the functions.
+
+Most of the time, you'll want to append the data you have collected to the `data` attribute and
+then await the :py:meth:`save` method.
+
+The data should always be collected as an instance of the :py:class:`~StatsItem` class.
+For your convenience, the latter offers the `from_context` class method, 
+to which you can pass an arbitrary dict of data as the `data` parameter.
+
+To add a wrapper to a concrete service, pass the wrapper to the `to_service` decorator.
 
 """
 

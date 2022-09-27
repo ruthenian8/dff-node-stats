@@ -6,7 +6,6 @@ You don't need to interact with this class manually, as it will be automatically
 imported and initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
 
 """
-from re import M # TODO: check all unused imports
 from typing import List
 from urllib import parse
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -42,7 +41,7 @@ class PostgresSaver:
         parsed_path = parse.urlparse(path)
         self.engine = create_async_engine(parse.urlunparse([(parsed_path.scheme + "+asyncpg"), *parsed_path[1:]]))
         self.metadata = MetaData()
-        self.sqla_table = Table( # TODO: sql_table ?
+        self.sqla_table = Table(  # TODO: sql_table ?
             self.table,
             self.metadata,
             Column("context_id", String),

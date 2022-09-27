@@ -13,6 +13,12 @@ from df_stats import Stats, Saver, StatsItem, get_wrapper_field
 from _utils import parse_args, script
 
 """
+As is the case with the regular wrappers, you can add df_stats wrappers both before and after the
+target service. You can use a wrapper that runs before the service to compare the pre-service and post-service
+states of the context, measure the running time, etc. Use `get_wrapper_field` function to save the required
+values to the context.
+
+Pass before- and after-wrappers to the respective parameters of the `to_service` decorator.
 
 """
 

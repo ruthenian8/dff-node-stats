@@ -12,8 +12,7 @@ import importlib
 
 from ..utils import StatsItem
 
-# TODO: Documentation
-# TODO: Remove useless
+
 class Saver:
     """
     :py:class:`~dff_node_stats.savers.saver.Saver` interface requires two methods to be impemented:
@@ -46,13 +45,16 @@ class Saver:
         Sets the name of the db table to use, if necessary. Defaults to "dff_stats".
     """
 
-    _saver_mapping = {}
+    _saver_mapping = {"clickhouse": "ClickHouseSaver", "csv": "CsvSaver", "postgresql": "PostgresSaver"}
 
     def __init_subclass__(cls, storage_type: str, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         cls._saver_mapping[storage_type] = cls.__name__
 
-    def __new__(cls, path: Optional[str] = None, table: str = "dff_stats"): # TODO: This is old code
+    def add_subclass(cls, storage_type, class_name):
+        cls._saver_mapping[storage_type] = class_name
+
+    def __new__(cls, path: Optional[str] = None, table: str = "df_stats"):
         if not path:
             raise ValueError(
                 """
@@ -117,21 +119,3 @@ class Saver:
         parse_dates: Union[List[str], bool] = False
         """
         raise NotImplementedError
-
-
-class ClickHouseSaver(Saver, storage_type="clickhouse"):
-    """ClickHouseSaver Class prototype"""
-
-    pass
-
-
-class CsvSaver(Saver, storage_type="csv"):
-    """CsvSaver Class prototype"""
-
-    pass
-
-
-class PostgresSaver(Saver, storage_type="postgresql"):
-    """PostgresSaver Class prototype"""
-
-    pass
