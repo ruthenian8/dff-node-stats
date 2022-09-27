@@ -63,6 +63,7 @@ def get_pipeline(args) -> Pipeline:
     pipeline.add_global_wrapper(GlobalWrapperType.BEFORE_ALL, get_start_time)
 
     pipeline.add_global_wrapper(GlobalWrapperType.AFTER_ALL, get_one_timing)
+    pipeline.add_global_wrapper(GlobalWrapperType.AFTER_ALL, get_another_timing)
     custom_annotator1 = custom_annotation_pool.new_extractor(custom_annotator1)
     custom_annotator2 = custom_annotation_pool.new_extractor(custom_annotator2)
     pipeline.add_global_wrapper(GlobalWrapperType.AFTER_ALL, custom_annotator1)
