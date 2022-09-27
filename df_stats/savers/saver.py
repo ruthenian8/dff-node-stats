@@ -13,7 +13,7 @@ import importlib
 from ..utils import StatsItem
 
 
-class Saver:
+class Saver: # TODO: reimplement Saver as base class and a saver creation function
     """
     :py:class:`~dff_node_stats.savers.saver.Saver` interface requires two methods to be impemented:
 
