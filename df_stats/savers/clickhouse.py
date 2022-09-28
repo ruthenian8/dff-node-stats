@@ -11,10 +11,15 @@ from typing import List
 from urllib import parse
 
 from pydantic import validator
-from httpx import AsyncClient
-from aiochclient import ChClient
+try:
+    from httpx import AsyncClient
+    from aiochclient import ChClient
+    IMPORT_ERROR_MESSAGE = None
+except ImportError as e:
+    IMPORT_ERROR_MESSAGE = e.msg
 
-from ..utils import StatsItem
+from .saver import Saver
+from ..item import StatsItem
 
 
 class CHItem(StatsItem):
@@ -27,7 +32,7 @@ class CHItem(StatsItem):
         return data
 
 
-class ClickHouseSaver:
+class ClickHouseSaver(Saver, storage_type="clickhouse"):
     """
     Saves and reads the stats dataframe from a csv file.
     You don't need to interact with this class manually, as it will be automatically
@@ -48,6 +53,8 @@ class ClickHouseSaver:
         Sets the name of the db table to use. Defaults to "dff_stats".
     """
     def __init__(self, path: str, table: str = "df_stats") -> None:
+        if IMPORT_ERROR_MESSAGE is not None:
+            raise ImportError(IMPORT_ERROR_MESSAGE)
         self.table = table
         parsed_path = parse.urlparse(path)
         auth, _, address = parsed_path.netloc.partition("@")

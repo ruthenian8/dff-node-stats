@@ -8,12 +8,12 @@ depending on the input parameters. See the class documentation for more info.
 
 """
 from typing import List, Optional
-import importlib
+from abc import ABC, abstractmethod
 
-from ..utils import StatsItem
+from ..item import StatsItem
 
 
-class Saver: # TODO: reimplement Saver as base class and a saver creation function
+class Saver(ABC):
     """
     :py:class:`~dff_node_stats.savers.saver.Saver` interface requires two methods to be impemented:
 
@@ -44,53 +44,26 @@ class Saver: # TODO: reimplement Saver as base class and a saver creation functi
     table: str
         Sets the name of the db table to use, if necessary. Defaults to "dff_stats".
     """
-
-    _saver_mapping = {"clickhouse": "ClickHouseSaver", "csv": "CsvSaver", "postgresql": "PostgresSaver"}
+    _saver_mapping = {}
 
     def __init_subclass__(cls, storage_type: str, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        cls._saver_mapping[storage_type] = cls.__name__
-
-    def add_subclass(cls, storage_type, class_name):
-        cls._saver_mapping[storage_type] = class_name
+        cls._saver_mapping[storage_type] = cls
 
     def __new__(cls, path: Optional[str] = None, table: str = "df_stats"):
-        if not path:
-            raise ValueError(
-                """
-            Saver should be initialized with a string
-            """
-            )
-
-        storage_and_path = path.partition("://")
-        if not all(storage_and_path):
-            raise ValueError(
-                """Saver should be initialized with either:
-                csv://path_to_file or dbname://engine_params
-                Available options: {}
-                """.format(
-                    ", ".join(list(cls._saver_mapping.keys()))
-                )
-            )
-        storage_type = storage_and_path[0]
-        subclass_name = cls._saver_mapping.get(storage_type)
-        if not subclass_name:
-            raise ValueError(
-                """
-                Cannot recognize option: {}
-                Available options: {}            
-                """.format(
-                    storage_type, ", ".join(list(cls._saver_mapping.keys()))
-                )
-            )
-        subclass = getattr(
-            importlib.import_module(f".{storage_type}", package="df_stats.savers"),
-            subclass_name,
+        storage_type, _, _ = path.partition("://")
+        assert storage_type, (
+            "Saver should be initialized with either:"
+            "csv://path_to_file or dbname://engine_params"
         )
+
+        subclass = cls._saver_mapping.get(storage_type)
+        assert subclass, f"Cannot recognize option: {storage_type}"
         obj = object.__new__(subclass)
         obj.__init__(str(path), table)
         return obj
 
+    @abstractmethod
     def save(
         self,
         data: List[StatsItem],
@@ -108,6 +81,7 @@ class Saver: # TODO: reimplement Saver as base class and a saver creation functi
         """
         raise NotImplementedError
 
+    @abstractmethod
     def load(self) -> List[StatsItem]:
         """
         Load the data from a database or a file.

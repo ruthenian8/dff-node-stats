@@ -5,23 +5,30 @@ Provides the CSV version of the :py:class:`~dff_node_stats.savers.saver.Saver`.
 You don't need to interact with this class manually, as it will be automatically 
 initialized when you construct a :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
 
-""" # TODO: add info about unused csv for dashboard for all csv mentions
+Statistical data collected to csv cannot be directly displayed in Superset.
+Use this class, if you want to permute or analyze your data manually.
+
+"""
 import json
 import csv
 from typing import List
 import pathlib
 import os
 
-from ..utils import StatsItem
+from .saver import Saver
+from ..item import StatsItem
 
 FIELDNAMES = list(StatsItem.schema()["properties"].keys())
 
 
-class CsvSaver:
+class CsvSaver(Saver, storage_type="csv"):
     """
     Saves and reads the stats dataframe from a csv file.
     You don't need to interact with this class manually, as it will be automatically
     initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+
+    Statistical data collected to csv cannot be directly displayed in Superset.
+    Use this class, if you want to permute or analyze your data manually.
 
     Parameters
     ----------

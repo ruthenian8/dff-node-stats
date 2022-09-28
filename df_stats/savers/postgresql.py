@@ -8,13 +8,18 @@ imported and initialized when you construct :py:class:`~dff_node_stats.savers.sa
 """
 from typing import List
 from urllib import parse
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import inspect, Table, MetaData, Column, String, Integer, JSON, DateTime, select, insert
+try:
+    from sqlalchemy.ext.asyncio import create_async_engine
+    from sqlalchemy import inspect, Table, MetaData, Column, String, Integer, JSON, DateTime, select, insert
+    IMPORT_ERROR_MESSAGE = None
+except ImportError as e:
+    IMPORT_ERROR_MESSAGE = e.msg
 
-from ..utils import StatsItem
+from .saver import Saver
+from ..item import StatsItem
 
 
-class PostgresSaver:
+class PostgresSaver(Saver, storage_type="postgresql"):
     """
     Saves the stats dataframe to - and reads from a Postgresql database.
     You don't need to interact with this class manually, as it will be automatically
@@ -36,12 +41,14 @@ class PostgresSaver:
     """
 
     def __init__(self, path: str, table: str = "df_stats") -> None:
+        if IMPORT_ERROR_MESSAGE is not None:
+            raise ImportError(IMPORT_ERROR_MESSAGE)
         self.table = table
         self.table_exists = False
         parsed_path = parse.urlparse(path)
         self.engine = create_async_engine(parse.urlunparse([(parsed_path.scheme + "+asyncpg"), *parsed_path[1:]]))
         self.metadata = MetaData()
-        self.sqla_table = Table(  # TODO: sql_table ?
+        self.sqla_table = Table( # TODO: sql_table ?
             self.table,
             self.metadata,
             Column("context_id", String),
