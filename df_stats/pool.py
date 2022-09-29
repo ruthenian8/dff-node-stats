@@ -7,7 +7,7 @@ from df_runner import WrapperRuntimeInfo
 from .record import StatsRecord
 
 # TODO: move to another module for inheriting by storage
-class PoolSubscriber(Protocol): # TODO: pls, describe this one for me
+class PoolSubscriber(Protocol):
     # TODO: maybe get_new_record_event ?
     def on_new_record(self, record: StatsRecord):
         raise NotImplementedError
@@ -79,7 +79,7 @@ default_extractor_pool = ExtractorPool()
 
 # TODO: add more, for example exec timing
 @default_extractor_pool.new_extractor
-async def get_default_actor_data(ctx: Context, _, info: WrapperRuntimeInfo): # TODO: bad Naming
+async def get_default_actor_data(ctx: Context, _, info: WrapperRuntimeInfo): # TODO: bad naming extract_current_label
     last_label = ctx.last_label or ("", "")
     default_data = StatsRecord.from_context(
         ctx, info, {"flow": last_label[0], "node": last_label[1], "label": ": ".join(last_label)}

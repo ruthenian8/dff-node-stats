@@ -22,7 +22,6 @@ help:
 	@echo "make wait_db: wait until container creation is over."
 	@echo
 
-# TODO: error of venv creating
 venv:
 	echo "Start creating virtual environment";\
 	python3 -m venv $(VENV_PATH);\

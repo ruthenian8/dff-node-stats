@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 
-# TODO: bad naming , in intex.rst same issue
+# TODO: bad naming , in index.rst same issue
 project = "DFF StatsStorage"
 copyright = "2021, Denis Kuznetsov"
 author = "Denis Kuznetsov"
