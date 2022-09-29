@@ -16,9 +16,9 @@ import pathlib
 import os
 
 from .saver import Saver
-from ..item import StatsItem
+from ..record import StatsRecord
 
-FIELDNAMES = list(StatsItem.schema()["properties"].keys())
+FIELDNAMES = list(StatsRecord.schema()["properties"].keys())
 
 
 class CsvSaver(Saver, storage_type="csv"):
@@ -49,7 +49,7 @@ class CsvSaver(Saver, storage_type="csv"):
         path = path.partition("://")[2]
         self.path = pathlib.Path(path)
 
-    async def save(self, data: List[StatsItem]) -> None:
+    async def save(self, data: List[StatsRecord]) -> None:
 
         saved_data = []
         if self.path.exists() and os.path.getsize(self.path) > 0:
@@ -65,11 +65,11 @@ class CsvSaver(Saver, storage_type="csv"):
             for item in data:
                 writer.writerow({**item.dict(), "data": json.dumps(item.data, default=str)})
 
-    async def load(self) -> List[StatsItem]:
+    async def load(self) -> List[StatsRecord]:
         with open(self.path, "r", encoding="utf-8") as file:
             reader = csv.DictReader(file, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             items = []
             for row in reader:
                 row["data"] = json.loads(row["data"])
-                items.append(StatsItem.parse_raw(json.dumps(row)))
+                items.append(StatsRecord.parse_raw(json.dumps(row)))
             return items

@@ -19,10 +19,10 @@ except ImportError as e:
     IMPORT_ERROR_MESSAGE = e.msg
 
 from .saver import Saver
-from ..item import StatsItem
+from ..record import StatsRecord
 
 
-class CHItem(StatsItem):
+class CHItem(StatsRecord):
     data: str
 
     @validator("data", pre=True)
@@ -69,7 +69,7 @@ class ClickHouseSaver(Saver, storage_type="clickhouse"):
             http_client, url=self.url, user=user, password=password, database=self.db
         )
 
-    async def save(self, data: List[StatsItem]) -> None:
+    async def save(self, data: List[StatsRecord]) -> None:
         if not self._table_exists:
             await self._create_table()
             self._table_exists = True
@@ -77,10 +77,10 @@ class ClickHouseSaver(Saver, storage_type="clickhouse"):
             f"INSERT INTO {self.table} VALUES", *[tuple(CHItem.parse_obj(item).dict().values()) for item in data]
         )
 
-    async def load(self) -> List[StatsItem]:
+    async def load(self) -> List[StatsRecord]:
         results = []
         async for row in self.ch_client.iterate(f"SELECT * FROM {self.table}"):
-            results.append(StatsItem.parse_obj({key: row[key] for key in row.keys()}))
+            results.append(StatsRecord.parse_obj({key: row[key] for key in row.keys()}))
         return results
 
     async def _create_table(self):

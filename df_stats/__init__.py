@@ -6,6 +6,7 @@ __email__ = "kuznetosv.den.p@gmail.com"
 __version__ = "0.1.0"
 
 from .utils import get_wrapper_field, STATS_KEY
-from .item import StatsItem
-from .stats import Stats
+from .record import StatsRecord
+from .pool import ExtractorPool
+from .storage import StatsStorage
 from .savers import Saver

@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).absolute().parent))
 
 from df_engine.core import Context, Actor
 from df_runner import Pipeline, WrapperRuntimeInfo, GlobalWrapperType
-from df_stats import Stats, Saver, StatsItem, get_wrapper_field
+from df_stats import StatsStorage, ExtractorPool, StatsRecord, get_wrapper_field
 
 from _utils import parse_args, script
 
@@ -20,42 +20,41 @@ Use the `add_global_wrapper` method.
 """
 
 
+extractor_pool = ExtractorPool()
+
+
 async def heavy_service(_):
     await asyncio.sleep(random.randint(0, 2))
 
 
+@extractor_pool.new_extractor
 async def get_start_time(ctx: Context, _, info: WrapperRuntimeInfo):
     start_time = datetime.now()
     ctx.misc[get_wrapper_field(info)] = start_time
 
 
+@extractor_pool.new_extractor
 async def get_pipeline_state(ctx: Context, _, info: WrapperRuntimeInfo):
     start_time = ctx.misc[get_wrapper_field(info)]
     data = {"execution_time": datetime.now() - start_time}
-    group_stats = StatsItem.from_context(ctx, info, data)
+    group_stats = StatsRecord.from_context(ctx, info, data)
     return group_stats
 
 
-def get_pipeline(args) -> Pipeline:
-    stats = Stats.from_uri(args["uri"], table=args["table"])
-    initial_wrapper = stats.get_wrapper(get_start_time)
-    final_wrapper = stats.get_wrapper(get_pipeline_state)
+actor = Actor(script, ("root", "start"), ("root", "fallback"))
 
-    actor = Actor(script, ("root", "start"), ("root", "fallback"))
-
-    pipeline_dict = {
-        "components": [
-            [heavy_service for _ in range(0, 5)],
-            actor,
-        ],
-    }
-    pipeline = Pipeline.from_dict(pipeline_dict)
-    pipeline.add_global_wrapper(GlobalWrapperType.BEFORE_ALL, initial_wrapper)
-    pipeline.add_global_wrapper(GlobalWrapperType.AFTER_ALL, final_wrapper)
-    return pipeline
-
+pipeline_dict = {
+    "components": [
+        [heavy_service for _ in range(0, 5)],
+        actor,
+    ],
+}
+pipeline = Pipeline.from_dict(pipeline_dict)
+pipeline.add_global_wrapper(GlobalWrapperType.BEFORE_ALL, get_start_time)
+pipeline.add_global_wrapper(GlobalWrapperType.AFTER_ALL, get_pipeline_state)
 
 if __name__ == "__main__":
     args = parse_args()
-    pipeline = get_pipeline(args)
+    stats = StatsStorage.from_uri(args["uri"], table=args["table"])
+    stats.add_extractor_pool(extractor_pool)
     pipeline.run()

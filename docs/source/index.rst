@@ -1,8 +1,8 @@
-.. DFF Stats documentation master file.
+.. DFF StatsStorage documentation master file.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to DFF Node Stats documentation!
+Welcome to DFF Node StatsStorage documentation!
 =================================================
 
 .. toctree::

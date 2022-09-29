@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 
-project = "DFF Stats"
+project = "DFF StatsStorage"
 copyright = "2021, Denis Kuznetsov"
 author = "Denis Kuznetsov"
 
@@ -54,7 +54,7 @@ extensions = [
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-html_short_title = "DFF Node Stats"
+html_short_title = "DFF Node StatsStorage"
 
 # -- Options for HTML output -------------------------------------------------
 

@@ -82,8 +82,7 @@ db_uri = "postgresql://user:password@host:5432/default"
 #
 stats = Stats.from_uri(db_uri)
 
-# Update the Actor with stats collection callbacks
-stats.update_actor_handlers(actor, auto_save=False)
+
 ```
 
 ### Statistics collection demo

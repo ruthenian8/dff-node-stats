@@ -16,7 +16,7 @@ except ImportError as e:
     IMPORT_ERROR_MESSAGE = e.msg
 
 from .saver import Saver
-from ..item import StatsItem
+from ..record import StatsRecord
 
 
 class PostgresSaver(Saver, storage_type="postgresql"):
@@ -58,7 +58,7 @@ class PostgresSaver(Saver, storage_type="postgresql"):
             Column("data", JSON),
         )
 
-    async def save(self, data: List[StatsItem]) -> None:
+    async def save(self, data: List[StatsRecord]) -> None:
         if not self.table_exists:
             await self._create_table()
             self.table_exists = True
@@ -67,14 +67,14 @@ class PostgresSaver(Saver, storage_type="postgresql"):
             await conn.execute(insert(self.sqla_table).values([item.dict() for item in data]))
             await conn.commit()
 
-    async def load(self) -> List[StatsItem]:
+    async def load(self) -> List[StatsRecord]:
         stats = []
 
         async with self.engine.connect() as conn:
             result = await conn.execute(select(self.sqla_table))
 
         async for item in result.all():
-            stats.append(StatsItem.from_orm(item))
+            stats.append(StatsRecord.from_orm(item))
 
         return stats
 

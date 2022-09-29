@@ -10,7 +10,7 @@ depending on the input parameters. See the class documentation for more info.
 from typing import List, Optional
 from abc import ABC, abstractmethod
 
-from ..item import StatsItem
+from ..record import StatsRecord
 
 
 class Saver(ABC):
@@ -23,13 +23,20 @@ class Saver(ABC):
     | A call to Saver is needed to instantiate one of the predefined child classes.
     | The subclass is chosen depending on the `path` parameter value (see Parameters).
 
-    | Your own Saver can be implemented by following the current structure:
-    | You can add this class to a separate module in this directory and then register it at runtime
-    | by subclassing the Saver class, passing the module name as the `storage_type` parameter::
+    | Your own Saver can be implemented in the following manner:
+    | You should subclass the `Saver` class and pass the url prefix as the `storage_type` parameter.
+    | Abstract methods `save` and `load` should necessarily be implemented.
 
-        MongoSaver(Saver, storage_type="mongo")
-
-    | As a result, the Saver class will look for `MongoSaver` implementation in `mongo.py`
+    .. code: python
+        class MongoSaver(Saver, storage_type="mongo"):
+            def __init__(self, path, table):
+                ...
+            
+            def save(self, data):
+                ...
+            
+            def load(self):
+                ...
 
     Parameters
     ----------
@@ -38,7 +45,7 @@ class Saver(ABC):
         A string that contains a prefix and a url of the target data storage, separated by ://.
         The prefix is used to automatically import a child class from one of the submodules
         and instantiate it.
-        For instance, a call to `Saver("csv://...")` will eventually produce a :py:class:`~dff_node_stats.savers.csv.CsvSaver`,
+        For instance, a call to `Saver("csv://...")` will eventually produce a :py:class:`~dff_node_stats.savers.csv_saver.CsvSaver`,
         while a call to `Saver("clickhouse://...")` produces a :py:class:`~dff_node_stats.savers.clickhouse.ClickHouseSaver`
 
     table: str
@@ -66,7 +73,7 @@ class Saver(ABC):
     @abstractmethod
     def save(
         self,
-        data: List[StatsItem],
+        data: List[StatsRecord],
     ) -> None:
         """
         Save the data to a database or a file.
@@ -82,7 +89,7 @@ class Saver(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def load(self) -> List[StatsItem]:
+    def load(self) -> List[StatsRecord]:
         """
         Load the data from a database or a file.
 

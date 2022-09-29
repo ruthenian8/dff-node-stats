@@ -3,7 +3,7 @@ from uuid import uuid4
 from random import choice
 
 import pytest
-from df_stats import Saver, StatsItem
+from df_stats import Saver, StatsRecord
 
 
 @pytest.fixture(scope="session")  # test saving configs to zip
@@ -26,8 +26,8 @@ def testing_saver(testing_file):
 @pytest.fixture(scope="session")
 def testing_items():
     yield [
-        StatsItem(context_id=str(uuid4()), request_id=1, data_key="some_data", data={"duration": 0.0001}),
-        StatsItem(
+        StatsRecord(context_id=str(uuid4()), request_id=1, data_key="some_data", data={"duration": 0.0001}),
+        StatsRecord(
             context_id=str(uuid4()),
             request_id=1,
             data_key="actor_data",

@@ -38,7 +38,12 @@ def run_pipeline_test(pipeline: Pipeline, turns: List[Tuple[str, str]]):
 def test_examples(module_path: pathlib.Path, testing_file: str):
     module = importlib.import_module(f"examples.{module_path.stem}")
     try:
-        pipeline = module.get_pipeline({"uri": f"csv://{testing_file}", "table": ""})
+        pipeline = module.pipeline
+        stats = module.StatsStorage.from_uri(f"csv://{testing_file}", "")
+        stats.add_extractor_pool(module.extractor_pool)
         run_pipeline_test(pipeline, TURNS)
+        with open(testing_file, "r", encoding="utf-8") as file:
+            lines = file.read().splitlines()
+            assert len(lines) > 1
     except Exception as exc:
         raise Exception(f"model_name={module_path.stem}") from exc

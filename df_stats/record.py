@@ -9,7 +9,7 @@ from df_runner import WrapperRuntimeInfo
 from .utils import get_wrapper_field
 
 
-class StatsItem(BaseModel):
+class StatsRecord(BaseModel):
     context_id: str
     request_id: int
     timestamp: datetime.datetime = Field(default_factory=datetime.datetime.now)
