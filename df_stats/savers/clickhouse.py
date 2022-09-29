@@ -53,7 +53,7 @@ class ClickHouseSaver(Saver, storage_type="clickhouse"):
 
     table: str
         Sets the name of the db table to use. Defaults to "dff_stats".
-    """
+    """  # TODO: fix dff_node_stats in docs
 
     def __init__(self, path: str, table: str = "df_stats") -> None:
         if IMPORT_ERROR_MESSAGE is not None:

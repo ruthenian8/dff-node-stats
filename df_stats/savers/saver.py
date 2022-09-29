@@ -54,10 +54,12 @@ class Saver(ABC):
 
     _saver_mapping = {}
 
+    # TODO: remove __init_subclass__
     def __init_subclass__(cls, storage_type: str, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         cls._saver_mapping[storage_type] = cls
 
+    # TODO: remove __new__
     def __new__(cls, path: Optional[str] = None, table: str = "df_stats"):
         storage_type, _, _ = path.partition("://")
         assert storage_type, "Saver should be initialized with either:" "csv://path_to_file or dbname://engine_params"

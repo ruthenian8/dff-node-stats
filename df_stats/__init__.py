@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa: F401
 
+# TODO: add yourself
 __author__ = "Denis Kuznetsov"
 __email__ = "kuznetosv.den.p@gmail.com"
 __version__ = "0.1.0"
