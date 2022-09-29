@@ -10,12 +10,13 @@ from typing import List
 
 from .savers import Saver
 from .pool import ExtractorPool
+from .record import StatsRecord
 
 
 class StatsStorage:
     """
-    This class serves as an intermediate collection of data records that stores 
-    batches of data and persists them to the database. The batch size is individual 
+    This class serves as an intermediate collection of data records that stores
+    batches of data and persists them to the database. The batch size is individual
     for each instance.
 
     Parameters
@@ -29,7 +30,7 @@ class StatsStorage:
     def __init__(self, saver: Saver, batch_size: int = 1) -> None:
         self.saver: Saver = saver
         self.batch_size: int = batch_size
-        self.data: List[dict] = []
+        self.data: List[StatsRecord] = []
 
     async def save(self):
         if len(self.data) >= self.batch_size:
@@ -39,6 +40,10 @@ class StatsStorage:
         async with asyncio.Lock():
             await self.saver.save(self.data)
         self.data.clear()
+
+    async def on_new_record(self, record: StatsRecord):
+        self.data.append(record)
+        await self.save()
 
     def add_extractor_pool(self, pool: ExtractorPool):
         pool.subscribers.append(self)

@@ -13,9 +13,9 @@ from df_stats import StatsStorage, ExtractorPool, StatsRecord, get_wrapper_field
 from _utils import parse_args, script
 
 """
-As is the case with the regular wrappers, you can add df_stats wrappers both before and after the
+As is the case with the regular wrappers, you can add extractors both before and after the
 target service. You can use a wrapper that runs before the service to compare the pre-service and post-service
-states of the context, measure the running time, etc. Use `get_wrapper_field` function to save the required
+states of the context, measure the running time, etc. Use the `get_wrapper_field` function to save the required
 values to the context.
 
 Pass before- and after-wrappers to the respective parameters of the `to_service` decorator.
@@ -23,10 +23,6 @@ Pass before- and after-wrappers to the respective parameters of the `to_service`
 """
 
 extractor_pool = ExtractorPool()
-
-
-async def heavy_service(_):
-    await asyncio.sleep(random.randint(0, 2))
 
 
 async def get_start_time(ctx: Context, _, info: WrapperRuntimeInfo):
@@ -41,14 +37,17 @@ async def get_service_state(ctx: Context, _, info: WrapperRuntimeInfo):
     return StatsRecord.from_context(ctx, info, data)
 
 
+@to_service(before_wrapper=[get_start_time], after_wrapper=[get_service_state])
+async def heavy_service(_):
+    await asyncio.sleep(random.randint(0, 2))
+
+
 actor = Actor(script, ("root", "start"), ("root", "fallback"))
 
 pipeline = Pipeline.from_dict(
     {
         "components": [
-            Service(
-                handler=to_service(before_wrapper=[get_start_time], after_wrapper=[get_service_state])(heavy_service)
-            ),
+            Service(handler=heavy_service),
             Service(handler=to_service(before_wrapper=[get_start_time], after_wrapper=[get_service_state])(actor)),
         ]
     }

@@ -31,10 +31,10 @@ class Saver(ABC):
         class MongoSaver(Saver, storage_type="mongo"):
             def __init__(self, path, table):
                 ...
-            
+
             def save(self, data):
                 ...
-            
+
             def load(self):
                 ...
 
@@ -51,6 +51,7 @@ class Saver(ABC):
     table: str
         Sets the name of the db table to use, if necessary. Defaults to "dff_stats".
     """
+
     _saver_mapping = {}
 
     def __init_subclass__(cls, storage_type: str, **kwargs) -> None:
@@ -59,10 +60,7 @@ class Saver(ABC):
 
     def __new__(cls, path: Optional[str] = None, table: str = "df_stats"):
         storage_type, _, _ = path.partition("://")
-        assert storage_type, (
-            "Saver should be initialized with either:"
-            "csv://path_to_file or dbname://engine_params"
-        )
+        assert storage_type, "Saver should be initialized with either:" "csv://path_to_file or dbname://engine_params"
 
         subclass = cls._saver_mapping.get(storage_type)
         assert subclass, f"Cannot recognize option: {storage_type}"

@@ -8,9 +8,11 @@ imported and initialized when you construct :py:class:`~dff_node_stats.savers.sa
 """
 from typing import List
 from urllib import parse
+
 try:
     from sqlalchemy.ext.asyncio import create_async_engine
     from sqlalchemy import inspect, Table, MetaData, Column, String, Integer, JSON, DateTime, select, insert
+
     IMPORT_ERROR_MESSAGE = None
 except ImportError as e:
     IMPORT_ERROR_MESSAGE = e.msg
@@ -48,7 +50,7 @@ class PostgresSaver(Saver, storage_type="postgresql"):
         parsed_path = parse.urlparse(path)
         self.engine = create_async_engine(parse.urlunparse([(parsed_path.scheme + "+asyncpg"), *parsed_path[1:]]))
         self.metadata = MetaData()
-        self.sqla_table = Table( # TODO: sql_table ?
+        self.sqla_table = Table(  # TODO: sql_table ?
             self.table,
             self.metadata,
             Column("context_id", String),

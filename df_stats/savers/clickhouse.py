@@ -11,9 +11,11 @@ from typing import List
 from urllib import parse
 
 from pydantic import validator
+
 try:
     from httpx import AsyncClient
     from aiochclient import ChClient
+
     IMPORT_ERROR_MESSAGE = None
 except ImportError as e:
     IMPORT_ERROR_MESSAGE = e.msg
@@ -52,6 +54,7 @@ class ClickHouseSaver(Saver, storage_type="clickhouse"):
     table: str
         Sets the name of the db table to use. Defaults to "dff_stats".
     """
+
     def __init__(self, path: str, table: str = "df_stats") -> None:
         if IMPORT_ERROR_MESSAGE is not None:
             raise ImportError(IMPORT_ERROR_MESSAGE)
@@ -65,9 +68,7 @@ class ClickHouseSaver(Saver, storage_type="clickhouse"):
         self._table_exists = False
         if not all([self.db, self.url, user, password]):
             raise ValueError("Invalid database URI or credentials")
-        self.ch_client = ChClient(
-            http_client, url=self.url, user=user, password=password, database=self.db
-        )
+        self.ch_client = ChClient(http_client, url=self.url, user=user, password=password, database=self.db)
 
     async def save(self, data: List[StatsRecord]) -> None:
         if not self._table_exists:
