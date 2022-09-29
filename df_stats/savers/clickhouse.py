@@ -11,13 +11,20 @@ from typing import List
 from urllib import parse
 
 from pydantic import validator
-from httpx import AsyncClient
-from aiochclient import ChClient
 
-from ..utils import StatsItem
+try:
+    from httpx import AsyncClient
+    from aiochclient import ChClient
+
+    IMPORT_ERROR_MESSAGE = None
+except ImportError as e:
+    IMPORT_ERROR_MESSAGE = e.msg
+
+from .saver import Saver
+from ..record import StatsRecord
 
 
-class CHItem(StatsItem):
+class CHItem(StatsRecord):
     data: str
 
     @validator("data", pre=True)
@@ -27,7 +34,7 @@ class CHItem(StatsItem):
         return data
 
 
-class ClickHouseSaver:
+class ClickHouseSaver(Saver, storage_type="clickhouse"):
     """
     Saves and reads the stats dataframe from a csv file.
     You don't need to interact with this class manually, as it will be automatically
@@ -46,25 +53,24 @@ class ClickHouseSaver:
 
     table: str
         Sets the name of the db table to use. Defaults to "dff_stats".
-    """  # TODO: fix docs
+    """
 
     def __init__(self, path: str, table: str = "df_stats") -> None:
+        if IMPORT_ERROR_MESSAGE is not None:
+            raise ImportError(IMPORT_ERROR_MESSAGE)
         self.table = table
         parsed_path = parse.urlparse(path)
         auth, _, address = parsed_path.netloc.partition("@")
         self.db = parsed_path.path.strip("/")
         self.url = parse.urlunparse(("http", address, "/", "", "", ""))
-        # TODO: drop useless property from self
-        self._user, _, self._password = auth.partition(":")
-        self._http_client = AsyncClient()
+        user, _, password = auth.partition(":")
+        http_client = AsyncClient()
         self._table_exists = False
-        if not all([self.db, self.url, self._user, self._password]):
+        if not all([self.db, self.url, user, password]):
             raise ValueError("Invalid database URI or credentials")
-        self.ch_client = ChClient(
-            self._http_client, url=self.url, user=self._user, password=self._password, database=self.db
-        )
+        self.ch_client = ChClient(http_client, url=self.url, user=user, password=password, database=self.db)
 
-    async def save(self, data: List[StatsItem]) -> None:
+    async def save(self, data: List[StatsRecord]) -> None:
         if not self._table_exists:
             await self._create_table()
             self._table_exists = True
@@ -72,10 +78,10 @@ class ClickHouseSaver:
             f"INSERT INTO {self.table} VALUES", *[tuple(CHItem.parse_obj(item).dict().values()) for item in data]
         )
 
-    async def load(self) -> List[StatsItem]:
+    async def load(self) -> List[StatsRecord]:
         results = []
         async for row in self.ch_client.iterate(f"SELECT * FROM {self.table}"):
-            results.append(StatsItem.parse_obj({key: row[key] for key in row.keys()}))
+            results.append(StatsRecord.parse_obj({key: row[key] for key in row.keys()}))
         return results
 
     async def _create_table(self):

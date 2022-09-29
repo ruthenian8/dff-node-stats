@@ -5,23 +5,30 @@ Provides the CSV version of the :py:class:`~dff_node_stats.savers.saver.Saver`.
 You don't need to interact with this class manually, as it will be automatically 
 initialized when you construct a :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
 
-""" # TODO: add info about unused csv for dashboard for all csv mentions
+Statistical data collected to csv cannot be directly displayed in Superset.
+Use this class, if you want to permute or analyze your data manually.
+
+"""
 import json
 import csv
 from typing import List
 import pathlib
 import os
 
-from ..utils import StatsItem
+from .saver import Saver
+from ..record import StatsRecord
 
-FIELDNAMES = list(StatsItem.schema()["properties"].keys())
+FIELDNAMES = list(StatsRecord.schema()["properties"].keys())
 
 
-class CsvSaver:
+class CsvSaver(Saver, storage_type="csv"):
     """
     Saves and reads the stats dataframe from a csv file.
     You don't need to interact with this class manually, as it will be automatically
     initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+
+    Statistical data collected to csv cannot be directly displayed in Superset.
+    Use this class, if you want to permute or analyze your data manually.
 
     Parameters
     ----------
@@ -42,7 +49,7 @@ class CsvSaver:
         path = path.partition("://")[2]
         self.path = pathlib.Path(path)
 
-    async def save(self, data: List[StatsItem]) -> None:
+    async def save(self, data: List[StatsRecord]) -> None:
 
         saved_data = []
         if self.path.exists() and os.path.getsize(self.path) > 0:
@@ -58,11 +65,11 @@ class CsvSaver:
             for item in data:
                 writer.writerow({**item.dict(), "data": json.dumps(item.data, default=str)})
 
-    async def load(self) -> List[StatsItem]:
+    async def load(self) -> List[StatsRecord]:
         with open(self.path, "r", encoding="utf-8") as file:
             reader = csv.DictReader(file, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             items = []
             for row in reader:
                 row["data"] = json.loads(row["data"])
-                items.append(StatsItem.parse_raw(json.dumps(row)))
+                items.append(StatsRecord.parse_raw(json.dumps(row)))
             return items

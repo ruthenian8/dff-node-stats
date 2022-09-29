@@ -51,7 +51,7 @@ Currently, we offer support for multiple database types that can be used to stor
 
 * [Postgresql](https://www.postgresql.org/)
 * [Clickhouse](https://clickhouse.com/)
--- # TODO: add csv
+* [CSV](#)
 
 In the future, we intend to add support for other SQL-compatible backends.
 
@@ -69,17 +69,20 @@ Assuming that you have defined a `df_engine` **Actor** and assigned it to `actor
 -- TODO: add csv into this example, without Saver
 ```python
 # import dependencies
-from df_stats import Stats, Saver
+from df_stats import Stats
 # ...
 
 # Define a destination for stats saving
 db_uri = "postgresql://user:password@host:5432/default"
-# for clickhouse:
+#
+# clickhouse:
 # db_uri = "clickhouse://user:password@host:8123/default"
-stats = Stats(saver=Saver(db_uri))
+# CSV:
+# db_uri = "csv://mydir/myfile.csv"
+#
+stats = Stats.from_uri(db_uri)
 
-# Update the Actor with stats collection callbacks
-stats.update_actor_handlers(actor, auto_save=False)
+
 ```
 
 ### Statistics collection demo
