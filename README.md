@@ -66,7 +66,6 @@ pip install df_stats[clickhouse]
 
 Assuming that you have defined a `df_engine` **Actor** and assigned it to `actor` variable, you can update your code with the following snippets.
 
--- TODO: add csv into this example, without Saver
 ```python
 # import dependencies
 from df_stats import Stats

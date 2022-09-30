@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa: F401
 
-# TODO: add yourself
-__author__ = "Denis Kuznetsov"
+__author__ = "Denis Kuznetsov, Daniil Ignatiev"
 __email__ = "kuznetosv.den.p@gmail.com"
 __version__ = "0.1.0"
 
@@ -10,6 +9,5 @@ from .utils import get_wrapper_field, STATS_KEY
 from .record import StatsRecord
 from .pool import ExtractorPool
 from .storage import StatsStorage
-from .savers import Saver
-
-# TODO: add our basic extractor pool
+from .defaults import default_extractor_pool
+from .savers import make_saver

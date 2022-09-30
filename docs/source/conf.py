@@ -18,10 +18,9 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 
-# TODO: bad naming , in index.rst same issue
-project = "DFF StatsStorage"
+project = "DF Stats"
 copyright = "2021, Denis Kuznetsov"
-author = "Denis Kuznetsov"
+author = "Denis Kuznetsov, Daniil Ignatiev"
 
 # The full version, including alpha/beta/rc tags
 release = "0.1.0"

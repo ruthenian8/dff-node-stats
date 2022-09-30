@@ -3,7 +3,7 @@ from uuid import uuid4
 from random import choice
 
 import pytest
-from df_stats import Saver, StatsRecord
+from df_stats import make_saver, StatsRecord
 
 
 @pytest.fixture(scope="session")  # test saving configs to zip
@@ -20,7 +20,7 @@ def testing_file(tmpdir_factory):
 
 @pytest.fixture(scope="session")
 def testing_saver(testing_file):
-    yield Saver("csv://{}".format(testing_file))
+    yield make_saver("csv://{}".format(testing_file))
 
 
 @pytest.fixture(scope="session")

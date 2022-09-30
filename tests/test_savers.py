@@ -1,14 +1,14 @@
 import pytest
 from sqlalchemy import text
 
-from df_stats import Saver
+from df_stats import make_saver
 from df_stats.savers.clickhouse import ClickHouseSaver
 from df_stats.savers.postgresql import PostgresSaver
 
 
 @pytest.mark.asyncio
 async def test_PG_saving(PG_uri_string, table, testing_items):
-    saver: PostgresSaver = Saver(PG_uri_string, table=table)
+    saver: PostgresSaver = make_saver(PG_uri_string, table=table)
     await saver._create_table()
 
     async with saver.engine.connect() as conn:
@@ -26,7 +26,7 @@ async def test_PG_saving(PG_uri_string, table, testing_items):
 
 @pytest.mark.asyncio
 async def test_CH_saving(CH_uri_string, table, testing_items):
-    saver: ClickHouseSaver = Saver(CH_uri_string, table=table)
+    saver: ClickHouseSaver = make_saver(CH_uri_string, table=table)
     await saver._create_table()
 
     await saver.ch_client.execute(f"TRUNCATE {table}")

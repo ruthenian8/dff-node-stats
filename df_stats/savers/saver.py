@@ -1,7 +1,7 @@
 """
 Saver
 ******
-Provides the base class :py:class:`~dff_node_stats.savers.saver.Saver`. 
+Provides the base class :py:class:`~df_stats.savers.saver.Saver`. 
 It is an interface class that defines methods for saving and loading dataframes.
 On the other hand, it is also used to automatically construct the child classes 
 depending on the input parameters. See the class documentation for more info.
@@ -15,10 +15,10 @@ from ..record import StatsRecord
 
 class Saver(ABC):
     """
-    :py:class:`~dff_node_stats.savers.saver.Saver` interface requires two methods to be impemented:
+    :py:class:`~df_stats.savers.saver.Saver` interface requires two methods to be impemented:
 
-    #. :py:meth:`~dff_node_stats.savers.saver.Saver.save`
-    #. :py:meth:`~dff_node_stats.savers.saver.Saver.load`
+    #. :py:meth:`~df_stats.savers.saver.Saver.save`
+    #. :py:meth:`~df_stats.savers.saver.Saver.load`
 
     | A call to Saver is needed to instantiate one of the predefined child classes.
     | The subclass is chosen depending on the `path` parameter value (see Parameters).
@@ -45,30 +45,12 @@ class Saver(ABC):
         A string that contains a prefix and a url of the target data storage, separated by ://.
         The prefix is used to automatically import a child class from one of the submodules
         and instantiate it.
-        For instance, a call to `Saver("csv://...")` will eventually produce a :py:class:`~dff_node_stats.savers.csv_saver.CsvSaver`,
-        while a call to `Saver("clickhouse://...")` produces a :py:class:`~dff_node_stats.savers.clickhouse.ClickHouseSaver`
+        For instance, a call to `Saver("csv://...")` will eventually produce a :py:class:`~df_stats.savers.csv_saver.CsvSaver`,
+        while a call to `Saver("clickhouse://...")` produces a :py:class:`~df_stats.savers.clickhouse.ClickHouseSaver`
 
     table: str
         Sets the name of the db table to use, if necessary. Defaults to "dff_stats".
     """
-
-    _saver_mapping = {}
-
-    # TODO: remove __init_subclass__
-    def __init_subclass__(cls, storage_type: str, **kwargs) -> None:
-        super().__init_subclass__(**kwargs)
-        cls._saver_mapping[storage_type] = cls
-
-    # TODO: remove __new__
-    def __new__(cls, path: Optional[str] = None, table: str = "df_stats"):
-        storage_type, _, _ = path.partition("://")
-        assert storage_type, "Saver should be initialized with either:" "csv://path_to_file or dbname://engine_params"
-
-        subclass = cls._saver_mapping.get(storage_type)
-        assert subclass, f"Cannot recognize option: {storage_type}"
-        obj = object.__new__(subclass)
-        obj.__init__(str(path), table)
-        return obj
 
     @abstractmethod
     def save(

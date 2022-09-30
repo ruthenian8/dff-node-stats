@@ -1,9 +1,9 @@
 """
 Postgresql
 ---------------------------
-Provides the Postgresql version of the :py:class:`~dff_node_stats.savers.saver.Saver`. 
+Provides the Postgresql version of the :py:class:`~df_stats.savers.saver.Saver`. 
 You don't need to interact with this class manually, as it will be automatically 
-imported and initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+imported and initialized when you construct :py:class:`~df_stats.savers.saver.Saver` with specific parameters.
 
 """
 from typing import List
@@ -21,11 +21,11 @@ from .saver import Saver
 from ..record import StatsRecord
 
 
-class PostgresSaver(Saver, storage_type="postgresql"):
+class PostgresSaver(Saver):
     """
     Saves the stats dataframe to - and reads from a Postgresql database.
     You don't need to interact with this class manually, as it will be automatically
-    initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+    initialized when you construct :py:class:`~df_stats.savers.saver.Saver` with specific parameters.
 
     Parameters
     ----------
@@ -50,7 +50,7 @@ class PostgresSaver(Saver, storage_type="postgresql"):
         parsed_path = parse.urlparse(path)
         self.engine = create_async_engine(parse.urlunparse([(parsed_path.scheme + "+asyncpg"), *parsed_path[1:]]))
         self.metadata = MetaData()
-        self.sqla_table = Table(  # TODO: sql_table ?
+        self.sql_table = Table(
             self.table,
             self.metadata,
             Column("context_id", String),
@@ -66,14 +66,14 @@ class PostgresSaver(Saver, storage_type="postgresql"):
             self.table_exists = True
 
         async with self.engine.connect() as conn:
-            await conn.execute(insert(self.sqla_table).values([item.dict() for item in data]))
+            await conn.execute(insert(self.sql_table).values([item.dict() for item in data]))
             await conn.commit()
 
     async def load(self) -> List[StatsRecord]:
         stats = []
 
         async with self.engine.connect() as conn:
-            result = await conn.execute(select(self.sqla_table))
+            result = await conn.execute(select(self.sql_table))
 
         async for item in result.all():
             stats.append(StatsRecord.from_orm(item))

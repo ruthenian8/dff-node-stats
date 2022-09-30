@@ -1,11 +1,11 @@
 """
 Clickhouse
 ---------------------------
-Provides the Clickhouse version of the :py:class:`~dff_node_stats.savers.saver.Saver`. 
+Provides the Clickhouse version of the :py:class:`~df_stats.savers.saver.Saver`. 
 You don't need to interact with this class manually, as it will be automatically 
-imported and initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+imported and initialized when you construct :py:class:`~df_stats.savers.saver.Saver` with specific parameters.
 
-"""  # TODO: fix docs
+"""
 import json
 from typing import List
 from urllib import parse
@@ -34,11 +34,11 @@ class CHItem(StatsRecord):
         return data
 
 
-class ClickHouseSaver(Saver, storage_type="clickhouse"):
+class ClickHouseSaver(Saver):
     """
     Saves and reads the stats dataframe from a csv file.
     You don't need to interact with this class manually, as it will be automatically
-    initialized when you construct :py:class:`~dff_node_stats.savers.saver.Saver` with specific parameters.
+    initialized when you construct :py:class:`~df_stats.savers.saver.Saver` with specific parameters.
 
     Parameters
     ----------
@@ -52,8 +52,8 @@ class ClickHouseSaver(Saver, storage_type="clickhouse"):
             ClickHouseSaver("clickhouse://user:password@localhost:8000/default")
 
     table: str
-        Sets the name of the db table to use. Defaults to "dff_stats".
-    """  # TODO: fix dff_node_stats in docs
+        Sets the name of the db table to use. Defaults to "df_stats".
+    """
 
     def __init__(self, path: str, table: str = "df_stats") -> None:
         if IMPORT_ERROR_MESSAGE is not None:
