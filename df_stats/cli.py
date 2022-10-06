@@ -58,7 +58,7 @@ def add_to_zip(zip_file, path, zippath):
             add_to_zip(zip_file, os.path.join(path, nm), os.path.join(zippath, nm))
 
 
-def import_dashboard(parsed_args: argparse.Namespace = None):
+def import_dashboard(parsed_args: argparse.Namespace = None): # TODO: Add Optioal type because `Type "None" cannot be assigned to type "Namespace"`
     """
     Import an Apache Superset dashboard to a local instance with specified arguments.
     """

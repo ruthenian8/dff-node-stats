@@ -38,7 +38,7 @@ async def get_service_state(ctx: Context, _, info: WrapperRuntimeInfo):
     before_wrapper=[default_extractor_pool["extract_timing_before"]],
     after_wrapper=[get_service_state, default_extractor_pool["extract_timing_after"]],
 )
-async def heavy_service(_):
+async def heavy_service(_): # TODO: add ordeanary args
     await asyncio.sleep(random.randint(0, 2))
 
 
