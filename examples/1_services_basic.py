@@ -42,14 +42,18 @@ extractor_pool = ExtractorPool()
 # Create an extractor and add it to the pool.
 @extractor_pool.new_extractor
 async def get_service_state(ctx: Context, _, info: WrapperRuntimeInfo):
+    # extract execution state of service from info
     data = {
         "execution_state": info["component"]["execution_state"],
     }
+    # return a record to save into connected database
     return StatsRecord.from_context(ctx, info, data)
 
 
-@to_service(after_wrapper=[get_service_state])
-async def heavy_service(_):
+@to_service(after_wrapper=[get_service_state]) # set get_service_state to rubn it after the `heavy_service`
+async def heavy_service(ctx: Context, actor: Actor):
+    _ = ctx # get something from ctx if it needs
+    _ = actor # get something from actor if it needs
     await asyncio.sleep(random.randint(0, 2))
 
 

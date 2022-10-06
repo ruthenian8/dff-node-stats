@@ -45,7 +45,7 @@ class CsvSaver(Saver):
         Does not affect the class. Added for constructor uniformity.
     """
 
-    def __init__(self, path: str, table: str = "dff_stats") -> None:
+    def __init__(self, path: str, _: str = "df_stats") -> None:
         path = path.partition("://")[2]
         self.path = pathlib.Path(path)
 

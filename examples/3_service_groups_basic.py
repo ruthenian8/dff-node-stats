@@ -20,7 +20,7 @@ to which wrapper functions can be passed.
 extractor_pool = ExtractorPool()
 
 
-async def heavy_service(_):# TODO: add ordeanary args
+async def heavy_service(_):
     await asyncio.sleep(random.randint(0, 2))
 
 
